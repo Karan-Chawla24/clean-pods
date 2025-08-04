@@ -1,7 +1,6 @@
 
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -10,6 +9,7 @@ import { formatPrice, calculateTax, calculateTotal, generateOrderId, validateEma
 import Header from '../components/Header';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
+import Image from 'next/image';
 
 interface CheckoutForm {
   firstName: string;
@@ -368,9 +368,11 @@ export default function Checkout() {
               <div className="space-y-4 mb-6">
                 {cart.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4">
-                    <img
+                    <Image
                       src={item.image}
                       alt={item.name}
+                      width={64}
+                      height={64}
                       className="w-16 h-16 object-cover rounded-lg"
                     />
                     <div className="flex-1">

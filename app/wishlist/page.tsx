@@ -1,10 +1,11 @@
 'use client';
 
-import Image from 'next/image';
 import { useAppStore } from '../lib/store';
 import { formatPrice } from '../lib/utils';
 import Header from '../components/Header';
 import toast from 'react-hot-toast';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Wishlist() {
   const { wishlist, removeFromWishlist, addToCart } = useAppStore();
@@ -42,16 +43,16 @@ export default function Wishlist() {
             </div>
             <h2 className="text-2xl font-semibold text-gray-600 mb-4">Your wishlist is empty</h2>
             <p className="text-gray-500 mb-8">Start adding products to your wishlist</p>
-            <a href="/#products" className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap inline-block">
+            <Link href="/#products" className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap inline-block">
               Shop Products
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {wishlist.map((item) => (
               <div key={item.id} className="bg-white rounded-2xl shadow-sm border overflow-hidden">
                 <div className="relative">
-                  <img 
+                  <Image 
                     src={item.image}
                     alt={item.name}
                     className="w-full h-48 object-cover object-top"

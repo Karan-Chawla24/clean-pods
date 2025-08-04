@@ -1,10 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import { useAppStore } from '../lib/store';
 import { formatPrice } from '../lib/utils';
 import Header from '../components/Header';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
 const products = [
   {
@@ -89,7 +89,7 @@ export default function Products() {
                   </div>
                 )}
                 <div className="relative">
-                  <img 
+                  <Image 
                     src={product.image}
                     alt={product.name}
                     className="w-full h-64 object-cover object-top"

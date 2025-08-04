@@ -70,14 +70,14 @@ export default function OrderSuccess() {
                   <span className="text-lg font-bold text-blue-600">1</span>
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">Order Processing</h3>
-                <p className="text-gray-600 text-sm">We're preparing your order for shipment</p>
+                <p className="text-gray-600 text-sm">We&apos;re preparing your order for shipment</p>
               </div>
               <div className="text-center">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <span className="text-lg font-bold text-blue-600">2</span>
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">Shipping Confirmation</h3>
-                <p className="text-gray-600 text-sm">You'll receive tracking information via email</p>
+                <p className="text-gray-600 text-sm">You&apos;ll receive tracking information via email</p>
               </div>
               <div className="text-center">
                 <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -106,7 +106,7 @@ export default function OrderSuccess() {
           <div className="mt-12 pt-8 border-t">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">Need Help?</h3>
             <p className="text-gray-600 mb-4">
-              If you have any questions about your order, don't hesitate to contact us.
+              If you have any questions about your order, don&apos;t hesitate to contact us.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a href="mailto:support@cleanpods.com" className="text-blue-600 hover:text-blue-700 cursor-pointer">

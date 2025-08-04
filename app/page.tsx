@@ -1,12 +1,12 @@
 
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
 import { useAppStore } from './lib/store';
 import { formatPrice } from './lib/utils';
 import Header from './components/Header';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
 export default function Home() {
   const { addToCart, addToWishlist, wishlist } = useAppStore();
@@ -107,7 +107,7 @@ export default function Home() {
                   </div>
                 )}
                 <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden">
-                  <img 
+                  <Image 
                     src={product.image}
                     alt={product.name}
                     className="w-full h-full object-cover object-top"
