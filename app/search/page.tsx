@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAppStore } from '../lib/store';
 import { formatPrice } from '../lib/utils';
 import Header from '../components/Header';
@@ -39,20 +40,27 @@ const allProducts: Product[] = [
 ];
 
 export default function Search() {
+  const searchParams = useSearchParams();
   const { searchQuery, addToCart, addToWishlist, removeFromWishlist, wishlist } = useAppStore();
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [currentQuery, setCurrentQuery] = useState('');
 
   useEffect(() => {
-    if (searchQuery.trim() === '') {
+    // Get query from URL params or store
+    const urlQuery = searchParams.get('q') || '';
+    const query = urlQuery || searchQuery;
+    setCurrentQuery(query);
+
+    if (query.trim() === '') {
       setFilteredProducts(allProducts);
     } else {
       const filtered = allProducts.filter(product =>
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+        product.name.toLowerCase().includes(query.toLowerCase()) ||
+        product.description.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredProducts(filtered);
     }
-  }, [searchQuery]);
+  }, [searchParams, searchQuery]);
 
   const handleAddToCart = (product: Product) => {
     addToCart({
@@ -90,7 +98,7 @@ export default function Search() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Search Results</h1>
           <p className="text-gray-600">
-            {searchQuery ? `Results for "${searchQuery}"` : 'All products'}
+            {currentQuery ? `Results for "${currentQuery}"` : 'All products'}
           </p>
         </div>
 
@@ -101,8 +109,8 @@ export default function Search() {
             </div>
             <h2 className="text-2xl font-semibold text-gray-600 mb-4">No products found</h2>
             <p className="text-gray-500 mb-8">
-              {searchQuery 
-                ? `No products match "${searchQuery}". Try a different search term.`
+              {currentQuery 
+                ? `No products match "${currentQuery}". Try a different search term.`
                 : 'No products available.'
               }
             </p>
@@ -159,4 +167,4 @@ export default function Search() {
       </div>
     </div>
   );
-} 
+}
