@@ -6,6 +6,12 @@
 
 **Solution:** ✅ **FIXED** - Removed the problematic `vercel.json` file that was causing this error.
 
+## ✅ **Fixed: Dependency Conflict Error**
+
+**Error:** `Conflicting peer dependency: react@18.3.1` with framer-motion
+
+**Solution:** ✅ **FIXED** - Updated framer-motion to v11.0.0 and added `.npmrc` file with `legacy-peer-deps=true`
+
 ---
 
 ## 📋 **Correct Deployment Steps:**
