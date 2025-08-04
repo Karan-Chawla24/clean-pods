@@ -55,6 +55,8 @@ export default function Wishlist() {
                   <Image 
                     src={item.image}
                     alt={item.name}
+                    width={300}
+                    height={192}
                     className="w-full h-48 object-cover object-top"
                   />
                   <button

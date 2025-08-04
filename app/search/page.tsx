@@ -131,6 +131,8 @@ function SearchContent() {
                     <Image 
                       src={product.image}
                       alt={product.name}
+                      width={300}
+                      height={192}
                       className="w-full h-48 object-cover object-top"
                     />
                     <button

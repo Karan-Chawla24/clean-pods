@@ -92,6 +92,8 @@ export default function Products() {
                   <Image 
                     src={product.image}
                     alt={product.name}
+                    width={300}
+                    height={256}
                     className="w-full h-64 object-cover object-top"
                   />
                   <button

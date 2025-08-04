@@ -3,15 +3,23 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function OrderSuccess() {
+  const searchParams = useSearchParams();
   const [orderNumber, setOrderNumber] = useState('');
 
   useEffect(() => {
-    // Generate a random order number for demo
-    const randomOrder = 'CP' + Math.random().toString(36).substr(2, 9).toUpperCase();
-    setOrderNumber(randomOrder);
-  }, []);
+    // Get order ID from URL params or generate one
+    const urlOrderId = searchParams.get('order_id');
+    if (urlOrderId) {
+      setOrderNumber(urlOrderId);
+    } else {
+      // Generate a random order number for demo
+      const randomOrder = 'CP' + Math.random().toString(36).substr(2, 9).toUpperCase();
+      setOrderNumber(randomOrder);
+    }
+  }, [searchParams]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -94,6 +102,11 @@ export default function OrderSuccess() {
             <Link href="/#products" className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap inline-block">
               Continue Shopping
             </Link>
+            {orderNumber && (
+              <Link href={`/orders/${orderNumber}`} className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors cursor-pointer whitespace-nowrap inline-block">
+                View Order Details
+              </Link>
+            )}
             <button 
               onClick={() => window.print()}
               className="bg-gray-200 text-gray-800 px-8 py-3 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer whitespace-nowrap"
