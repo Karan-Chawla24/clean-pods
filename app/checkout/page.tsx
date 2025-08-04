@@ -1,6 +1,8 @@
 
 'use client';
 
+import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { useAppStore } from '../lib/store';
@@ -188,12 +190,12 @@ export default function Checkout() {
           <div className="text-center">
             <h1 className="text-3xl font-bold text-gray-900 mb-4">Your Cart is Empty</h1>
             <p className="text-gray-600 mb-8">Add some products to your cart before checkout.</p>
-            <a
+            <Link
               href="/products"
               className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer inline-block"
             >
               Continue Shopping
-            </a>
+            </Link>
           </div>
         </div>
       </div>

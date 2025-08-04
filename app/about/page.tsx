@@ -52,7 +52,7 @@ export default function About() {
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-4">Sustainability</h3>
             <p className="text-gray-600">
-              We're committed to reducing environmental impact through biodegradable ingredients, eco-friendly packaging, and sustainable manufacturing processes.
+              We&apos;re committed to reducing environmental impact through biodegradable ingredients, eco-friendly packaging, and sustainable manufacturing processes.
             </p>
           </div>
 
