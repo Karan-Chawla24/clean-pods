@@ -31,12 +31,19 @@
 
 3. **Add Environment Variables:**
    - In Vercel dashboard → Project → Settings → Environment Variables
-   - Add these variables:
+   - Add these variables (make sure to use the exact names):
      ```
      RAZORPAY_KEY_ID = rzp_test_8FhZsj7WtT228R
      RAZORPAY_KEY_SECRET = OclgSCmRYoNmRN4dzoQd2sKl
      NEXT_PUBLIC_RAZORPAY_KEY_ID = rzp_test_8FhZsj7WtT228R
+     RESEND_API_KEY = your_resend_api_key_here
+     ADMIN_EMAIL = your-business-email@gmail.com
      ```
+   
+   **Important:**
+   - Don't use quotes around the values
+   - Make sure there are no extra spaces
+   - Use the exact variable names as shown above
 
 4. **Redeploy:**
    - After adding environment variables, trigger a new deployment
