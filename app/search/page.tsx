@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAppStore } from '../lib/store';
 import { formatPrice } from '../lib/utils';
@@ -41,7 +41,7 @@ const allProducts: Product[] = [
   },
 ];
 
-export default function Search() {
+function SearchContent() {
   const searchParams = useSearchParams();
   const { searchQuery, addToCart, addToWishlist, removeFromWishlist, wishlist } = useAppStore();
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -168,5 +168,13 @@ export default function Search() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense>
+      <SearchContent />
+    </Suspense>
   );
 }
