@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAppStore } from '../lib/store';
 import { cn } from '../lib/utils';
 
@@ -11,12 +11,18 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (localSearchQuery.trim()) {
       setSearchQuery(localSearchQuery);
-      router.push('/search');
+      // If already on search page, just update the query
+      if (pathname === '/search') {
+        router.push(`/search?q=${encodeURIComponent(localSearchQuery.trim())}`);
+      } else {
+        router.push(`/search?q=${encodeURIComponent(localSearchQuery.trim())}`);
+      }
     }
   };
 
