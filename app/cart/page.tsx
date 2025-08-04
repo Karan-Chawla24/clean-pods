@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '../lib/store';
@@ -70,9 +70,11 @@ export default function Cart() {
               <div className="bg-white rounded-2xl overflow-hidden">
                 {cart.map((item, index) => (
                   <div key={item.id} className={`flex items-center p-6 ${index !== cart.length - 1 ? 'border-b' : ''}`}>
-                    <img 
+                    <Image
                       src={item.image}
                       alt={item.name}
+                      width={96}
+                      height={96}
                       className="w-24 h-24 object-cover object-top rounded-lg mr-6"
                     />
                     

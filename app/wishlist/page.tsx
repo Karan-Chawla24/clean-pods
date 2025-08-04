@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useAppStore } from '../lib/store';
 import { formatPrice } from '../lib/utils';
 import Header from '../components/Header';

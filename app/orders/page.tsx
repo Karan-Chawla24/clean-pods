@@ -3,6 +3,8 @@
 import { useAppStore } from '../lib/store';
 import { formatPrice, formatDate, getOrderStatusColor } from '../lib/utils';
 import Header from '../components/Header';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Orders() {
   const { orders } = useAppStore();
@@ -25,13 +27,13 @@ export default function Orders() {
               <i className="ri-shopping-bag-line text-gray-400 w-12 h-12"></i>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No Orders Yet</h3>
-            <p className="text-gray-600 mb-6">You haven't placed any orders yet.</p>
-            <a
+            <p className="text-gray-600 mb-6">You haven&apos;t placed any orders yet.</p>
+            <Link
               href="/products"
               className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer inline-block"
             >
               Start Shopping
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="space-y-6">
@@ -52,9 +54,11 @@ export default function Orders() {
                 <div className="space-y-4 mb-6">
                   {order.items.map((item) => (
                     <div key={item.id} className="flex items-center space-x-4">
-                      <img
+                      <Image
                         src={item.image}
                         alt={item.name}
+                        width={64}
+                        height={64}
                         className="w-16 h-16 object-cover rounded-lg"
                       />
                       <div className="flex-1">
