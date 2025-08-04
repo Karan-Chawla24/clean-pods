@@ -1,12 +1,13 @@
 'use client';
 
-import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAppStore } from '../lib/store';
 import { formatPrice } from '../lib/utils';
 import Header from '../components/Header';
 import toast from 'react-hot-toast';
+import Link from 'next/link';
+import Image from 'next/image';
 
 interface Product {
   id: string;
@@ -115,9 +116,9 @@ export default function Search() {
                 : 'No products available.'
               }
             </p>
-            <a href="/#products" className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap inline-block">
+            <Link href="/#products" className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap inline-block">
               Browse All Products
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -127,7 +128,7 @@ export default function Search() {
               return (
                 <div key={product.id} className="bg-white rounded-2xl shadow-sm border overflow-hidden">
                   <div className="relative">
-                    <img 
+                    <Image 
                       src={product.image}
                       alt={product.name}
                       className="w-full h-48 object-cover object-top"
@@ -152,12 +153,12 @@ export default function Search() {
                       >
                         Add to Cart
                       </button>
-                      <a
+                      <Link
                         href={`/products/${product.id}`}
                         className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer whitespace-nowrap"
                       >
                         View Details
-                      </a>
+                      </Link>
                     </div>
                   </div>
                 </div>

@@ -23,7 +23,7 @@ export default function Contact() {
     reset,
   } = useForm<ContactForm>();
 
-  const onSubmit = async (data: ContactForm) => {
+  const onSubmit = async () => {
     setIsSubmitting(true);
     
     try {
@@ -32,7 +32,7 @@ export default function Contact() {
       
       toast.success('Message sent successfully! We\'ll get back to you soon.');
       reset();
-    } catch (error) {
+    } catch {
       toast.error('Failed to send message. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -47,7 +47,7 @@ export default function Contact() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-3">Contact Us</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Have questions about our products or need support? We're here to help!
+            Have questions about our products or need support? We&apos;re here to help!
           </p>
         </div>
 

@@ -1,13 +1,13 @@
 
 'use client';
 
-import Image from 'next/image';
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAppStore } from '../../lib/store';
 import { formatPrice } from '../../lib/utils';
 import Header from '../../components/Header';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
 interface Product {
   id: string;
@@ -123,23 +123,23 @@ export default function ProductDetail({ productId }: { productId: string }) {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Product Image */}
           <div className="bg-white rounded-2xl p-8">
-            <img 
+            <Image 
               src={product.image}
               alt={product.name}
               className="w-full h-96 object-cover object-top rounded-lg mb-4"
             />
             <div className="grid grid-cols-3 gap-4">
-              <img 
+              <Image 
                 src={product.image}
                 alt={product.name}
                 className="w-full h-24 object-cover object-top rounded-lg border-2 border-blue-200 cursor-pointer"
               />
-              <img 
+              <Image 
                 src={product.image}
                 alt={product.name}
                 className="w-full h-24 object-cover object-top rounded-lg border cursor-pointer hover:border-blue-200"
               />
-              <img 
+              <Image 
                 src={product.image}
                 alt={product.name}
                 className="w-full h-24 object-cover object-top rounded-lg border cursor-pointer hover:border-blue-200"
