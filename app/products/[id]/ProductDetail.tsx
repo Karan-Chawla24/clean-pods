@@ -126,22 +126,30 @@ export default function ProductDetail({ productId }: { productId: string }) {
             <Image 
               src={product.image}
               alt={product.name}
+              width={600}
+              height={400}
               className="w-full h-96 object-cover object-top rounded-lg mb-4"
             />
             <div className="grid grid-cols-3 gap-4">
               <Image 
                 src={product.image}
                 alt={product.name}
+                width={100}
+                height={100}
                 className="w-full h-24 object-cover object-top rounded-lg border-2 border-blue-200 cursor-pointer"
               />
               <Image 
                 src={product.image}
                 alt={product.name}
+                width={100}
+                height={100}
                 className="w-full h-24 object-cover object-top rounded-lg border cursor-pointer hover:border-blue-200"
               />
               <Image 
                 src={product.image}
                 alt={product.name}
+                width={100}
+                height={100}
                 className="w-full h-24 object-cover object-top rounded-lg border cursor-pointer hover:border-blue-200"
               />
             </div>

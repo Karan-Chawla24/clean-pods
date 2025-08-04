@@ -10,6 +10,7 @@ import Header from '../components/Header';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import Image from 'next/image';
+import { saveOrder } from '../lib/database';
 
 interface CheckoutForm {
   firstName: string;
@@ -89,8 +90,16 @@ export default function Checkout() {
       }
 
       // Initialize Razorpay
+      const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+      
+      if (!razorpayKey) {
+        throw new Error('Razorpay key not configured. Please check your environment variables.');
+      }
+      
+      console.log('Using Razorpay key:', razorpayKey);
+      
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        key: razorpayKey,
         amount: orderData.order.amount,
         currency: orderData.order.currency,
         name: 'CleanPods',
@@ -99,6 +108,11 @@ export default function Checkout() {
         handler: async function (response: any) {
           try {
             console.log('Payment response:', response);
+            console.log('Payment details:', {
+              order_id: response.razorpay_order_id,
+              payment_id: response.razorpay_payment_id,
+              signature: response.razorpay_signature
+            });
             
             // Verify payment
             const verifyResponse = await fetch('/api/verify-payment', {
@@ -113,13 +127,32 @@ export default function Checkout() {
               }),
             });
 
+            console.log('Verification response status:', verifyResponse.status);
             const verifyData = await verifyResponse.json();
             console.log('Verification response:', verifyData);
 
             if (verifyData.success) {
-              // Create order in our system
+              // Generate order ID
+              const orderId = generateOrderId();
+              
+              // Save order to database
+              try {
+                await saveOrder({
+                  id: orderId,
+                  customer: data,
+                  items: cart,
+                  total: total,
+                  paymentId: response.razorpay_payment_id
+                });
+                console.log('✅ Order saved to database:', orderId);
+              } catch (dbError) {
+                console.error('❌ Failed to save order to database:', dbError);
+                // Continue with email sending even if DB fails
+              }
+
+              // Create order in our system (existing code)
               const order = {
-                id: generateOrderId(),
+                id: orderId,
                 items: cart,
                 total: total,
                 status: 'processing' as const,
@@ -128,27 +161,42 @@ export default function Checkout() {
                 paymentId: response.razorpay_payment_id,
               };
 
-              // Send order notification emails
+              // Send Slack notification
               try {
-                await fetch('/api/send-order-email', {
+                await fetch('/api/slack-notification', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
                   },
                   body: JSON.stringify({
-                    orderData: order,
-                    customerData: data,
+                    orderData: {
+                      id: orderId,
+                      items: cart.map(item => ({
+                        name: item.name,
+                        quantity: item.quantity,
+                        price: item.price
+                      })),
+                      total: total,
+                      paymentId: response.razorpay_payment_id,
+                    },
+                    customerData: {
+                      name: `${data.firstName} ${data.lastName}`,
+                      email: data.email,
+                      phone: data.phone,
+                      address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
+                    },
                   }),
                 });
-              } catch (emailError) {
-                console.error('Failed to send order notification:', emailError);
-                // Don't fail the order if email fails
+                console.log('✅ Slack notification sent');
+              } catch (slackError) {
+                console.error('❌ Failed to send Slack notification:', slackError);
+                // Don't fail the order if Slack notification fails
               }
 
               addOrder(order);
               clearCart();
               toast.success('Payment successful! Your order has been placed.');
-              router.push('/order-success');
+              router.push(`/order-success?order_id=${orderId}`);
             } else {
               toast.error('Payment verification failed');
             }
