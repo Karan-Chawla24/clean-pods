@@ -46,7 +46,7 @@ export default function OrderDetails() {
         } else {
           setError('Order not found');
         }
-      } catch (err) {
+      } catch {
         setError('Failed to load order');
       } finally {
         setLoading(false);
