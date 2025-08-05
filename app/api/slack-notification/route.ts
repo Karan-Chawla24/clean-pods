@@ -30,7 +30,6 @@ export async function POST(request: NextRequest) {
     const { orderData, customerData }: { orderData: OrderData; customerData: CustomerData } = body;
 
     if (!process.env.SLACK_WEBHOOK_URL) {
-      console.log('⚠️ SLACK_WEBHOOK_URL not configured, skipping Slack notification');
       return NextResponse.json({ success: true, message: 'Slack webhook not configured' });
     }
 
@@ -142,9 +141,6 @@ export async function POST(request: NextRequest) {
     // Send to Slack
     const result = await webhook.send(slackMessage);
     
-    console.log('✅ Slack notification sent successfully');
-    console.log('📱 Slack Response:', result);
-    
     return NextResponse.json({
       success: true,
       message: 'Slack notification sent successfully',
@@ -152,8 +148,6 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Failed to send Slack notification:', error);
-    
     return NextResponse.json(
       { 
         success: false, 

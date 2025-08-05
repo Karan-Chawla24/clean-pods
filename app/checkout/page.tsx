@@ -53,8 +53,6 @@ export default function Checkout() {
     setIsProcessing(true);
 
     try {
-      console.log('Creating order with amount:', total);
-      
       // Create Razorpay order
       const orderResponse = await fetch('/api/create-order', {
         method: 'POST',
@@ -68,17 +66,12 @@ export default function Checkout() {
         }),
       });
 
-      console.log('Order response status:', orderResponse.status);
-      console.log('Order response headers:', orderResponse.headers);
-
       if (!orderResponse.ok) {
         const errorText = await orderResponse.text();
-        console.error('API Error Response:', errorText);
         throw new Error(`API Error: ${orderResponse.status} - ${errorText}`);
       }
 
       const orderData = await orderResponse.json();
-      console.log('Order data received:', orderData);
 
       if (!orderData.success) {
         throw new Error(orderData.error || 'Failed to create order');
@@ -96,8 +89,6 @@ export default function Checkout() {
         throw new Error('Razorpay key not configured. Please check your environment variables.');
       }
       
-      console.log('Using Razorpay key:', razorpayKey);
-      
       const options = {
         key: razorpayKey,
         amount: orderData.order.amount,
@@ -107,13 +98,6 @@ export default function Checkout() {
         order_id: orderData.order.id,
         handler: async function (response: any) {
           try {
-            console.log('Payment response:', response);
-            console.log('Payment details:', {
-              order_id: response.razorpay_order_id,
-              payment_id: response.razorpay_payment_id,
-              signature: response.razorpay_signature
-            });
-            
             // Verify payment
             const verifyResponse = await fetch('/api/verify-payment', {
               method: 'POST',
@@ -127,9 +111,7 @@ export default function Checkout() {
               }),
             });
 
-            console.log('Verification response status:', verifyResponse.status);
             const verifyData = await verifyResponse.json();
-            console.log('Verification response:', verifyData);
 
             if (verifyData.success) {
               // Generate order ID
@@ -144,10 +126,8 @@ export default function Checkout() {
                   total: total,
                   paymentId: response.razorpay_payment_id
                 });
-                console.log('✅ Order saved to database:', orderId);
               } catch (dbError) {
-                console.error('❌ Failed to save order to database:', dbError);
-                // Continue with email sending even if DB fails
+                // Continue with Slack notification even if DB fails
               }
 
               // Create order in our system (existing code)
@@ -187,9 +167,7 @@ export default function Checkout() {
                     },
                   }),
                 });
-                console.log('✅ Slack notification sent');
               } catch (slackError) {
-                console.error('❌ Failed to send Slack notification:', slackError);
                 // Don't fail the order if Slack notification fails
               }
 
@@ -201,7 +179,6 @@ export default function Checkout() {
               toast.error('Payment verification failed');
             }
           } catch (error) {
-            console.error('Payment verification error:', error);
             toast.error('Payment verification failed');
           }
         },
@@ -218,12 +195,10 @@ export default function Checkout() {
         },
       };
 
-      console.log('Razorpay options:', options);
       const razorpay = new window.Razorpay(options);
       razorpay.open();
 
     } catch (error) {
-      console.error('Payment error:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to process payment. Please try again.');
     } finally {
       setIsProcessing(false);
