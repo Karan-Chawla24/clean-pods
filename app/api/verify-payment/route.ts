@@ -27,7 +27,6 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error('Error verifying payment:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to verify payment' },
       { status: 500 }

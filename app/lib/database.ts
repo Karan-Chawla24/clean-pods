@@ -80,9 +80,6 @@ export async function saveOrder(orderData: {
   orders.push(order);
   orderItems.push(...items);
 
-  console.log('✅ Order saved to memory:', orderData.id);
-  console.log('📊 Total orders in memory:', orders.length);
-
   return orderData.id;
 }
 

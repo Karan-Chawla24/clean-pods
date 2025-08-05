@@ -90,3 +90,8 @@ jspm_packages/
 
 # Vercel
 .vercel
+
+# Documentation
+SLACK_SETUP.md
+ORDER_MANAGEMENT.md
+

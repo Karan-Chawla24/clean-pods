@@ -6,9 +6,7 @@ const keyId = process.env.RAZORPAY_KEY_ID;
 const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
 if (!keyId || !keySecret) {
-  console.error('Razorpay environment variables not set!');
-  console.error('RAZORPAY_KEY_ID:', keyId ? 'SET' : 'NOT SET');
-  console.error('RAZORPAY_KEY_SECRET:', keySecret ? 'SET' : 'NOT SET');
+  // Environment variables not configured
 }
 
 const razorpay = new Razorpay({
@@ -32,8 +30,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { amount, currency = 'INR', receipt } = body;
 
-    console.log('Creating Razorpay order with:', { amount, currency, receipt });
-
     const options = {
       amount: amount * 100, // Razorpay expects amount in paise
       currency,
@@ -41,8 +37,6 @@ export async function POST(request: NextRequest) {
     };
 
     const order = await razorpay.orders.create(options);
-
-    console.log('Razorpay order created:', order.id);
 
     return NextResponse.json({
       success: true,
@@ -53,7 +47,6 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Error creating Razorpay order:', error);
     return NextResponse.json(
       { 
         success: false, 
