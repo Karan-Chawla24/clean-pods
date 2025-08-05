@@ -25,8 +25,8 @@ interface Order {
 }
 
 // In-memory storage
-let orders: Order[] = [];
-let orderItems: OrderItem[] = [];
+const orders: Order[] = [];
+const orderItems: OrderItem[] = [];
 
 // Save order to memory
 export async function saveOrder(orderData: {

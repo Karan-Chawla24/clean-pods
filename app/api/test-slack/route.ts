@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { IncomingWebhook } from '@slack/webhook';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const webhookUrl = process.env.SLACK_WEBHOOK_URL;
     

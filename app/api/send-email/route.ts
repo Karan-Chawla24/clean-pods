@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-const sgMail = require('@sendgrid/mail');
+import sgMail from '@sendgrid/mail';
 
 // Set your SendGrid API Key in Vercel environment variables as SENDGRID_API_KEY
 sgMail.setApiKey(process.env.SENDGRID_API_KEY!);
