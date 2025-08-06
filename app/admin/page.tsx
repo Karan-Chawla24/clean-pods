@@ -1,12 +1,75 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAppStore } from '../lib/store';
 import { formatPrice, formatDate, getOrderStatusColor } from '../lib/utils';
-import { useState } from 'react';
+import Header from '../components/Header';
+
+function downloadOrdersExcel() {
+  fetch('/api/admin-download-orders')
+    .then(res => res.blob())
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'orders.xlsx';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    });
+}
 
 export default function AdminDashboard() {
+  const router = useRouter();
   const { orders } = useAppStore();
   const [filter, setFilter] = useState('all');
+  const [isAuthorized, setIsAuthorized] = useState(false);
+
+  // Check admin authorization
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const sessionToken = sessionStorage.getItem('adminSessionToken');
+      if (!sessionToken) {
+        router.push('/admin-login');
+        return;
+      }
+      
+      // Verify with server
+      fetch('/api/admin-verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionToken })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.isAdmin) {
+          setIsAuthorized(true);
+        } else {
+          sessionStorage.removeItem('adminSessionToken');
+          sessionStorage.removeItem('adminExpiresAt');
+          router.push('/admin-login');
+        }
+      })
+      .catch(() => {
+        sessionStorage.removeItem('adminSessionToken');
+        sessionStorage.removeItem('adminExpiresAt');
+        router.push('/admin-login');
+      });
+    }
+  }, [router]);
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('adminSessionToken');
+    sessionStorage.removeItem('adminExpiresAt');
+    router.push('/');
+  };
+
+  // Don't render if not authorized
+  if (!isAuthorized) {
+    return null;
+  }
 
   const filteredOrders = orders.filter(order => {
     if (filter === 'all') return true;
@@ -25,8 +88,33 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <h1 className="font-['Pacifico'] text-2xl text-blue-600">CleanPods Admin</h1>
-            <div className="text-sm text-gray-600">
-              Admin Dashboard
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-600">Admin Dashboard</div>
+              <button
+                onClick={() => {
+                  fetch('/api/admin-download-orders')
+                    .then(res => res.blob())
+                    .then(blob => {
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'orders.xlsx';
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      window.URL.revokeObjectURL(url);
+                    });
+                }}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
+              >
+                Download Orders as Excel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-semibold"
+              >
+                Logout
+              </button>
             </div>
           </div>
         </div>
@@ -189,7 +277,6 @@ export default function AdminDashboard() {
             <p><strong>Current Setup:</strong> Orders are logged to the console and stored locally.</p>
             <p><strong>For Production:</strong> You need to set up email notifications:</p>
             <ul className="list-disc list-inside space-y-1 ml-4">
-              <li>Add email service (Gmail SMTP, SendGrid, or AWS SES)</li>
               <li>Configure environment variables for email credentials</li>
               <li>Orders will be automatically emailed to you</li>
               <li>Customers will receive confirmation emails</li>

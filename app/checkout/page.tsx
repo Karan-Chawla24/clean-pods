@@ -10,7 +10,6 @@ import Header from '../components/Header';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import Image from 'next/image';
-import { saveOrder } from '../lib/database';
 
 interface CheckoutForm {
   firstName: string;
@@ -119,14 +118,26 @@ export default function Checkout() {
               
               // Save order to database
               try {
-                await saveOrder({
-                  id: orderId,
-                  customer: data,
-                  items: cart,
-                  total: total,
-                  paymentId: response.razorpay_payment_id
+                const orderResponse = await fetch('/api/orders', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    paymentId: response.razorpay_payment_id,
+                    customer: data,
+                    items: cart,
+                    total: total,
+                  }),
                 });
+                
+                if (!orderResponse.ok) {
+                  const errorText = await orderResponse.text();
+                  console.error('Order creation failed:', errorText);
+                } else {
+                  const orderResult = await orderResponse.json();
+                  console.log('Order created successfully:', orderResult);
+                }
               } catch (dbError) {
+                console.error('Order creation error:', dbError);
                 // Continue with Slack notification even if DB fails
               }
 

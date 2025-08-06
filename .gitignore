@@ -94,4 +94,6 @@ jspm_packages/
 # Documentation
 SLACK_SETUP.md
 ORDER_MANAGEMENT.md
+orders.xlsx
 
+/app/generated/prisma

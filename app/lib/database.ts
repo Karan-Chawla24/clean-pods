@@ -1,36 +1,7 @@
-// Simple in-memory storage for development
-// In production, you would use a proper database like PostgreSQL, MongoDB, etc.
+import { prisma } from './prisma';
 
-interface OrderItem {
-  id: string;
-  order_id: string;
-  product_name: string;
-  quantity: number;
-  unit_price: number;
-  total_price: number;
-}
-
-interface Order {
-  id: string;
-  customer_email: string;
-  customer_name: string;
-  customer_phone: string;
-  shipping_address: string;
-  total_amount: number;
-  status: string;
-  payment_status: string;
-  payment_id: string;
-  created_at: string;
-  items: OrderItem[];
-}
-
-// In-memory storage
-const orders: Order[] = [];
-const orderItems: OrderItem[] = [];
-
-// Save order to memory
 export async function saveOrder(orderData: {
-  id: string;
+  paymentId: string;
   customer: {
     firstName: string;
     lastName: string;
@@ -42,60 +13,43 @@ export async function saveOrder(orderData: {
     pincode: string;
   };
   items: Array<{
-    id: string;
     name: string;
     price: number;
     quantity: number;
-    image: string;
   }>;
   total: number;
-  paymentId: string;
 }) {
-  // Create order
-  const order: Order = {
-    id: orderData.id,
-    customer_email: orderData.customer.email,
-    customer_name: `${orderData.customer.firstName} ${orderData.customer.lastName}`,
-    customer_phone: orderData.customer.phone,
-    shipping_address: `${orderData.customer.address}, ${orderData.customer.city}, ${orderData.customer.state} ${orderData.customer.pincode}`,
-    total_amount: orderData.total,
-    status: 'confirmed',
-    payment_status: 'paid',
-    payment_id: orderData.paymentId,
-    created_at: new Date().toISOString(),
-    items: []
-  };
-
-  // Create order items
-  const items: OrderItem[] = orderData.items.map((item, index) => ({
-    id: `${orderData.id}_item_${index}`,
-    order_id: orderData.id,
-    product_name: item.name,
-    quantity: item.quantity,
-    unit_price: item.price,
-    total_price: item.price * item.quantity
-  }));
-
-  // Store in memory
-  orders.push(order);
-  orderItems.push(...items);
-
-  return orderData.id;
+  const order = await prisma.order.create({
+    data: {
+      paymentId: orderData.paymentId,
+      customerName: `${orderData.customer.firstName} ${orderData.customer.lastName}`,
+      customerEmail: orderData.customer.email,
+      customerPhone: orderData.customer.phone,
+      address: `${orderData.customer.address}, ${orderData.customer.city}, ${orderData.customer.state} ${orderData.customer.pincode}`,
+      total: orderData.total,
+      items: {
+        create: orderData.items.map(item => ({
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+      },
+    },
+    include: { items: true },
+  });
+  return order.id;
 }
 
-// Get order by ID
 export async function getOrder(orderId: string) {
-  const order = orders.find(o => o.id === orderId);
-  if (!order) return null;
-
-  const items = orderItems.filter(item => item.order_id === orderId);
-  return { ...order, items };
+  return prisma.order.findUnique({
+    where: { id: orderId },
+    include: { items: true },
+  });
 }
 
-// Get all orders (for admin dashboard)
 export async function getAllOrders() {
-  return orders.map(order => {
-    const items = orderItems.filter(item => item.order_id === order.id);
-    return { ...order, items };
+  return prisma.order.findMany({
+    include: { items: true },
+    orderBy: { orderDate: 'desc' },
   });
 } 
