@@ -23,16 +23,38 @@ export default function Contact() {
     reset,
   } = useForm<ContactForm>();
 
-  const onSubmit = async () => {
+  const onSubmit = async (data: ContactForm) => {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Send contact form data to Slack
+      const response = await fetch('/api/contact-notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: data.name,
+          email: data.email,
+          subject: data.subject,
+          message: data.message,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
+      const result = await response.json();
       
-      toast.success('Message sent successfully! We\'ll get back to you soon.');
-      reset();
-    } catch {
+      if (result.success) {
+        toast.success('Message sent successfully! We\'ll get back to you soon.');
+        reset();
+      } else {
+        throw new Error(result.error || 'Failed to send message');
+      }
+    } catch (error) {
+      console.error('Contact form error:', error);
       toast.error('Failed to send message. Please try again.');
     } finally {
       setIsSubmitting(false);

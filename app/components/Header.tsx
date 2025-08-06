@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAppStore } from '../lib/store';
 import { cn } from '../lib/utils';
@@ -10,8 +10,34 @@ export default function Header() {
   const { cart, wishlist, setSearchQuery } = useAppStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [localSearchQuery, setLocalSearchQuery] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+
+  // Check admin status on mount and when pathname changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const sessionToken = sessionStorage.getItem('adminSessionToken');
+      if (sessionToken) {
+        // Verify with server
+        fetch('/api/admin-verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionToken })
+        })
+        .then(res => res.json())
+        .then(data => {
+          setIsAdmin(data.success && data.isAdmin);
+          if (!data.success || !data.isAdmin) {
+            sessionStorage.removeItem('adminSessionToken');
+            sessionStorage.removeItem('adminExpiresAt');
+          }
+        });
+      } else {
+        setIsAdmin(false);
+      }
+    }
+  }, [pathname]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,6 +49,15 @@ export default function Header() {
       } else {
         router.push(`/search?q=${encodeURIComponent(localSearchQuery.trim())}`);
       }
+    }
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('adminSessionToken');
+    sessionStorage.removeItem('adminExpiresAt');
+    setIsAdmin(false);
+    if (pathname === '/admin') {
+      router.push('/');
     }
   };
 
@@ -51,9 +86,19 @@ export default function Header() {
             <Link href="/orders" className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
               Orders
             </Link>
-            <Link href="/admin" className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
-              Admin
-            </Link>
+            {isAdmin && (
+              <>
+                <Link href="/admin" className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+                  Admin
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="text-red-600 hover:text-red-700 transition-colors cursor-pointer"
+                >
+                  Logout
+                </button>
+              </>
+            )}
           </nav>
 
           {/* Search Bar */}
@@ -119,9 +164,19 @@ export default function Header() {
               <Link href="/orders" className="block text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
                 Orders
               </Link>
-              <Link href="/admin" className="block text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
-                Admin
-              </Link>
+              {isAdmin && (
+                <>
+                  <Link href="/admin" className="block text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+                    Admin
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="block text-red-600 hover:text-red-700 transition-colors cursor-pointer"
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
               <form onSubmit={handleSearch} className="pt-4">
                 <div className="relative">
                   <input
