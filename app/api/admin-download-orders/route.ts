@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../lib/prisma';
-import ExcelJS from 'exceljs';
+
+// Dynamic import for ExcelJS to avoid build issues
+let ExcelJS: any;
 
 export async function GET(request: NextRequest) {
   try {
+    // Dynamic import to avoid build issues
+    if (!ExcelJS) {
+      ExcelJS = (await import('exceljs')).default;
+    }
+
     const orders = await prisma.order.findMany({
       include: { items: true },
       orderBy: { orderDate: 'desc' },
@@ -47,6 +54,11 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Failed to generate Excel', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    console.error('Excel generation error:', error);
+    return NextResponse.json({ 
+      success: false, 
+      error: 'Failed to generate Excel', 
+      details: error instanceof Error ? error.message : 'Unknown error' 
+    }, { status: 500 });
   }
 }
