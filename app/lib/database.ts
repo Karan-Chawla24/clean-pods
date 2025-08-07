@@ -19,25 +19,34 @@ export async function saveOrder(orderData: {
   }>;
   total: number;
 }) {
-  const order = await prisma.order.create({
-    data: {
-      paymentId: orderData.paymentId,
-      customerName: `${orderData.customer.firstName} ${orderData.customer.lastName}`,
-      customerEmail: orderData.customer.email,
-      customerPhone: orderData.customer.phone,
-      address: `${orderData.customer.address}, ${orderData.customer.city}, ${orderData.customer.state} ${orderData.customer.pincode}`,
-      total: orderData.total,
-      items: {
-        create: orderData.items.map(item => ({
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-        })),
+  console.log('saveOrder called with data:', JSON.stringify(orderData, null, 2));
+  
+  try {
+    const order = await prisma.order.create({
+      data: {
+        paymentId: orderData.paymentId,
+        customerName: `${orderData.customer.firstName} ${orderData.customer.lastName}`,
+        customerEmail: orderData.customer.email,
+        customerPhone: orderData.customer.phone,
+        address: `${orderData.customer.address}, ${orderData.customer.city}, ${orderData.customer.state} ${orderData.customer.pincode}`,
+        total: orderData.total,
+        items: {
+          create: orderData.items.map(item => ({
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+          })),
+        },
       },
-    },
-    include: { items: true },
-  });
-  return order.id;
+      include: { items: true },
+    });
+    
+    console.log('Order created successfully:', order);
+    return order.id;
+  } catch (error) {
+    console.error('Error in saveOrder:', error);
+    throw error;
+  }
 }
 
 export async function getOrder(orderId: string) {

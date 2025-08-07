@@ -17,10 +17,24 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    console.log('Creating order with data:', data);
+    console.log('POST /api/orders - Received data:', JSON.stringify(data, null, 2));
+    
+    // Validate required fields
+    if (!data.paymentId || !data.customer || !data.items || !data.total) {
+      console.error('Missing required fields:', { 
+        hasPaymentId: !!data.paymentId, 
+        hasCustomer: !!data.customer, 
+        hasItems: !!data.items, 
+        hasTotal: !!data.total 
+      });
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
     
     const orderId = await saveOrder(data);
-    console.log('Order created successfully with ID:', orderId);
+    console.log('POST /api/orders - Order created successfully with ID:', orderId);
     
     return NextResponse.json({ orderId });
   } catch (error) {
