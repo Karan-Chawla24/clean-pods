@@ -1,6 +1,7 @@
 import { prisma } from './prisma';
 
 export async function saveOrder(orderData: {
+  razorpayOrderId: string;
   paymentId: string;
   customer: {
     firstName: string;
@@ -24,6 +25,7 @@ export async function saveOrder(orderData: {
   try {
     const order = await prisma.order.create({
       data: {
+        razorpayOrderId: orderData.razorpayOrderId,
         paymentId: orderData.paymentId,
         customerName: `${orderData.customer.firstName} ${orderData.customer.lastName}`,
         customerEmail: orderData.customer.email,

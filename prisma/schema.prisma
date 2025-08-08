@@ -16,6 +16,7 @@ datasource db {
 
 model Order {
   id            String      @id @default(cuid())
+  razorpayOrderId String?   @unique // Razorpay order ID (optional for existing orders)
   paymentId     String
   customerName  String
   customerEmail String

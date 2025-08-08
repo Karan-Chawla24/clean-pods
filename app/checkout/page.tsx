@@ -113,8 +113,8 @@ export default function Checkout() {
             const verifyData = await verifyResponse.json();
 
             if (verifyData.success) {
-              // Generate order ID
-              const orderId = generateOrderId();
+              // Use Razorpay order ID instead of generating custom one
+              const orderId = response.razorpay_order_id;
               
               // Save order to database
               try {
@@ -122,6 +122,7 @@ export default function Checkout() {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
+                    razorpayOrderId: response.razorpay_order_id,
                     paymentId: response.razorpay_payment_id,
                     customer: data,
                     items: cart,
