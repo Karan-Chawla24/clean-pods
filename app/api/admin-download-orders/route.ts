@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Orders');
     worksheet.columns = [
-      { header: 'Order ID', key: 'orderId', width: 20 },
+      { header: 'Razorpay Order ID', key: 'razorpayOrderId', width: 25 },
       { header: 'Payment ID', key: 'paymentId', width: 20 },
       { header: 'Customer Name', key: 'customerName', width: 25 },
       { header: 'Customer Email', key: 'customerEmail', width: 30 },
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     for (const order of orders) {
       const itemsString = order.items.map(item => `${item.name} (x${item.quantity}) - ₹${item.price}`).join('; ');
       worksheet.addRow({
-        orderId: order.id,
+        razorpayOrderId: order.razorpayOrderId,
         paymentId: order.paymentId,
         customerName: order.customerName,
         customerEmail: order.customerEmail,

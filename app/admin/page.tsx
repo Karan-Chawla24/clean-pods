@@ -2,9 +2,28 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAppStore } from '../lib/store';
 import { formatPrice, formatDate, getOrderStatusColor } from '../lib/utils';
 import Header from '../components/Header';
+
+interface OrderItem {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  id: string;
+  razorpayOrderId: string;
+  paymentId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  address: string;
+  total: number;
+  orderDate: string;
+  items: OrderItem[];
+}
 
 function downloadOrdersExcel() {
   fetch('/api/admin-download-orders')
@@ -23,9 +42,10 @@ function downloadOrdersExcel() {
 
 export default function AdminDashboard() {
   const router = useRouter();
-  const { orders } = useAppStore();
+  const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState('all');
   const [isAuthorized, setIsAuthorized] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Check admin authorization
   useEffect(() => {
@@ -46,6 +66,8 @@ export default function AdminDashboard() {
       .then(data => {
         if (data.success && data.isAdmin) {
           setIsAuthorized(true);
+          // Fetch orders from database
+          fetchOrders();
         } else {
           sessionStorage.removeItem('adminSessionToken');
           sessionStorage.removeItem('adminExpiresAt');
@@ -60,6 +82,20 @@ export default function AdminDashboard() {
     }
   }, [router]);
 
+  const fetchOrders = async () => {
+    try {
+      const response = await fetch('/api/orders');
+      if (response.ok) {
+        const ordersData = await response.json();
+        setOrders(ordersData);
+      }
+    } catch (error) {
+      console.error('Failed to fetch orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     sessionStorage.removeItem('adminSessionToken');
     sessionStorage.removeItem('adminExpiresAt');
@@ -73,13 +109,26 @@ export default function AdminDashboard() {
 
   const filteredOrders = orders.filter(order => {
     if (filter === 'all') return true;
-    return order.status === filter;
+    // For now, all orders are considered 'processing' since we don't have status field
+    return filter === 'processing';
   });
 
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
   const totalOrders = orders.length;
-  const pendingOrders = orders.filter(order => order.status === 'pending').length;
-  const processingOrders = orders.filter(order => order.status === 'processing').length;
+  const processingOrders = orders.length; // All orders are processing for now
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <div className="text-gray-500">Loading orders...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -105,13 +154,13 @@ export default function AdminDashboard() {
                       window.URL.revokeObjectURL(url);
                     });
                 }}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-semibold"
+                className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
               >
-                Download Orders as Excel
+                Download Orders
               </button>
               <button
                 onClick={handleLogout}
-                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm font-semibold"
+                className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors"
               >
                 Logout
               </button>
@@ -121,70 +170,44 @@ export default function AdminDashboard() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats Cards */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg p-6 shadow-sm border">
-            <div className="text-2xl font-bold text-blue-600 mb-2">{totalOrders}</div>
-            <div className="text-gray-600">Total Orders</div>
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="text-2xl font-bold text-gray-900">{totalOrders}</div>
+            <div className="text-sm text-gray-500">Total Orders</div>
           </div>
-          <div className="bg-white rounded-lg p-6 shadow-sm border">
-            <div className="text-2xl font-bold text-green-600 mb-2">{formatPrice(totalRevenue)}</div>
-            <div className="text-gray-600">Total Revenue</div>
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="text-2xl font-bold text-green-600">{formatPrice(totalRevenue)}</div>
+            <div className="text-sm text-gray-500">Total Revenue</div>
           </div>
-          <div className="bg-white rounded-lg p-6 shadow-sm border">
-            <div className="text-2xl font-bold text-orange-600 mb-2">{pendingOrders}</div>
-            <div className="text-gray-600">Pending Orders</div>
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="text-2xl font-bold text-blue-600">{processingOrders}</div>
+            <div className="text-sm text-gray-500">Processing Orders</div>
           </div>
-          <div className="bg-white rounded-lg p-6 shadow-sm border">
-            <div className="text-2xl font-bold text-purple-600 mb-2">{processingOrders}</div>
-            <div className="text-gray-600">Processing Orders</div>
+          <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="text-2xl font-bold text-gray-600">0</div>
+            <div className="text-sm text-gray-500">Delivered Orders</div>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-lg p-6 shadow-sm border mb-6">
-          <div className="flex space-x-4">
-            <button
-              onClick={() => setFilter('all')}
-              className={`px-4 py-2 rounded-lg cursor-pointer ${
-                filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
-              }`}
-            >
-              All Orders
-            </button>
-            <button
-              onClick={() => setFilter('pending')}
-              className={`px-4 py-2 rounded-lg cursor-pointer ${
-                filter === 'pending' ? 'bg-yellow-600 text-white' : 'bg-gray-100 text-gray-700'
-              }`}
-            >
-              Pending
-            </button>
-            <button
-              onClick={() => setFilter('processing')}
-              className={`px-4 py-2 rounded-lg cursor-pointer ${
-                filter === 'processing' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
-              }`}
-            >
-              Processing
-            </button>
-            <button
-              onClick={() => setFilter('shipped')}
-              className={`px-4 py-2 rounded-lg cursor-pointer ${
-                filter === 'shipped' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700'
-              }`}
-            >
-              Shipped
-            </button>
-            <button
-              onClick={() => setFilter('delivered')}
-              className={`px-4 py-2 rounded-lg cursor-pointer ${
-                filter === 'delivered' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-700'
-              }`}
-            >
-              Delivered
-            </button>
-          </div>
+        {/* Filter Buttons */}
+        <div className="flex space-x-2 mb-6">
+          <button
+            onClick={() => setFilter('all')}
+            className={`px-4 py-2 rounded-lg cursor-pointer ${
+              filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
+            }`}
+          >
+            All Orders
+          </button>
+          <button
+            onClick={() => setFilter('processing')}
+            className={`px-4 py-2 rounded-lg cursor-pointer ${
+              filter === 'processing' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
+            }`}
+          >
+            Processing
+          </button>
         </div>
 
         {/* Orders Table */}
@@ -214,19 +237,16 @@ export default function AdminDashboard() {
                       Date
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Customer
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Items
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Total
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Payment ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Tracking
                     </th>
                   </tr>
                 </thead>
@@ -234,10 +254,17 @@ export default function AdminDashboard() {
                   {filteredOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        #{order.id}
+                        {order.razorpayOrderId}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(order.orderDate)}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        <div>
+                          <div className="font-medium">{order.customerName}</div>
+                          <div className="text-xs text-gray-400">{order.customerEmail}</div>
+                          <div className="text-xs text-gray-400">{order.customerPhone}</div>
+                        </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         <div className="max-w-xs">
@@ -248,19 +275,11 @@ export default function AdminDashboard() {
                           ))}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                         {formatPrice(order.total)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getOrderStatusColor(order.status)}`}>
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
-                        {(order as any).paymentId || 'N/A'}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
-                        {order.trackingNumber || 'N/A'}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="text-xs font-mono">{order.paymentId}</div>
                       </td>
                     </tr>
                   ))}
@@ -268,21 +287,6 @@ export default function AdminDashboard() {
               </table>
             </div>
           )}
-        </div>
-
-        {/* Instructions */}
-        <div className="mt-8 bg-blue-50 rounded-lg p-6">
-          <h3 className="text-lg font-semibold text-blue-900 mb-4">How to Receive Order Notifications</h3>
-          <div className="space-y-3 text-blue-800">
-            <p><strong>Current Setup:</strong> Orders are logged to the console and stored locally.</p>
-            <p><strong>For Production:</strong> You need to set up email notifications:</p>
-            <ul className="list-disc list-inside space-y-1 ml-4">
-              <li>Configure environment variables for email credentials</li>
-              <li>Orders will be automatically emailed to you</li>
-              <li>Customers will receive confirmation emails</li>
-            </ul>
-            <p><strong>Database Integration:</strong> For production, integrate with a database like MongoDB, PostgreSQL, or Firebase to permanently store orders.</p>
-          </div>
         </div>
       </div>
     </div>
