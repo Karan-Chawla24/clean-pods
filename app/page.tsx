@@ -157,7 +157,7 @@ export default function Home() {
       <section className="py-20 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold text-gray-900 mb-4">Why Choose CleanPods?</h3>
+            <h3 className="text-4xl font-bold text-gray-900 mb-4">Why Choose BubbleBeads?</h3>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -199,7 +199,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h3 className="text-4xl font-bold text-white mb-4">Ready to Transform Your Laundry?</h3>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of satisfied customers who have made the switch to CleanPods for a cleaner, fresher laundry experience.
+            Join thousands of satisfied customers who have made the switch to BubbleBeads for a cleaner, fresher laundry experience.
           </p>
           <Link href="#products" className="bg-white text-blue-600 px-8 py-4 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors cursor-pointer whitespace-nowrap inline-block">
             Shop All Products
@@ -212,7 +212,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
-              <h1 className="font-['Pacifico'] text-xl text-blue-400 mb-4">CleanPods</h1>
+              <h1 className="font-['Pacifico'] text-xl text-blue-400 mb-4">BubbleBeads</h1>
               <p className="text-gray-400">
                 Premium detergent pods for the modern household. Clean, simple, effective.
               </p>
@@ -239,15 +239,15 @@ export default function Home() {
             <div>
               <h5 className="font-semibold mb-4">Contact</h5>
               <ul className="space-y-2 text-gray-400">
-                <li>support@cleanpods.com</li>
-                <li>1-800-CLEANPODS</li>
+                <li>support@bubblebeads.com</li>
+                <li>1-800-BUBBLEBEADS</li>
                 <li>Mon-Fri 9AM-6PM</li>
               </ul>
             </div>
           </div>
           
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-            <p>&copy; 2024 CleanPods. All rights reserved.</p>
+            <p>&copy; 2024 BubbleBeads. All rights reserved.</p>
           </div>
         </div>
       </footer>

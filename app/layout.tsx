@@ -21,10 +21,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CleanPods - Premium Laundry Detergent Pods",
+  title: "BubbleBeads - Premium Laundry Detergent Pods",
   description: "Revolutionary laundry detergent pods for modern households. Clean, fresh, and effortless laundry experience.",
   keywords: "laundry detergent, detergent pods, cleaning products, household cleaning",
-  authors: [{ name: "CleanPods" }],
+  authors: [{ name: "BubbleBeads" }],
 };
 
 export const viewport: Viewport = {

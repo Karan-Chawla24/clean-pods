@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { fetchWithCsrf } from '../lib/csrf';
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('');
@@ -10,26 +11,23 @@ export default function AdminLogin() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // Check if already logged in
+  // Check if already logged in using HTTP-only cookie
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const sessionToken = sessionStorage.getItem('adminSessionToken');
-      if (sessionToken) {
-        // Verify session token with server
-        fetch('/api/admin-verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionToken })
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && data.isAdmin) {
-            router.push('/admin');
-          } else {
-            sessionStorage.removeItem('adminSessionToken');
-          }
-        });
-      }
+      // Use GET request to verify admin status with HTTP-only cookie
+      fetchWithCsrf('/api/admin-verify', {
+        method: 'GET',
+        credentials: 'include', // Important for cookies
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success && data.isAdmin) {
+          router.push('/admin');
+        }
+      })
+      .catch(error => {
+        console.error('Error verifying admin status:', error);
+      });
     }
   }, [router]);
 
@@ -39,17 +37,18 @@ export default function AdminLogin() {
     setError('');
 
     try {
-      const response = await fetch('/api/admin-login', {
+      const response = await fetchWithCsrf('/api/admin-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
+        body: JSON.stringify({ password }),
+        credentials: 'include', // Important for cookies
       });
 
       const data = await response.json();
 
       if (data.success) {
-        sessionStorage.setItem('adminSessionToken', data.sessionToken);
-        sessionStorage.setItem('adminExpiresAt', data.expiresAt);
+        // Session token is now stored in HTTP-only cookie
+        // Just redirect to admin page
         router.push('/admin');
       } else {
         setError(data.error || 'Invalid password');
@@ -115,4 +114,4 @@ export default function AdminLogin() {
       </div>
     </div>
   );
-} 
+}

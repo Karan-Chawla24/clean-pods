@@ -4,6 +4,12 @@ import { IncomingWebhook } from '@slack/webhook';
 // Initialize Slack webhook for contact form
 const webhook = new IncomingWebhook(process.env.SLACK_CONTACT_URL || '');
 
+// Function to display full email (no masking)
+function displayEmail(email: string): string {
+  if (!email) return '';
+  return email;
+}
+
 interface ContactFormData {
   name: string;
   email: string;
@@ -41,7 +47,7 @@ export async function POST(request: NextRequest) {
             },
             {
               type: 'mrkdwn',
-              text: `*Email:*\n${email}`
+              text: `*Email:*\n${displayEmail(email)}`
             },
             {
               type: 'mrkdwn',
@@ -75,7 +81,7 @@ export async function POST(request: NextRequest) {
           elements: [
             {
               type: 'mrkdwn',
-              text: '🛍️ CleanPods Contact Form'
+              text: '🛍️ BubbleBeads Contact Form'
             }
           ]
         }
@@ -102,4 +108,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

@@ -90,8 +90,8 @@ export default function Contact() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
-                  <p className="text-gray-600 text-sm">support@cleanpods.com</p>
-                  <p className="text-gray-600 text-sm">orders@cleanpods.com</p>
+                  <p className="text-gray-600 text-sm">support@bubblebeads.com</p>
+                  <p className="text-gray-600 text-sm">orders@bubblebeads.com</p>
                 </div>
               </div>
 
@@ -101,7 +101,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
-                  <p className="text-gray-600 text-sm">1-800-CLEANPODS</p>
+                  <p className="text-gray-600 text-sm">1-800-BUBBLEBEADS</p>
                   <p className="text-gray-600 text-sm">+91 98765 43210</p>
                 </div>
               </div>
@@ -124,7 +124,7 @@ export default function Contact() {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Address</h3>
                   <p className="text-gray-600 text-sm">
-                    CleanPods Headquarters<br />
+                    BubbleBeads Headquarters<br />
                     123 Laundry Street, Mumbai<br />
                     Maharashtra 400001, India
                   </p>

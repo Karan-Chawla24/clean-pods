@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatPrice, formatDate, getOrderStatusColor } from '../lib/utils';
 import Header from '../components/Header';
+import { fetchWithCsrf } from '../lib/csrf';
 
 interface OrderItem {
   id: string;
@@ -26,7 +27,7 @@ interface Order {
 }
 
 function downloadOrdersExcel() {
-  fetch('/api/admin-download-orders')
+  fetchWithCsrf('/api/admin-download-orders')
     .then(res => res.blob())
     .then(blob => {
       const url = window.URL.createObjectURL(blob);
@@ -47,20 +48,13 @@ export default function AdminDashboard() {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Check admin authorization
+  // Check admin authorization using HTTP-only cookie
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const sessionToken = sessionStorage.getItem('adminSessionToken');
-      if (!sessionToken) {
-        router.push('/admin-login');
-        return;
-      }
-      
-      // Verify with server
-      fetch('/api/admin-verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionToken })
+      // Verify with server using HTTP-only cookie
+      fetchWithCsrf('/api/admin-verify', {
+        method: 'GET',
+        credentials: 'include' // Important for cookies
       })
       .then(res => res.json())
       .then(data => {
@@ -69,14 +63,10 @@ export default function AdminDashboard() {
           // Fetch orders from database
           fetchOrders();
         } else {
-          sessionStorage.removeItem('adminSessionToken');
-          sessionStorage.removeItem('adminExpiresAt');
           router.push('/admin-login');
         }
       })
       .catch(() => {
-        sessionStorage.removeItem('adminSessionToken');
-        sessionStorage.removeItem('adminExpiresAt');
         router.push('/admin-login');
       });
     }
@@ -84,7 +74,7 @@ export default function AdminDashboard() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetch('/api/orders');
+      const response = await fetchWithCsrf('/api/orders');
       if (response.ok) {
         const ordersData = await response.json();
         setOrders(ordersData);
@@ -96,9 +86,12 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('adminSessionToken');
-    sessionStorage.removeItem('adminExpiresAt');
+  const handleLogout = async () => {
+    // Call logout endpoint to clear the HTTP-only cookie
+    await fetchWithCsrf('/api/admin-logout', {
+      method: 'POST',
+      credentials: 'include'
+    });
     router.push('/');
   };
 
@@ -136,12 +129,12 @@ export default function AdminDashboard() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <h1 className="font-['Pacifico'] text-2xl text-blue-600">CleanPods Admin</h1>
+            <h1 className="font-['Pacifico'] text-2xl text-blue-600">BubbleBeads Admin</h1>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">Admin Dashboard</div>
               <button
                 onClick={() => {
-                  fetch('/api/admin-download-orders')
+                  fetchWithCsrf('/api/admin-download-orders')
                     .then(res => res.blob())
                     .then(blob => {
                       const url = window.URL.createObjectURL(blob);
