@@ -7,6 +7,10 @@ import { formatPrice } from './lib/utils';
 import Header from './components/Header';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
+import SinglePod from '../images/Single.jpg';
+import threein1 from '../images/threein1.jpg';
+import fivein1 from '../images/fivein1.jpg';
+import HomeImg  from '../images/Home.jpg';
 
 export default function Home() {
   const { addToCart, addToWishlist, wishlist } = useAppStore();
@@ -39,7 +43,7 @@ export default function Home() {
       price: 299,
       description: 'Pure detergent power for everyday cleaning. Removes dirt and stains effectively while being gentle on fabrics.',
       features: ['Powerful stain removal', 'Gentle on all fabric types', 'Fresh scent', '30 pods per pack'],
-      image: 'https://readdy.ai/api/search-image?query=Single%20blue%20detergent%20pod%20on%20clean%20white%20background%2C%20modern%20product%20photography%2C%20premium%20household%20cleaning%20product%2C%20glossy%20finish%2C%20professional%20lighting%2C%20minimalist%20composition%2C%20fresh%20and%20clean%20aesthetic&width=300&height=300&seq=product-basic&orientation=squarish',
+      image: SinglePod, 
       isPopular: false,
     },
     {
@@ -47,8 +51,8 @@ export default function Home() {
       name: 'Soft & Fresh',
       price: 449,
       description: 'Complete care with detergent and fabric softener. Cleans thoroughly while making clothes soft and fragrant.',
-      features: ['Deep cleaning formula', 'Built-in fabric softener', 'Long-lasting freshness', '25 pods per pack'],
-      image: 'https://readdy.ai/api/search-image?query=Dual-colored%20detergent%20pod%20with%20blue%20and%20green%20swirls%20on%20clean%20white%20background%2C%20premium%20household%20cleaning%20product%2C%20professional%20product%20photography%2C%20modern%20design%2C%20glossy%20finish%2C%20fresh%20and%20soft%20aesthetic&width=300&height=300&seq=product-softener&orientation=squarish',
+      features: ['Deep cleaning formula', 'Built-in fabric softener', 'Long-lasting freshness', '30 pods per pack'],
+      image: threein1,
       isPopular: true,
     },
     {
@@ -57,7 +61,7 @@ export default function Home() {
       price: 599,
       description: 'The complete solution with detergent, fabric softener, and stain remover for the toughest cleaning challenges.',
       features: ['Triple-action formula', 'Advanced stain removal', 'Fabric protection', '20 pods per pack'],
-      image: 'https://readdy.ai/api/search-image?query=Triple-layered%20detergent%20pod%20with%20blue%2C%20green%2C%20and%20white%20sections%20on%20clean%20white%20background%2C%20premium%20all-in-one%20cleaning%20product%2C%20professional%20product%20photography%2C%20modern%20design%2C%20glossy%20finish%2C%20complete%20care%20aesthetic&width=300&height=300&seq=product-complete&orientation=squarish',
+      image: fivein1,
       isPopular: false,
     },
   ];
@@ -68,7 +72,7 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center" style={{
-        backgroundImage: `url('https://readdy.ai/api/search-image?query=Modern%20laundry%20room%20with%20clean%20white%20washing%20machines%2C%20bright%20natural%20lighting%2C%20minimalist%20design%2C%20soap%20bubbles%20floating%20in%20the%20air%2C%20fresh%20and%20clean%20atmosphere%2C%20premium%20household%20products%20on%20wooden%20shelves%2C%20soft%20blue%20and%20white%20color%20scheme%2C%20professional%20photography&width=1920&height=1080&seq=hero-laundry&orientation=landscape')`,
+        backgroundImage: `url(${HomeImg.src})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}>

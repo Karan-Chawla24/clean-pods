@@ -32,7 +32,7 @@ const products: Record<string, Product> = {
       'Fresh scent',
       '30 pods per pack'
     ],
-    image: 'https://readdy.ai/api/search-image?query=Single%20blue%20detergent%20pod%20on%20clean%20white%20background%2C%20modern%20product%20photography%2C%20premium%20household%20cleaning%20product%2C%20glossy%20finish%2C%20professional%20lighting%2C%20minimalist%20composition%2C%20fresh%20and%20clean%20aesthetic&width=600&height=600&seq=product-basic-detail&orientation=squarish',
+    image: '/Single.jpg',
     ingredients: 'Surfactants, Enzymes, Brightening agents, Fragrance',
     usage: 'Use 1 pod for regular loads, 2 pods for heavily soiled items. Place in drum before adding clothes.'
   },
@@ -47,7 +47,7 @@ const products: Record<string, Product> = {
       'Long-lasting freshness',
       '25 pods per pack'
     ],
-    image: 'https://readdy.ai/api/search-image?query=Dual-colored%20detergent%20pod%20with%20blue%20and%20green%20swirls%20on%20clean%20white%20background%2C%20premium%20household%20cleaning%20product%2C%20professional%20product%20photography%2C%20modern%20design%2C%20glossy%20finish%2C%20fresh%20and%20soft%20aesthetic&width=600&height=600&seq=product-softener-detail&orientation=squarish',
+    image: '/Threein1.jpg',
     ingredients: 'Surfactants, Enzymes, Fabric softener, Brightening agents, Fragrance',
     usage: 'Use 1 pod for regular loads. The dual-chamber design releases softener at the right time during the wash cycle.'
   },
@@ -62,7 +62,7 @@ const products: Record<string, Product> = {
       'Fabric protection',
       '20 pods per pack'
     ],
-    image: 'https://readdy.ai/api/search-image?query=Triple-layered%20detergent%20pod%20with%20blue%2C%20green%2C%20and%20white%20sections%20on%20clean%20white%20background%2C%20premium%20all-in-one%20cleaning%20product%2C%20professional%20product%20photography%2C%20modern%20design%2C%20glossy%20finish%2C%20complete%20care%20aesthetic&width=600&height=600&seq=product-complete-detail&orientation=squarish',
+    image: '/fivein1.jpg',
     ingredients: 'Surfactants, Enzymes, Stain removers, Fabric softener, Brightening agents, Fragrance',
     usage: 'Use 1 pod for most loads. Perfect for tough stains, delicate fabrics, and everything in between.'
   }
@@ -128,31 +128,31 @@ export default function ProductDetail({ productId }: { productId: string }) {
               alt={product.name}
               width={600}
               height={400}
-              className="w-full h-96 object-cover object-top rounded-lg mb-4"
+              className="w-full h-96 object-contain object-center rounded-lg mb-4"
             />
-            <div className="grid grid-cols-3 gap-4">
+            {/* <div className="grid grid-cols-3 gap-4">
               <Image 
                 src={product.image}
                 alt={product.name}
                 width={100}
                 height={100}
-                className="w-full h-24 object-cover object-top rounded-lg border-2 border-blue-200 cursor-pointer"
+                className="w-full h-24 object-contain object-center rounded-lg border-2 border-blue-200 cursor-pointer"
               />
               <Image 
                 src={product.image}
                 alt={product.name}
                 width={100}
                 height={100}
-                className="w-full h-24 object-cover object-top rounded-lg border cursor-pointer hover:border-blue-200"
+                className="w-full h-24 object-contain object-center rounded-lg border cursor-pointer hover:border-blue-200"
               />
               <Image 
                 src={product.image}
                 alt={product.name}
                 width={100}
                 height={100}
-                className="w-full h-24 object-cover object-top rounded-lg border cursor-pointer hover:border-blue-200"
+                className="w-full h-24 object-contain object-center rounded-lg border cursor-pointer hover:border-blue-200"
               />
-            </div>
+            </div> */}
           </div>
 
           {/* Product Info */}

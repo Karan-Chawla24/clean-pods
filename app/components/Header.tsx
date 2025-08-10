@@ -69,7 +69,7 @@ export default function Header() {
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <Link href="/" className="font-['Pacifico'] text-2xl text-blue-600 cursor-pointer">
-            CleanPods
+            BubbleBeads
           </Link>
 
           {/* Desktop Navigation */}
