@@ -28,7 +28,7 @@ function OrderSuccessContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <Link href="/" className="font-['Pacifico'] text-2xl text-blue-600 cursor-pointer">
-              CleanPods
+              BubbleBeads
             </Link>
           </div>
         </div>
@@ -92,7 +92,7 @@ function OrderSuccessContent() {
                   <span className="text-lg font-bold text-blue-600">3</span>
                 </div>
                 <h3 className="font-semibold text-gray-900 mb-2">Delivery</h3>
-                <p className="text-gray-600 text-sm">Your CleanPods will arrive at your doorstep</p>
+                <p className="text-gray-600 text-sm">Your BubbleBeads will arrive at your doorstep</p>
               </div>
             </div>
           </div>
@@ -122,13 +122,13 @@ function OrderSuccessContent() {
               If you have any questions about your order, don&apos;t hesitate to contact us.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="mailto:support@cleanpods.com" className="text-blue-600 hover:text-blue-700 cursor-pointer">
+              <a href="mailto:support@bubblebeads.com" className="text-blue-600 hover:text-blue-700 cursor-pointer">
                 <i className="ri-mail-line w-4 h-4 inline-block mr-2"></i>
-                support@cleanpods.com
+                support@bubblebeads.com
               </a>
-              <a href="tel:1-800-CLEANPODS" className="text-blue-600 hover:text-blue-700 cursor-pointer">
+              <a href="tel:1-800-BUBBLEBEADS" className="text-blue-600 hover:text-blue-700 cursor-pointer">
                 <i className="ri-phone-line w-4 h-4 inline-block mr-2"></i>
-                1-800-CLEANPODS
+                1-800-BUBBLEBEADS
               </a>
             </div>
           </div>
@@ -145,7 +145,7 @@ function LoadingFallback() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <Link href="/" className="font-['Pacifico'] text-2xl text-blue-600 cursor-pointer">
-              CleanPods
+              BubbleBeads
             </Link>
           </div>
         </div>

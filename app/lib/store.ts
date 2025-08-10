@@ -142,7 +142,7 @@ export const useAppStore = create<AppState>()(
       setSelectedCategory: (selectedCategory) => set({ selectedCategory }),
     }),
     {
-      name: 'cleanpods-store',
+      name: 'bubblebeads-store',
       partialize: (state) => ({
         cart: state.cart,
         cartTotal: state.cartTotal,
@@ -151,4 +151,4 @@ export const useAppStore = create<AppState>()(
       }),
     }
   )
-); 
+);

@@ -1,4 +1,4 @@
-# CleanPods - Premium Laundry Detergent Pods
+# BubbleBeads - Premium Laundry Detergent Pods
 
 A modern, full-featured e-commerce application for selling premium laundry detergent pods. Built with Next.js 15, TypeScript, and Tailwind CSS.
 
@@ -95,7 +95,7 @@ clean-pods/
 - **Session Persistence**: Automatic login state management
 
 **Demo Credentials:**
-- Email: `demo@cleanpods.com`
+- Email: `demo@bubblebeads.com`
 - Password: `demo123`
 
 ### 2. Product Management
@@ -237,10 +237,10 @@ This project is licensed under the MIT License.
 ## 📞 Support
 
 For support and questions:
-- Email: support@cleanpods.com
-- Phone: 1-800-CLEANPODS
+- Email: support@bubblebeads.com
+- Phone: 1-800-BUBBLEBEADS
 - Hours: Mon-Fri 9AM-6PM
 
 ---
 
-**CleanPods** - Revolutionary laundry made simple. 🧺✨
+**BubbleBeads** - Revolutionary laundry made simple. 🧺✨

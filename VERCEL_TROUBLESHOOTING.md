@@ -1,4 +1,4 @@
-# 🚀 Vercel Deployment Troubleshooting
+# 🚀 BubbleBeads Vercel Deployment Troubleshooting
 
 ## ✅ **Fixed: Environment Variable Error**
 
@@ -19,7 +19,7 @@
 ### **Step 1: Push to GitHub**
 ```bash
 git add .
-git commit -m "CleanPods e-commerce app"
+git commit -m "BubbleBeads e-commerce app"
 git push origin main
 ```
 
@@ -143,7 +143,7 @@ Your app should be live at: `https://your-project-name.vercel.app`
 
 ## 🎉 **Success!**
 
-Once deployed successfully, your CleanPods e-commerce store will be:
+Once deployed successfully, your BubbleBeads e-commerce store will be:
 - **Live on the internet** 🌐
 - **Accepting real payments** 💳
 - **Sending order notifications** 📧

@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAppStore } from '../lib/store';
 import { cn } from '../lib/utils';
+import { fetchWithCsrf } from '../lib/csrf';
 
 export default function Header() {
   const { cart, wishlist, setSearchQuery } = useAppStore();
@@ -14,28 +15,22 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Check admin status on mount and when pathname changes
+  // Check admin status on mount and when pathname changes using HTTP-only cookie
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const sessionToken = sessionStorage.getItem('adminSessionToken');
-      if (sessionToken) {
-        // Verify with server
-        fetch('/api/admin-verify', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionToken })
-        })
-        .then(res => res.json())
-        .then(data => {
-          setIsAdmin(data.success && data.isAdmin);
-          if (!data.success || !data.isAdmin) {
-            sessionStorage.removeItem('adminSessionToken');
-            sessionStorage.removeItem('adminExpiresAt');
-          }
-        });
-      } else {
+      // Verify with server using HTTP-only cookie
+      fetchWithCsrf('/api/admin-verify', {
+        method: 'GET',
+        credentials: 'include' // Important for cookies
+      })
+      .then(res => res.json())
+      .then(data => {
+        setIsAdmin(data.success && data.isAdmin);
+      })
+      .catch(error => {
+        console.error('Error verifying admin status:', error);
         setIsAdmin(false);
-      }
+      });
     }
   }, [pathname]);
 
@@ -52,9 +47,12 @@ export default function Header() {
     }
   };
 
-  const handleLogout = () => {
-    sessionStorage.removeItem('adminSessionToken');
-    sessionStorage.removeItem('adminExpiresAt');
+  const handleLogout = async () => {
+    // Call logout endpoint to clear the HTTP-only cookie
+    await fetchWithCsrf('/api/admin-logout', {
+      method: 'POST',
+      credentials: 'include'
+    });
     setIsAdmin(false);
     if (pathname === '/admin') {
       router.push('/');
@@ -200,4 +198,4 @@ export default function Header() {
       </div>
     </header>
   );
-} 
+}

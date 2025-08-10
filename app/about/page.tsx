@@ -9,7 +9,7 @@ export default function About() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">About CleanPods</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">About BubbleBeads</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Revolutionizing laundry care with innovative, eco-friendly detergent pods designed for modern households.
           </p>
@@ -21,13 +21,13 @@ export default function About() {
             <div>
               <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
               <p className="text-gray-600 mb-4">
-                CleanPods was born from a simple observation: traditional laundry detergents were messy, wasteful, and harmful to the environment. We set out to create a better solution.
+                BubbleBeads was born from a simple observation: traditional laundry detergents were messy, wasteful, and harmful to the environment. We set out to create a better solution.
               </p>
               <p className="text-gray-600 mb-4">
                 Our journey began in 2020 when our founders, a team of chemical engineers and environmental scientists, came together with a shared vision: to revolutionize laundry care with products that are both effective and eco-friendly.
               </p>
               <p className="text-gray-600">
-                Today, CleanPods is proud to serve thousands of households across India, providing premium laundry solutions that make cleaning easier, more efficient, and better for our planet.
+                Today, BubbleBeads is proud to serve thousands of households across India, providing premium laundry solutions that make cleaning easier, more efficient, and better for our planet.
               </p>
             </div>
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-8">
@@ -126,4 +126,4 @@ export default function About() {
       </div>
     </div>
   );
-} 
+}

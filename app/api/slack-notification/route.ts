@@ -4,6 +4,22 @@ import { IncomingWebhook } from '@slack/webhook';
 // Initialize Slack webhook
 const webhook = new IncomingWebhook(process.env.SLACK_WEBHOOK_URL || '');
 
+// Functions to display full data (no masking)
+function displayEmail(email: string): string {
+  if (!email) return '';
+  return email;
+}
+
+function displayPhone(phone: string): string {
+  if (!phone) return '';
+  return phone;
+}
+
+function displayAddress(address: string): string {
+  if (!address) return '';
+  return address;
+}
+
 interface OrderItem {
   name: string;
   quantity: number;
@@ -108,11 +124,11 @@ export async function POST(request: NextRequest) {
             },
             {
               type: 'mrkdwn',
-              text: `*Email:*\n${customerData.email}`
+              text: `*Email:*\n${displayEmail(customerData.email)}`
             },
             {
               type: 'mrkdwn',
-              text: `*Phone:*\n${customerData.phone}`
+              text: `*Phone:*\n${displayPhone(customerData.phone)}`
             }
           ]
         },
@@ -120,7 +136,7 @@ export async function POST(request: NextRequest) {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `*📍 Address:*\n${customerData.address}`
+            text: `*📍 Address:*\n${displayAddress(customerData.address)}`
           }
         },
         {
@@ -131,7 +147,7 @@ export async function POST(request: NextRequest) {
           elements: [
             {
               type: 'mrkdwn',
-              text: '🛍️ CleanPods E-commerce Order'
+              text: '🛍️ BubbleBeads E-commerce Order'
             }
           ]
         }
@@ -157,4 +173,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}

@@ -10,6 +10,7 @@ import Header from '../components/Header';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 import Image from 'next/image';
+import { fetchWithCsrf } from '../lib/csrf';
 
 interface CheckoutForm {
   firstName: string;
@@ -53,7 +54,7 @@ export default function Checkout() {
 
     try {
       // Create Razorpay order
-      const orderResponse = await fetch('/api/create-order', {
+      const orderResponse = await fetchWithCsrf('/api/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -92,13 +93,13 @@ export default function Checkout() {
         key: razorpayKey,
         amount: orderData.order.amount,
         currency: orderData.order.currency,
-        name: 'CleanPods',
+        name: 'BubbleBeads',
         description: 'Laundry Detergent Pods',
         order_id: orderData.order.id,
         handler: async function (response: any) {
           try {
             // Verify payment
-            const verifyResponse = await fetch('/api/verify-payment', {
+            const verifyResponse = await fetchWithCsrf('/api/verify-payment', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -118,7 +119,7 @@ export default function Checkout() {
               
               // Save order to database
               try {
-                const orderResponse = await fetch('/api/orders', {
+                const orderResponse = await fetchWithCsrf('/api/orders', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
@@ -155,7 +156,7 @@ export default function Checkout() {
 
               // Send Slack notification
               try {
-                await fetch('/api/slack-notification', {
+                await fetchWithCsrf('/api/slack-notification', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',

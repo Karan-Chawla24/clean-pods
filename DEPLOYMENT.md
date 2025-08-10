@@ -1,4 +1,4 @@
-# 🚀 CleanPods Deployment Guide
+# 🚀 BubbleBeads Deployment Guide
 
 ## Option 1: Vercel (Recommended) ⭐
 
@@ -15,9 +15,9 @@
    ```bash
    git init
    git add .
-   git commit -m "Initial commit - CleanPods e-commerce app"
+   git commit -m "Initial commit - BubbleBeads e-commerce app"
    git branch -M main
-   git remote add origin https://github.com/yourusername/cleanpods.git
+   git remote add origin https://github.com/yourusername/bubblebeads.git
    git push -u origin main
    ```
 
