@@ -1,21 +1,23 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useAppStore } from '../lib/store';
 import { cn } from '../lib/utils';
 import { fetchWithCsrf } from '../lib/csrf';
+import { useSession, signOut } from 'next-auth/react';
 
 export default function Header() {
   const { cart, wishlist, setSearchQuery } = useAppStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [localSearchQuery, setLocalSearchQuery] = useState('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const { data: session, status } = useSession();
   const router = useRouter();
-  const pathname = usePathname();
 
-  // Check admin status on mount and when pathname changes using HTTP-only cookie
+  // Check admin status on mount using HTTP-only cookie
   useEffect(() => {
     if (typeof window !== 'undefined') {
       // Verify with server using HTTP-only cookie
@@ -32,18 +34,13 @@ export default function Header() {
         setIsAdmin(false);
       });
     }
-  }, [pathname]);
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (localSearchQuery.trim()) {
       setSearchQuery(localSearchQuery);
-      // If already on search page, just update the query
-      if (pathname === '/search') {
-        router.push(`/search?q=${encodeURIComponent(localSearchQuery.trim())}`);
-      } else {
-        router.push(`/search?q=${encodeURIComponent(localSearchQuery.trim())}`);
-      }
+      router.push(`/search?q=${encodeURIComponent(localSearchQuery.trim())}`);
     }
   };
 
@@ -54,20 +51,25 @@ export default function Header() {
       credentials: 'include'
     });
     setIsAdmin(false);
-    if (pathname === '/admin') {
-      router.push('/');
-    }
+    router.push('/');
   };
 
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
 
   return (
     <header className="bg-white shadow-sm border-b sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center py-3">
           {/* Logo */}
-          <Link href="/" className="font-['Pacifico'] text-2xl text-blue-600 cursor-pointer">
-            BubbleBeads
+          <Link href="/" className="flex items-center cursor-pointer">
+            <Image
+              src="/beadslogo.jpg"
+              alt="BubbleBeads Logo"
+              width={80}
+              height={28}
+              className="object-contain"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -120,6 +122,55 @@ export default function Header() {
 
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
+            {/* User Authentication */}
+            {status === 'loading' ? (
+              <div className="w-8 h-8 animate-pulse bg-gray-200 rounded-full"></div>
+            ) : session ? (
+              <div className="relative group">
+                <button className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                    {session.user.firstName?.[0] || session.user.name?.[0] || session.user.email?.[0]?.toUpperCase()}
+                  </div>
+                  <span className="hidden sm:block font-medium">
+                    {session.user.firstName || session.user.name?.split(' ')[0] || 'User'}
+                  </span>
+                  <i className="ri-arrow-down-s-line w-4 h-4"></i>
+                </button>
+                
+                {/* User Dropdown Menu */}
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                  <div className="px-4 py-2 border-b">
+                    <p className="font-medium text-gray-900 truncate">{session.user.name || `${session.user.firstName} ${session.user.lastName}`}</p>
+                    <p className="text-sm text-gray-500 truncate" title={session.user.email || undefined}>{session.user.email}</p>
+                  </div>
+                  <Link href="/profile" className="block px-4 py-2 text-gray-700 hover:bg-gray-50">
+                    <i className="ri-user-line w-4 h-4 inline-block mr-2"></i>
+                    Profile
+                  </Link>
+                  <Link href="/orders" className="block px-4 py-2 text-gray-700 hover:bg-gray-50">
+                    <i className="ri-shopping-bag-line w-4 h-4 inline-block mr-2"></i>
+                    My Orders
+                  </Link>
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/' })}
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-50"
+                  >
+                    <i className="ri-logout-box-line w-4 h-4 inline-block mr-2"></i>
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link href="/auth/signin" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
+                  Sign In
+                </Link>
+                <Link href="/auth/signup" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                  Sign Up
+                </Link>
+              </div>
+            )}
+
             {/* Wishlist */}
             <Link href="/wishlist" className="relative text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
               <i className="ri-heart-line w-5 h-5"></i>

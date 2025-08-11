@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { formatPrice, formatDate, getOrderStatusColor } from '../lib/utils';
 import Header from '../components/Header';
 import { fetchWithCsrf } from '../lib/csrf';
@@ -129,7 +130,17 @@ export default function AdminDashboard() {
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
-            <h1 className="font-['Pacifico'] text-2xl text-blue-600">BubbleBeads Admin</h1>
+            <div className="flex items-center space-x-3">
+              <Image
+                src="/beadslogo.ico"
+                alt="BubbleBeads Logo"
+                width={70}
+                height={24}
+                className="object-contain"
+                priority
+              />
+              <span className="text-lg font-semibold text-gray-600">Admin</span>
+            </div>
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">Admin Dashboard</div>
               <button

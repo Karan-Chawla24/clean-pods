@@ -8,9 +8,10 @@ import { useAppStore } from '../lib/store';
 import { formatPrice, calculateTax, calculateTotal, generateOrderId, validateEmail, validatePhone } from '../lib/utils';
 import Header from '../components/Header';
 import toast from 'react-hot-toast';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { fetchWithCsrf } from '../lib/csrf';
+import { useSession } from 'next-auth/react';
 
 interface CheckoutForm {
   firstName: string;
@@ -30,15 +31,27 @@ declare global {
 }
 
 export default function Checkout() {
+  const { data: session } = useSession();
   const router = useRouter();
   const { cart, cartTotal, clearCart, addOrder } = useAppStore();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<CheckoutForm>();
+
+  // Pre-fill form with user data if signed in
+  useEffect(() => {
+    if (session?.user) {
+      if (session.user.firstName) setValue('firstName', session.user.firstName);
+      if (session.user.lastName) setValue('lastName', session.user.lastName);
+      if (session.user.email) setValue('email', session.user.email);
+    }
+  }, [session, setValue]);
 
   const subtotal = cartTotal;
   const tax = calculateTax(subtotal);
@@ -97,6 +110,9 @@ export default function Checkout() {
         description: 'Laundry Detergent Pods',
         order_id: orderData.order.id,
         handler: async function (response: any) {
+          // Show loader immediately when payment is completed
+          setIsRedirecting(true);
+          
           try {
             // Verify payment
             const verifyResponse = await fetchWithCsrf('/api/verify-payment', {
@@ -117,16 +133,25 @@ export default function Checkout() {
               // Use Razorpay order ID instead of generating custom one
               const orderId = response.razorpay_order_id;
               
-              // Save order to database
+              // Save order to database (authenticated users get it saved to their account)
               try {
-                const orderResponse = await fetchWithCsrf('/api/orders', {
+                const orderApiUrl = session ? '/api/user/orders' : '/api/orders';
+                const orderResponse = await fetchWithCsrf(orderApiUrl, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({
                     razorpayOrderId: response.razorpay_order_id,
                     paymentId: response.razorpay_payment_id,
-                    customer: data,
-                    items: cart,
+                    customerName: `${data.firstName} ${data.lastName}`,
+                    customerEmail: data.email,
+                    customerPhone: data.phone,
+                    address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
+                    items: cart.map(item => ({
+                      id: item.id,
+                      name: item.name,
+                      quantity: item.quantity,
+                      price: item.price
+                    })),
                     total: total,
                   }),
                 });
@@ -184,6 +209,34 @@ export default function Checkout() {
                 // Don't fail the order if Slack notification fails
               }
 
+              // Store order in user's localStorage for privacy (only for unauthenticated users)
+              if (!session) {
+                try {
+                  const userOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+                  const orderForStorage = {
+                    id: orderId,
+                    razorpayOrderId: response.razorpay_order_id,
+                    paymentId: response.razorpay_payment_id,
+                    customerName: `${data.firstName} ${data.lastName}`,
+                    customerEmail: data.email,
+                    customerPhone: data.phone,
+                    address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
+                    items: cart.map(item => ({
+                      id: item.id,
+                      name: item.name,
+                      quantity: item.quantity,
+                      price: item.price
+                    })),
+                    total: total,
+                    orderDate: new Date().toISOString(),
+                  };
+                  userOrders.push(orderForStorage);
+                  localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                } catch (localError) {
+                  console.error('Failed to store order locally:', localError);
+                }
+              }
+              
               addOrder(order);
               clearCart();
               toast.success('Payment successful! Your order has been placed.');
@@ -241,6 +294,17 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
+      
+      {/* Full-page loader overlay when redirecting to success page */}
+      {isRedirecting && (
+        <div className="fixed inset-0 bg-white bg-opacity-95 backdrop-blur-sm z-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Payment Successful!</h2>
+            <p className="text-gray-600">Redirecting to your order confirmation...</p>
+          </div>
+        </div>
+      )}
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid lg:grid-cols-2 gap-12">
