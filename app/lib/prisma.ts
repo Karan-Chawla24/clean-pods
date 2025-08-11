@@ -1,36 +1,43 @@
-// Conditional import to handle build issues with Prisma client
+// Dynamic import to handle build-time issues
 let PrismaClient: any;
 let prismaInstance: any;
 
 try {
-  // Try to import PrismaClient
+  // Try to import PrismaClient dynamically
   const prismaModule = require('@prisma/client');
   PrismaClient = prismaModule.PrismaClient;
-  
+
   const globalForPrisma = globalThis as unknown as { prisma: any };
-  prismaInstance = globalForPrisma.prisma || new PrismaClient();
   
-  if (process.env.NODE_ENV !== 'production') {
-    globalForPrisma.prisma = prismaInstance;
+  if (PrismaClient) {
+    prismaInstance = globalForPrisma.prisma ?? new PrismaClient({
+      log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    });
+
+    if (process.env.NODE_ENV !== 'production') {
+      globalForPrisma.prisma = prismaInstance;
+    }
+  } else {
+    throw new Error('PrismaClient not available');
   }
 } catch (error) {
-  // Fallback for build environments where Prisma client isn't available
-  console.warn('Prisma client not available, using mock for build');
+  // Build-time fallback - create mock client
+  console.warn('Prisma client not available during build, using mock');
   prismaInstance = {
     user: {
-      findUnique: () => Promise.resolve(null),
-      create: () => Promise.resolve({}),
-      update: () => Promise.resolve({}),
-      findMany: () => Promise.resolve([]),
+      findUnique: async () => null,
+      create: async () => ({}),
+      update: async () => ({}),
+      findMany: async () => [],
     },
     order: {
-      findMany: () => Promise.resolve([]),
-      create: () => Promise.resolve({}),
-      findUnique: () => Promise.resolve(null),
+      findMany: async () => [],
+      create: async () => ({}),
+      findUnique: async () => null,
     },
     orderItem: {
-      findMany: () => Promise.resolve([]),
-      create: () => Promise.resolve({}),
+      findMany: async () => [],
+      create: async () => ({}),
     },
   };
 }
