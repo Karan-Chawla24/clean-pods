@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllOrders, saveOrder } from '../../lib/database';
+import { headers } from 'next/headers';
 
 export async function GET() {
+  // This endpoint is now secured - only admin should access
+  const headersList = await headers();
+  const adminHeader = headersList.get('X-Admin-Key');
+  
+  if (adminHeader !== process.env.ADMIN_ORDERS_KEY) {
+    return NextResponse.json(
+      { error: 'Access denied. This endpoint requires admin authentication.' },
+      { status: 403 }
+    );
+  }
+
   try {
     const orders = await getAllOrders();
     return NextResponse.json(orders);

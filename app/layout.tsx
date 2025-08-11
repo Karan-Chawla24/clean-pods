@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Pacifico } from "next/font/google";
 import "./globals.css";
 import ToastProvider from "./components/ToastProvider";
+import AuthProvider from "./components/AuthProvider";
 
 const pacifico = Pacifico({
   weight: '400',
@@ -25,6 +26,11 @@ export const metadata: Metadata = {
   description: "Revolutionary laundry detergent pods for modern households. Clean, fresh, and effortless laundry experience.",
   keywords: "laundry detergent, detergent pods, cleaning products, household cleaning",
   authors: [{ name: "BubbleBeads" }],
+  icons: {
+    icon: '/beadslogo.ico',
+    shortcut: '/beadslogo.ico',
+    apple: '/beadslogo.ico',
+  },
 };
 
 export const viewport: Viewport = {
@@ -46,8 +52,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pacifico.variable} antialiased`}
       >
-        {children}
-        <ToastProvider />
+        <AuthProvider>
+          {children}
+          <ToastProvider />
+        </AuthProvider>
       </body>
     </html>
   );

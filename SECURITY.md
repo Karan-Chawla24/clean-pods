@@ -78,10 +78,73 @@ A `.env.example` file has been added to the project for reference.
 4. **Secure Headers**: HTTP-only and secure flags are set on sensitive cookies
 5. **HTTPS Only**: The application should only be served over HTTPS in production
 
+## Order System Security
+
+### Current Order Storage Model
+
+The application uses a **dual-storage approach** for orders:
+
+1. **Browser localStorage (`userOrders`)**: Stores detailed customer information for each order on the user's device
+2. **Zustand Store (`bubblebeads-store`)**: Application state management with localStorage persistence
+3. **Database**: Secure server-side storage with full order details
+
+### Security Assessment
+
+#### ✅ What's Secure
+- **Data Isolation**: Each user can only see orders stored in their own browser
+- **Invoice Protection**: HMAC-SHA256 tokens protect invoice downloads
+- **Admin API Security**: Orders API now requires `ADMIN_ORDERS_KEY` for access
+- **Payment Security**: All payments processed through PCI-compliant Razorpay
+
+#### ⚠️ Current Limitations
+- **No User Authentication**: No login system - orders tied to browser/device
+- **Shared Device Risk**: Multiple users on same device can see each other's orders
+- **Data Loss Risk**: Orders lost if browser data is cleared
+- **Device Dependency**: Orders not accessible across different devices
+
+### Admin Order Access
+
+Admins can securely access all orders using:
+
+```bash
+# Set admin key in environment
+export ADMIN_ORDERS_KEY="your_secret_admin_key_here"
+
+# Run admin script
+node scripts/admin-orders.js
+```
+
+### Risk Assessment
+
+| Security Concern | Risk Level | Current Mitigation |
+|------------------|------------|-------------------|
+| Cross-user data access | **Low** | localStorage isolation |
+| Unauthorized invoice access | **Low** | Token-based security |
+| Admin data breach | **Medium** | API key requirement |
+| Order data loss | **High** | No current mitigation |
+| Shared device privacy | **Medium** | User education needed |
+
+## Environment Variables (Updated)
+
+```env
+# Existing variables...
+ADMIN_ORDERS_KEY=your_secret_admin_key_here
+```
+
 ## Future Improvements
 
-1. Implement rate limiting for login attempts
-2. Add two-factor authentication for admin access
-3. Implement Content Security Policy (CSP) headers
-4. Set up regular security audits and penetration testing
-5. Add automated security scanning in CI/CD pipeline
+### High Priority
+1. **User Authentication System**: Implement login/registration to link orders to user accounts
+2. **Cross-device Order Sync**: Allow users to access orders from any device
+3. **Order Data Backup**: Implement server-side order retrieval for users
+
+### Medium Priority
+4. Implement rate limiting for login attempts
+5. Add two-factor authentication for admin access
+6. Implement Content Security Policy (CSP) headers
+7. Enhanced session management
+
+### Long Term
+8. Set up regular security audits and penetration testing
+9. Add automated security scanning in CI/CD pipeline
+10. Implement audit logging for all admin actions

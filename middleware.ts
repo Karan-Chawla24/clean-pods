@@ -7,13 +7,17 @@ const protectedRoutes = [
   '/api/orders',
   '/api/verify-payment',
   '/api/contact-notification',
-  '/api/slack-notification'
+  '/api/slack-notification',
+  '/api/user/orders',
+  '/api/user/profile'
 ];
 
 // List of routes that should bypass CSRF protection (e.g., GET requests)
 const bypassRoutes = [
-  '/api/admin-verify'
+  '/api/admin-verify',
+  '/api/auth'
 ];
+
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
@@ -62,6 +66,7 @@ export async function middleware(request: NextRequest) {
   
   return response;
 }
+
 
 // Configure the middleware to run on specific paths
 export const config = {

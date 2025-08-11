@@ -11,9 +11,28 @@ import SinglePod from '../images/Single.jpg';
 import threein1 from '../images/threein1.jpg';
 import fivein1 from '../images/fivein1.jpg';
 import HomeImg  from '../images/Home.jpg';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function Home() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const { addToCart, addToWishlist, wishlist } = useAppStore();
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/auth/signin');
+    }
+  }, [status, router]);
+
+  if (status === 'loading' || status === 'unauthenticated') {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
 
   const handleAddToCart = (product: any) => {
     addToCart({
