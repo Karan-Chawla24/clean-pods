@@ -54,8 +54,8 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             email: user.email,
             name: user.name,
-            firstName: user.firstName,
-            lastName: user.lastName,
+            firstName: user.firstName || undefined,
+            lastName: user.lastName || undefined,
           };
         } else {
           // Sign in logic
@@ -77,8 +77,8 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             email: user.email,
             name: user.name,
-            firstName: user.firstName,
-            lastName: user.lastName,
+            firstName: user.firstName || undefined,
+            lastName: user.lastName || undefined,
           };
         }
       },
@@ -117,8 +117,8 @@ export const authOptions: NextAuthOptions = {
             });
           }
           
-          token.firstName = dbUser.firstName;
-          token.lastName = dbUser.lastName;
+          token.firstName = dbUser.firstName || undefined;
+          token.lastName = dbUser.lastName || undefined;
         }
       }
       
@@ -137,7 +137,6 @@ export const authOptions: NextAuthOptions = {
   
   pages: {
     signIn: "/auth/signin",
-    signUp: "/auth/signup",
   },
   
   secret: process.env.NEXTAUTH_SECRET,
