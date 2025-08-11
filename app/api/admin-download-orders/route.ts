@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     ];
 
     for (const order of orders) {
-      const itemsString = order.items.map(item => `${item.name} (x${item.quantity}) - ₹${item.price}`).join('; ');
+      const itemsString = order.items.map((item: any) => `${item.name} (x${item.quantity}) - ₹${item.price}`).join('; ');
       worksheet.addRow({
         razorpayOrderId: order.razorpayOrderId,
         paymentId: order.paymentId,
