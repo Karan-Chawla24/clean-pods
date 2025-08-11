@@ -42,7 +42,7 @@ export async function GET(
       try {
         order = JSON.parse(decodeURIComponent(orderData));
         // Validate that the order data contains the expected orderId
-        if (order.id !== orderId && order.razorpayOrderId !== orderId) {
+        if (order && (order.id !== orderId && order.razorpayOrderId !== orderId)) {
           return NextResponse.json(
             { error: 'Order data mismatch' },
             { status: 400 }

@@ -104,7 +104,7 @@ function OrderSuccessContent() {
             </Link>
             <button 
               onClick={() => window.print()}
-              className="bg-gray-200 text-gray-800 px-8 py-3 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer whitespace-nowrap
+              className="bg-gray-200 text-gray-800 px-8 py-3 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer whitespace-nowrap"
             >
               Print Order Details
             </button>
