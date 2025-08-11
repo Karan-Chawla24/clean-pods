@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Format orders to match frontend expectations
-    const formattedOrders = orders.map(order => ({
+    const formattedOrders = orders.map((order: any) => ({
       id: order.id,
       razorpayOrderId: order.razorpayOrderId || order.id,
       paymentId: order.paymentId,
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       address: order.address,
       total: order.total,
       orderDate: order.orderDate.toISOString(),
-      items: order.items.map(item => ({
+      items: order.items.map((item: any) => ({
         id: item.id,
         name: item.name,
         quantity: item.quantity,

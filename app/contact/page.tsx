@@ -19,6 +19,13 @@ export default function Contact() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ContactForm>();
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -33,13 +40,6 @@ export default function Contact() {
       </div>
     );
   }
-  
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<ContactForm>();
 
   const onSubmit = async (data: ContactForm) => {
     setIsSubmitting(true);
