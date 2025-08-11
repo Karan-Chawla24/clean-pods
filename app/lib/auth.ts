@@ -21,7 +21,8 @@ export const authOptions: NextAuthOptions = {
 
         const isSignUp = credentials.isSignUp === "true";
 
-        if (isSignUp) {
+        try {
+          if (isSignUp) {
           // Sign up logic
           if (!credentials.firstName || !credentials.lastName) {
             throw new Error("First name and last name are required for signup");
@@ -81,6 +82,13 @@ export const authOptions: NextAuthOptions = {
             lastName: user.lastName || undefined,
           };
         }
+        } catch (error) {
+          console.error('NextAuth authorize error:', error);
+          if (error instanceof Error) {
+            throw error;
+          }
+          throw new Error('Authentication failed');
+        }
       },
     }),
   ],
@@ -137,7 +145,10 @@ export const authOptions: NextAuthOptions = {
   
   pages: {
     signIn: "/auth/signin",
+    error: "/auth/error", // Error code passed in query string as ?error=
   },
+  
+  debug: process.env.NODE_ENV === 'development',
   
   secret: process.env.NEXTAUTH_SECRET,
 };
