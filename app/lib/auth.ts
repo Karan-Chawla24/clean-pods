@@ -3,6 +3,22 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
 
+// Configuration validation
+if (!process.env.NEXTAUTH_SECRET) {
+  console.error('Missing required environment variable: NEXTAUTH_SECRET');
+}
+
+if (!process.env.DATABASE_URL) {
+  console.error('Missing required environment variable: DATABASE_URL');
+}
+
+console.log('NextAuth Configuration:', {
+  hasSecret: !!process.env.NEXTAUTH_SECRET,
+  hasDatabaseUrl: !!process.env.DATABASE_URL,
+  nextauthUrl: process.env.NEXTAUTH_URL,
+  nodeEnv: process.env.NODE_ENV
+});
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
