@@ -2,22 +2,31 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
+import type { User as PrismaUser } from "@prisma/client";
 
-// Configuration validation
+// Define the return type for the authorize function
+type AuthorizeResult = {
+  id: string;
+  email: string;
+  name: string;
+  firstName?: string;
+  lastName?: string;
+} | null;
+
+// Configuration validation - only log critical errors
 if (!process.env.NEXTAUTH_SECRET) {
   console.error('Missing required environment variable: NEXTAUTH_SECRET');
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('NEXTAUTH_SECRET is required in production');
+  }
 }
 
 if (!process.env.DATABASE_URL) {
   console.error('Missing required environment variable: DATABASE_URL');
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('DATABASE_URL is required in production');
+  }
 }
-
-console.log('NextAuth Configuration:', {
-  hasSecret: !!process.env.NEXTAUTH_SECRET,
-  hasDatabaseUrl: !!process.env.DATABASE_URL,
-  nextauthUrl: process.env.NEXTAUTH_URL,
-  nodeEnv: process.env.NODE_ENV
-});
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -30,7 +39,7 @@ export const authOptions: NextAuthOptions = {
         lastName: { label: "Last Name", type: "text" },
         isSignUp: { label: "Sign Up", type: "hidden" },
       },
-      async authorize(credentials) {
+      async authorize(credentials): Promise<AuthorizeResult> {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Email and password are required");
         }
@@ -47,7 +56,7 @@ export const authOptions: NextAuthOptions = {
           // Check if user already exists
           const existingUser = await prisma.user.findUnique({
             where: { email: credentials.email },
-          });
+          }) as PrismaUser | null;
 
           if (existingUser) {
             throw new Error("User with this email already exists");
@@ -65,20 +74,21 @@ export const authOptions: NextAuthOptions = {
               lastName: credentials.lastName,
               name: `${credentials.firstName} ${credentials.lastName}`,
             },
-          });
+          }) as PrismaUser;
 
+          const fullName = user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim();
           return {
             id: user.id,
             email: user.email,
-            name: user.name,
-            firstName: user.firstName || undefined,
-            lastName: user.lastName || undefined,
+            name: fullName || user.email,
+            firstName: user.firstName ?? undefined,
+            lastName: user.lastName ?? undefined,
           };
         } else {
           // Sign in logic
           const user = await prisma.user.findUnique({
             where: { email: credentials.email },
-          });
+          }) as PrismaUser | null;
 
           if (!user || !user.password) {
             throw new Error("Invalid email or password");
@@ -90,12 +100,13 @@ export const authOptions: NextAuthOptions = {
             throw new Error("Invalid email or password");
           }
 
+          const fullName = user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim();
           return {
             id: user.id,
             email: user.email,
-            name: user.name,
-            firstName: user.firstName || undefined,
-            lastName: user.lastName || undefined,
+            name: fullName || user.email,
+            firstName: user.firstName ?? undefined,
+            lastName: user.lastName ?? undefined,
           };
         }
         } catch (error) {
@@ -123,26 +134,31 @@ export const authOptions: NextAuthOptions = {
       
       // If this is a Google sign in, update the user's name from Google
       if (account?.provider === "google" && user) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: user.email! },
-        });
-        
-        if (dbUser) {
-          // Update name from Google if not set
-          if (!dbUser.firstName && user.name) {
-            const nameParts = user.name.split(' ');
-            await prisma.user.update({
-              where: { id: dbUser.id },
-              data: {
-                firstName: nameParts[0] || user.name,
-                lastName: nameParts.slice(1).join(' ') || '',
-                name: user.name,
-              },
-            });
-          }
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email! },
+          }) as PrismaUser | null;
           
-          token.firstName = dbUser.firstName || undefined;
-          token.lastName = dbUser.lastName || undefined;
+          if (dbUser) {
+            // Update name from Google if not set
+            if (!dbUser.firstName && user.name) {
+              const nameParts = user.name.split(' ');
+              await prisma.user.update({
+                where: { id: dbUser.id },
+                data: {
+                  firstName: nameParts[0] || user.name,
+                  lastName: nameParts.slice(1).join(' ') || '',
+                  name: user.name,
+                },
+              }) as PrismaUser;
+            }
+            
+            token.firstName = dbUser.firstName || undefined;
+            token.lastName = dbUser.lastName || undefined;
+          }
+        } catch (error) {
+          console.error('Error updating user from Google OAuth:', error);
+          // Continue without failing the entire auth process
         }
       }
       
@@ -150,10 +166,10 @@ export const authOptions: NextAuthOptions = {
     },
     
     async session({ session, token }) {
-      if (token) {
+      if (token && token.id) {
         session.user.id = token.id as string;
-        session.user.firstName = token.firstName as string;
-        session.user.lastName = token.lastName as string;
+        session.user.firstName = (token.firstName as string) || undefined;
+        session.user.lastName = (token.lastName as string) || undefined;
       }
       return session;
     },
