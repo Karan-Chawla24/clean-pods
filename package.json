@@ -4,13 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=development next dev -H 0.0.0.0 -p 3000",
-    "build": "prisma generate && prisma db push --skip-generate && next build",
+    "build": "prisma generate && next build",
     "build:with-prisma": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate deploy",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "db:setup": "prisma db push --skip-generate && prisma generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
