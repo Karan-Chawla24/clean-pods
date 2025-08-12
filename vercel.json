@@ -1,0 +1,11 @@
+{
+  "functions": {
+    "app/api/**/*": {
+      "maxDuration": 30
+    }
+  },
+  "crons": [],
+  "env": {
+    "PRISMA_GENERATE_DATAPROXY": "true"
+  }
+}
