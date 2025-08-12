@@ -136,24 +136,42 @@ export default function Checkout() {
               // Save order to database (authenticated users get it saved to their account)
               try {
                 const orderApiUrl = session ? '/api/user/orders' : '/api/orders';
+                
+                const orderPayload: any = {
+                  razorpayOrderId: response.razorpay_order_id,
+                  paymentId: response.razorpay_payment_id,
+                  total: total,
+                  customerName: `${data.firstName} ${data.lastName}`,
+                  customerEmail: data.email,
+                  customerPhone: data.phone,
+                  address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
+                  items: cart.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price
+                  }))
+                };
+                
+                // For non-authenticated users, use the legacy format expected by /api/orders
+                if (!session) {
+                  orderPayload.customer = {
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    email: data.email,
+                    phone: data.phone,
+                    address: data.address,
+                    city: data.city,
+                    state: data.state,
+                    pincode: data.pincode
+                  };
+                }
+                
+                console.log('Sending order payload:', orderPayload);
+                
                 const orderResponse = await fetchWithCsrf(orderApiUrl, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    razorpayOrderId: response.razorpay_order_id,
-                    paymentId: response.razorpay_payment_id,
-                    customerName: `${data.firstName} ${data.lastName}`,
-                    customerEmail: data.email,
-                    customerPhone: data.phone,
-                    address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
-                    items: cart.map(item => ({
-                      id: item.id,
-                      name: item.name,
-                      quantity: item.quantity,
-                      price: item.price
-                    })),
-                    total: total,
-                  }),
+                  body: JSON.stringify(orderPayload),
                 });
                 
                 if (!orderResponse.ok) {

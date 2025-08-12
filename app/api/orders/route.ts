@@ -31,13 +31,45 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     console.log('POST /api/orders - Received data:', JSON.stringify(data, null, 2));
     
+    // Handle both legacy format (with customer object) and new format (with direct customer fields)
+    let orderData;
+    
+    if (data.customer) {
+      // Legacy format - transform to new format
+      orderData = {
+        razorpayOrderId: data.razorpayOrderId,
+        paymentId: data.paymentId,
+        customer: data.customer,
+        items: data.items,
+        total: data.total
+      };
+    } else {
+      // New format - create customer object
+      orderData = {
+        razorpayOrderId: data.razorpayOrderId,
+        paymentId: data.paymentId,
+        customer: {
+          firstName: data.customerName?.split(' ')[0] || 'Customer',
+          lastName: data.customerName?.split(' ').slice(1).join(' ') || '',
+          email: data.customerEmail || '',
+          phone: data.customerPhone || '',
+          address: data.address?.split(',')[0] || '',
+          city: data.address?.split(',')[1]?.trim() || '',
+          state: data.address?.split(',')[2]?.trim() || '',
+          pincode: data.address?.split(',')[3]?.trim() || ''
+        },
+        items: data.items,
+        total: data.total
+      };
+    }
+    
     // Validate required fields
-    if (!data.paymentId || !data.customer || !data.items || !data.total) {
+    if (!orderData.paymentId || !orderData.customer || !orderData.items || !orderData.total) {
       console.error('Missing required fields:', { 
-        hasPaymentId: !!data.paymentId, 
-        hasCustomer: !!data.customer, 
-        hasItems: !!data.items, 
-        hasTotal: !!data.total 
+        hasPaymentId: !!orderData.paymentId, 
+        hasCustomer: !!orderData.customer, 
+        hasItems: !!orderData.items, 
+        hasTotal: !!orderData.total 
       });
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -45,10 +77,10 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const orderId = await saveOrder(data);
+    const orderId = await saveOrder(orderData);
     console.log('POST /api/orders - Order created successfully with ID:', orderId);
     
-    return NextResponse.json({ orderId });
+    return NextResponse.json({ success: true, orderId });
   } catch (error) {
     console.error('POST /api/orders error:', error);
     return NextResponse.json(
@@ -56,4 +88,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+}
