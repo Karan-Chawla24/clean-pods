@@ -7,6 +7,7 @@ import { validateEmail } from '../lib/utils';
 import toast from 'react-hot-toast';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { fetchWithCsrf } from '../lib/csrf';
 
 interface ContactForm {
   name: string;
@@ -45,8 +46,8 @@ export default function Contact() {
     setIsSubmitting(true);
     
     try {
-      // Send contact form data to Slack
-      const response = await fetch('/api/contact-notification', {
+      // Send contact form data to Slack using CSRF-protected fetch
+      const response = await fetchWithCsrf('/api/contact-notification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +61,17 @@ export default function Contact() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to send message');
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        
+        if (response.status === 403) {
+          console.error('CSRF token error:', errorData);
+          toast.error('Security token expired. Please refresh the page and try again.');
+          // Refresh the page to get a new CSRF token
+          setTimeout(() => window.location.reload(), 2000);
+          return;
+        }
+        
+        throw new Error(errorData.error || `Server error: ${response.status}`);
       }
 
       const result = await response.json();
@@ -73,7 +84,8 @@ export default function Contact() {
       }
     } catch (error) {
       console.error('Contact form error:', error);
-      toast.error('Failed to send message. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send message. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
