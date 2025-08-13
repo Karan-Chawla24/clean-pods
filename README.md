@@ -51,6 +51,15 @@ A modern, full-featured e-commerce application for selling premium laundry deter
    npm run dev
    ```
 
+4. **For Vercel Deployment**
+   ```bash
+   # Prepare for Vercel deployment
+   node scripts/vercel-deploy.js
+   
+   # Deploy to Vercel
+   vercel --prod
+   ```
+
 4. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 

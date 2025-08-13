@@ -1,5 +1,11 @@
 # 🚀 BubbleBeads Vercel Deployment Troubleshooting
 
+## ✅ **Fixed: Database Connection Error**
+
+**Error:** `Error: P1001: Can't reach database server at db.ddhhpozckwrbwubugeef.supabase.co:5432`
+
+**Solution:** ✅ **FIXED** - Updated build process to skip database operations during build and properly configured database connection strings with URL-encoded special characters.
+
 ## ✅ **Fixed: Environment Variable Error**
 
 **Error:** `Environment Variable "RAZORPAY_KEY_ID" references Secret "razorpay_key_id", which does not exist.`
