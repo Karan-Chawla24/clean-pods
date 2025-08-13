@@ -7,7 +7,6 @@ import { validateEmail } from '../lib/utils';
 import toast from 'react-hot-toast';
 import { useSession, getCsrfToken } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { fetchWithCsrf } from '../lib/csrf';
 
 interface ContactForm {
   name: string;
