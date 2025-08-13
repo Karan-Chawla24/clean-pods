@@ -64,7 +64,7 @@ export default function Orders() {
             throw new Error('Failed to fetch orders');
           }
           const data = await response.json();
-          setOrders(data.orders || []);
+          setOrders(Array.isArray(data) ? data : data.orders || []);
         } catch (err) {
           console.error('Error fetching orders:', err);
           setError('Failed to load your orders');
@@ -258,4 +258,4 @@ export default function Orders() {
       </div>
     </div>
   );
-} 
+}

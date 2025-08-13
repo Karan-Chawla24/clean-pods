@@ -3,56 +3,33 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '../../../lib/auth';
 import { prisma } from '../../../lib/prisma';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    // Get user's orders from database
+    
     const orders = await prisma.order.findMany({
-      where: { 
-        userId: session.user.id 
+      where: {
+        userId: session.user.id
       },
       include: {
-        items: true,
+        items: true
       },
       orderBy: {
-        orderDate: 'desc', // Most recent first
+        orderDate: 'desc'
       }
     });
-
-    // Format orders to match frontend expectations
-    const formattedOrders = orders.map((order: any) => ({
-      id: order.id,
-      razorpayOrderId: order.razorpayOrderId || order.id,
-      paymentId: order.paymentId,
-      customerName: order.customerName,
-      customerEmail: order.customerEmail,
-      customerPhone: order.customerPhone,
-      address: order.address,
-      total: order.total,
-      orderDate: order.orderDate.toISOString(),
-      items: order.items.map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-      }))
-    }));
-
-    return NextResponse.json({
-      success: true,
-      orders: formattedOrders
-    });
-
+    
+    return NextResponse.json(orders);
   } catch (error) {
-    console.error('Error fetching user orders:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error' 
-    }, { status: 500 });
+    console.error('Error fetching orders:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch orders' },
+      { status: 500 }
+    );
   }
 }
 
@@ -63,60 +40,53 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const orderData = await request.json();
-    const { 
-      razorpayOrderId, 
-      paymentId, 
-      total, 
-      customerName, 
-      customerEmail, 
-      customerPhone, 
-      address, 
-      items 
-    } = orderData;
-
+    
+    const data = await request.json();
+    console.log('POST /api/user/orders - Received data:', JSON.stringify(data, null, 2));
+    
+    // Validate required fields
+    if (!data.paymentId || !data.items || !data.total) {
+      console.error('Missing required fields:', { 
+        hasPaymentId: !!data.paymentId, 
+        hasItems: !!data.items, 
+        hasTotal: !!data.total 
+      });
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+    
     // Create order with user association
     const order = await prisma.order.create({
       data: {
-        userId: session.user.id,
-        razorpayOrderId,
-        paymentId,
-        total,
-        customerName: customerName || session.user.name || 'Customer',
-        customerEmail: customerEmail || session.user.email!,
-        customerPhone: customerPhone || '',
-        address: address || '',
+        razorpayOrderId: data.razorpayOrderId,
+        paymentId: data.paymentId,
+        total: data.total,
+        customerName: data.customerName,
+        customerEmail: data.customerEmail,
+        customerPhone: data.customerPhone,
+        address: data.address,
+        userId: session.user.id, // Associate with authenticated user
         items: {
-          create: items.map((item: any) => ({
+          create: data.items.map((item: any) => ({
             name: item.name,
-            quantity: item.quantity,
             price: item.price,
-          }))
-        }
+            quantity: item.quantity,
+          })),
+        },
       },
-      include: {
-        items: true,
-      }
+      include: { items: true },
     });
-
-    return NextResponse.json({
-      success: true,
-      message: 'Order created successfully',
-      order: {
-        id: order.id,
-        razorpayOrderId: order.razorpayOrderId,
-        paymentId: order.paymentId,
-        total: order.total,
-        orderDate: order.orderDate.toISOString(),
-        items: order.items
-      }
-    });
-
+    
+    console.log('POST /api/user/orders - Order created successfully with ID:', order.id);
+    
+    return NextResponse.json({ success: true, orderId: order.id });
   } catch (error) {
-    console.error('Error creating user order:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error' 
-    }, { status: 500 });
+    console.error('POST /api/user/orders error:', error);
+    return NextResponse.json(
+      { error: 'Failed to create order', details: error instanceof Error ? error.message : 'Unknown error' },
+      { status: 500 }
+    );
   }
 }

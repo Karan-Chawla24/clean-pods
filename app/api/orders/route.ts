@@ -31,48 +31,44 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
     console.log('POST /api/orders - Received data:', JSON.stringify(data, null, 2));
     
-    // Handle both legacy format (with customer object) and new format (with direct customer fields)
-    let orderData;
+    // Prepare order data for saving
+    const orderData: any = {
+      razorpayOrderId: data.razorpayOrderId,
+      paymentId: data.paymentId,
+      items: data.items,
+      total: data.total
+    };
     
+    // Handle both legacy format (with customer object) and new format (with direct fields)
     if (data.customer) {
-      // Legacy format - transform to new format
-      orderData = {
-        razorpayOrderId: data.razorpayOrderId,
-        paymentId: data.paymentId,
-        customer: data.customer,
-        items: data.items,
-        total: data.total
-      };
+      // Legacy format with customer object
+      orderData.customer = data.customer;
     } else {
-      // New format - create customer object
-      orderData = {
-        razorpayOrderId: data.razorpayOrderId,
-        paymentId: data.paymentId,
-        customer: {
-          firstName: data.customerName?.split(' ')[0] || 'Customer',
-          lastName: data.customerName?.split(' ').slice(1).join(' ') || '',
-          email: data.customerEmail || '',
-          phone: data.customerPhone || '',
-          address: data.address?.split(',')[0] || '',
-          city: data.address?.split(',')[1]?.trim() || '',
-          state: data.address?.split(',')[2]?.trim() || '',
-          pincode: data.address?.split(',')[3]?.trim() || ''
-        },
-        items: data.items,
-        total: data.total
-      };
+      // New format with direct fields
+      orderData.customerName = data.customerName;
+      orderData.customerEmail = data.customerEmail;
+      orderData.customerPhone = data.customerPhone;
+      orderData.address = data.address;
     }
     
     // Validate required fields
-    if (!orderData.paymentId || !orderData.customer || !orderData.items || !orderData.total) {
+    if (!orderData.paymentId || !orderData.items || !orderData.total) {
       console.error('Missing required fields:', { 
         hasPaymentId: !!orderData.paymentId, 
-        hasCustomer: !!orderData.customer, 
         hasItems: !!orderData.items, 
         hasTotal: !!orderData.total 
       });
       return NextResponse.json(
         { error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+    
+    // Customer information validation
+    if (!orderData.customer && !orderData.customerName) {
+      console.error('Missing customer information');
+      return NextResponse.json(
+        { error: 'Missing customer information' },
         { status: 400 }
       );
     }
