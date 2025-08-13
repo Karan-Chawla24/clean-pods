@@ -10,7 +10,7 @@ import Header from '../components/Header';
 import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { fetchWithCsrf } from '../lib/csrf';
+import { fetchWithNextAuthCsrf } from '../lib/csrf-utils';
 import { useSession } from 'next-auth/react';
 
 interface CheckoutForm {
@@ -67,7 +67,7 @@ export default function Checkout() {
 
     try {
       // Create Razorpay order
-      const orderResponse = await fetchWithCsrf('/api/create-order', {
+      const orderResponse = await fetchWithNextAuthCsrf('/api/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +115,7 @@ export default function Checkout() {
           
           try {
             // Verify payment
-            const verifyResponse = await fetchWithCsrf('/api/verify-payment', {
+            const verifyResponse = await fetchWithNextAuthCsrf('/api/verify-payment', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ export default function Checkout() {
                 
                 console.log('Sending order payload:', orderPayload);
                 
-                const orderResponse = await fetchWithCsrf(orderApiUrl, {
+                const orderResponse = await fetchWithNextAuthCsrf(orderApiUrl, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(orderPayload),
@@ -199,7 +199,7 @@ export default function Checkout() {
 
               // Send Slack notification
               try {
-                await fetchWithCsrf('/api/slack-notification', {
+                await fetchWithNextAuthCsrf('/api/slack-notification', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
