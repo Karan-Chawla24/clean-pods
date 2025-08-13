@@ -3,7 +3,7 @@ import { prisma } from './prisma';
 export async function saveOrder(orderData: {
   razorpayOrderId: string;
   paymentId: string;
-  customer: {
+  customer?: {
     firstName: string;
     lastName: string;
     email: string;
@@ -13,6 +13,11 @@ export async function saveOrder(orderData: {
     state: string;
     pincode: string;
   };
+  customerName?: string;
+  customerEmail?: string;
+  customerPhone?: string;
+  address?: string;
+  userId?: string;
   items: Array<{
     name: string;
     price: number;
@@ -23,15 +28,24 @@ export async function saveOrder(orderData: {
   console.log('saveOrder called with data:', JSON.stringify(orderData, null, 2));
   
   try {
+    // Handle both legacy format (with customer object) and new format (with direct fields)
+    const customerName = orderData.customerName || 
+      (orderData.customer ? `${orderData.customer.firstName} ${orderData.customer.lastName}` : '');
+    const customerEmail = orderData.customerEmail || (orderData.customer?.email || '');
+    const customerPhone = orderData.customerPhone || (orderData.customer?.phone || '');
+    const address = orderData.address || 
+      (orderData.customer ? `${orderData.customer.address}, ${orderData.customer.city}, ${orderData.customer.state} ${orderData.customer.pincode}` : '');
+    
     const order = await prisma.order.create({
       data: {
         razorpayOrderId: orderData.razorpayOrderId,
         paymentId: orderData.paymentId,
-        customerName: `${orderData.customer.firstName} ${orderData.customer.lastName}`,
-        customerEmail: orderData.customer.email,
-        customerPhone: orderData.customer.phone,
-        address: `${orderData.customer.address}, ${orderData.customer.city}, ${orderData.customer.state} ${orderData.customer.pincode}`,
+        customerName,
+        customerEmail,
+        customerPhone,
+        address,
         total: orderData.total,
+        userId: orderData.userId, // Associate with user if provided
         items: {
           create: orderData.items.map(item => ({
             name: item.name,
@@ -63,4 +77,4 @@ export async function getAllOrders() {
     include: { items: true },
     orderBy: { orderDate: 'desc' },
   });
-} 
+}
