@@ -15,12 +15,12 @@ if (process.env.VERCEL) {
   prisma = new PrismaClient();
 } else {
   // In development, we want to reuse the same instance to avoid connection limits
-  // @ts-ignore - Global is not typed correctly for this use case
+  // @ts-expect-error - Global is not typed correctly for this use case
   if (!global.prisma) {
-    // @ts-ignore
+    // @ts-expect-error
     global.prisma = new PrismaClient();
   }
-  // @ts-ignore
+  // @ts-expect-error
   prisma = global.prisma;
 }
 
