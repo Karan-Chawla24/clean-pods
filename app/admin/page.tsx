@@ -5,7 +5,13 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { formatPrice, formatDate, getOrderStatusColor } from '../lib/utils';
 import Header from '../components/Header';
-import { fetchWithCsrf } from '../lib/csrf';
+// Simple fetch wrapper for admin endpoints
+const adminFetch = (url: string, options: RequestInit = {}) => {
+  return fetch(url, {
+    ...options,
+    credentials: 'include',
+  });
+};
 
 interface OrderItem {
   id: string;
@@ -28,7 +34,7 @@ interface Order {
 }
 
 function downloadOrdersExcel() {
-  fetchWithCsrf('/api/admin-download-orders')
+  adminFetch('/api/admin-download-orders')
     .then(res => res.blob())
     .then(blob => {
       const url = window.URL.createObjectURL(blob);
@@ -53,9 +59,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       // Verify with server using HTTP-only cookie
-      fetchWithCsrf('/api/admin-verify', {
+      adminFetch('/api/admin-verify', {
         method: 'GET',
-        credentials: 'include' // Important for cookies
       })
       .then(res => res.json())
       .then(data => {
@@ -75,7 +80,7 @@ export default function AdminDashboard() {
 
   const fetchOrders = async () => {
     try {
-      const response = await fetchWithCsrf('/api/orders');
+      const response = await adminFetch('/api/orders');
       if (response.ok) {
         const ordersData = await response.json();
         setOrders(ordersData);
@@ -89,9 +94,8 @@ export default function AdminDashboard() {
 
   const handleLogout = async () => {
     // Call logout endpoint to clear the HTTP-only cookie
-    await fetchWithCsrf('/api/admin-logout', {
+    await adminFetch('/api/admin-logout', {
       method: 'POST',
-      credentials: 'include'
     });
     router.push('/');
   };
@@ -145,7 +149,7 @@ export default function AdminDashboard() {
               <div className="text-sm text-gray-600">Admin Dashboard</div>
               <button
                 onClick={() => {
-                  fetchWithCsrf('/api/admin-download-orders')
+                adminFetch('/api/admin-download-orders')
                     .then(res => res.blob())
                     .then(blob => {
                       const url = window.URL.createObjectURL(blob);
