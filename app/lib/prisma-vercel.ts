@@ -17,10 +17,10 @@ if (process.env.VERCEL) {
   // In development, we want to reuse the same instance to avoid connection limits
   // @ts-expect-error - Global is not typed correctly for this use case
   if (!global.prisma) {
-    // @ts-expect-error
+    // @ts-expect-error - Global prisma needs to be assigned a PrismaClient instance
     global.prisma = new PrismaClient();
   }
-  // @ts-expect-error
+  // @ts-expect-error - Using global prisma as our singleton instance
   prisma = global.prisma;
 }
 
