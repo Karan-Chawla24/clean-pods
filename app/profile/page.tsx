@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession, getSession } from 'next-auth/react';
+import { useSession, getSession, getCsrfToken } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Header from '../components/Header';
 import toast from 'react-hot-toast';
@@ -80,11 +80,8 @@ export default function Profile() {
     setLoading(true);
 
     try {
-      // Get CSRF token from cookie
-      const csrfToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('csrfToken='))
-        ?.split('=')[1];
+      // Get CSRF token using NextAuth's built-in method
+      const csrfToken = await getCsrfToken();
 
       const response = await fetch('/api/user/profile', {
         method: 'PUT',

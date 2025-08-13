@@ -3,7 +3,13 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { fetchWithCsrf } from '../lib/csrf';
+// Simple fetch wrapper for admin endpoints
+const adminFetch = (url: string, options: RequestInit = {}) => {
+  return fetch(url, {
+    ...options,
+    credentials: 'include',
+  });
+};
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('');
@@ -15,9 +21,8 @@ export default function AdminLogin() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       // Use GET request to verify admin status with HTTP-only cookie
-      fetchWithCsrf('/api/admin-verify', {
+      adminFetch('/api/admin-verify', {
         method: 'GET',
-        credentials: 'include', // Important for cookies
       })
       .then(res => res.json())
       .then(data => {
@@ -37,11 +42,10 @@ export default function AdminLogin() {
     setError('');
 
     try {
-      const response = await fetchWithCsrf('/api/admin-login', {
+      const response = await adminFetch('/api/admin-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
-        credentials: 'include', // Important for cookies
       });
 
       const data = await response.json();

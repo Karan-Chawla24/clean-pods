@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import Header from '../components/Header';
 import { validateEmail } from '../lib/utils';
 import toast from 'react-hot-toast';
-import { useSession } from 'next-auth/react';
+import { useSession, getCsrfToken } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 
 interface ContactForm {
@@ -45,11 +45,15 @@ export default function Contact() {
     setIsSubmitting(true);
     
     try {
+      // Get CSRF token using NextAuth's built-in method
+      const csrfToken = await getCsrfToken();
+
       // Send contact form data to Slack
       const response = await fetch('/api/contact-notification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken || '',
         },
         body: JSON.stringify({
           name: data.name,

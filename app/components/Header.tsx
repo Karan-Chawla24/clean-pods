@@ -6,7 +6,13 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '../lib/store';
 import { cn } from '../lib/utils';
-import { fetchWithCsrf } from '../lib/csrf';
+// Simple fetch wrapper for admin endpoints
+const adminFetch = (url: string, options: RequestInit = {}) => {
+  return fetch(url, {
+    ...options,
+    credentials: 'include',
+  });
+};
 import { useSession, signOut } from 'next-auth/react';
 
 export default function Header() {
@@ -21,9 +27,8 @@ export default function Header() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       // Verify with server using HTTP-only cookie
-      fetchWithCsrf('/api/admin-verify', {
+      adminFetch('/api/admin-verify', {
         method: 'GET',
-        credentials: 'include' // Important for cookies
       })
       .then(res => res.json())
       .then(data => {
@@ -46,9 +51,8 @@ export default function Header() {
 
   const handleLogout = async () => {
     // Call logout endpoint to clear the HTTP-only cookie
-    await fetchWithCsrf('/api/admin-logout', {
+    await adminFetch('/api/admin-logout', {
       method: 'POST',
-      credentials: 'include'
     });
     setIsAdmin(false);
     router.push('/');
@@ -82,9 +86,6 @@ export default function Header() {
             </Link>
             <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
               Contact
-            </Link>
-            <Link href="/orders" className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
-              Orders
             </Link>
             {isAdmin && (
               <>
