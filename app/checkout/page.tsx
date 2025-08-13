@@ -10,8 +10,7 @@ import Header from '../components/Header';
 import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { fetchWithNextAuthCsrf } from '../lib/csrf-utils';
-import { useSession } from 'next-auth/react';
+import { useSession, getCsrfToken } from 'next-auth/react';
 
 interface CheckoutForm {
   firstName: string;
@@ -36,6 +35,19 @@ export default function Checkout() {
   const { cart, cartTotal, clearCart, addOrder } = useAppStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+
+  // Helper function to make CSRF-protected API calls
+  const fetchWithCsrf = async (url: string, options: RequestInit = {}) => {
+    const csrfToken = await getCsrfToken();
+    return fetch(url, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...options.headers,
+        'X-CSRF-Token': csrfToken || '',
+      },
+    });
+  };
 
   const {
     register,
@@ -67,7 +79,7 @@ export default function Checkout() {
 
     try {
       // Create Razorpay order
-      const orderResponse = await fetchWithNextAuthCsrf('/api/create-order', {
+      const orderResponse = await fetchWithCsrf('/api/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +127,7 @@ export default function Checkout() {
           
           try {
             // Verify payment
-            const verifyResponse = await fetchWithNextAuthCsrf('/api/verify-payment', {
+            const verifyResponse = await fetchWithCsrf('/api/verify-payment', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -168,7 +180,7 @@ export default function Checkout() {
                 
                 console.log('Sending order payload:', orderPayload);
                 
-                const orderResponse = await fetchWithNextAuthCsrf(orderApiUrl, {
+                const orderResponse = await fetchWithCsrf(orderApiUrl, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify(orderPayload),
@@ -199,7 +211,7 @@ export default function Checkout() {
 
               // Send Slack notification
               try {
-                await fetchWithNextAuthCsrf('/api/slack-notification', {
+                await fetchWithCsrf('/api/slack-notification', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
