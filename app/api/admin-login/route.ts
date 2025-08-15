@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
+import { validateRequest, adminLoginSchema } from '@/app/lib/security/validation';
+import { generateAdminToken, setAdminCookie } from '@/app/lib/security/jwt';
 
 // Function to hash password with salt using PBKDF2
 function hashPassword(password: string, salt: string): string {
@@ -12,9 +15,18 @@ function verifyPassword(inputPassword: string, storedHash: string, salt: string)
   return crypto.timingSafeEqual(Buffer.from(inputHash, 'hex'), Buffer.from(storedHash, 'hex'));
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit(rateLimitConfigs.strict)(async (request: NextRequest) => {
   try {
-    const { password } = await request.json();
+    // Validate request body with Zod schema
+    const validationResult = await validateRequest(request, adminLoginSchema);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { success: false, error: validationResult.error },
+        { status: 400 }
+      );
+    }
+
+    const { password } = validationResult.data;
     
     // Server-side password validation
     const adminPassword = process.env.ADMIN_PASSWORD;
@@ -32,29 +44,20 @@ export async function POST(request: NextRequest) {
     const isPasswordValid = verifyPassword(password, adminPassword, adminPasswordSalt);
     
     if (isPasswordValid) {
-      // Generate a secure session token
-      const sessionToken = crypto.randomBytes(32).toString('hex');
+      // Generate JWT token for admin
+      const adminId = 'admin'; // In production, this would come from database
+      const token = generateAdminToken(adminId);
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-      
-      // In production, store this in a database or Redis with the user ID
-      // For now, we'll use a simple approach
       
       // Set HTTP-only cookie for better security
       const response = NextResponse.json({
         success: true,
-        expiresAt: expiresAt.toISOString()
+        expiresAt: expiresAt.toISOString(),
+        token: token // Include token in response for client-side storage if needed
       });
       
-      // Set secure HTTP-only cookie
-      response.cookies.set({
-        name: 'adminSessionToken',
-        value: sessionToken,
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict',
-        expires: expiresAt,
-        path: '/'
-      });
+      // Set secure JWT cookie
+      setAdminCookie(response, token);
       
       return response;
     } else {
@@ -69,4 +72,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

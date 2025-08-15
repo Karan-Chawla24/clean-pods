@@ -1,11 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../lib/prisma';
+import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
+import { requireAdminAuth } from '@/app/lib/security/jwt';
 
 // Dynamic import for ExcelJS to avoid build issues
 let ExcelJS: any;
 
-export async function GET(request: NextRequest) {
+export const GET = withRateLimit(rateLimitConfigs.moderate)(async (request: NextRequest) => {
   try {
+    // Verify JWT authentication
+    const authResult = requireAdminAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+    
     // Dynamic import to avoid build issues
     if (!ExcelJS) {
       ExcelJS = (await import('exceljs')).default;
@@ -61,4 +69,4 @@ export async function GET(request: NextRequest) {
       details: error instanceof Error ? error.message : 'Unknown error' 
     }, { status: 500 });
   }
-}
+});

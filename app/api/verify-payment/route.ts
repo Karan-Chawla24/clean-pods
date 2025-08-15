@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
+import { validateRequest, razorpayWebhookSchema } from '@/app/lib/security/validation';
+import { validateRazorpayOrder, validateRazorpayPayment } from '@/app/lib/security/razorpay';
 
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit(rateLimitConfigs.strict)(async (request: NextRequest) => {
   try {
     // Check if Razorpay key secret is configured
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -13,13 +16,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
-
-    // Validate required fields
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    // Validate request body with Zod schema
+    const validationResult = await validateRequest(request, razorpayWebhookSchema);
+    if (!validationResult.success) {
       return NextResponse.json(
-        { success: false, error: 'Missing required payment verification parameters' },
+        { success: false, error: validationResult.error },
+        { status: 400 }
+      );
+    }
+
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = validationResult.data;
+
+    // Additional validation for order and payment IDs
+    if (!validateRazorpayOrder(razorpay_order_id)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid order ID format' },
+        { status: 400 }
+      );
+    }
+
+    if (!validateRazorpayPayment(razorpay_payment_id)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid payment ID format' },
         { status: 400 }
       );
     }
@@ -62,4 +80,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

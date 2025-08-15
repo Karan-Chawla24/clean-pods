@@ -1,64 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
+import { requireAdminAuth } from '@/app/lib/security/jwt';
 
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit(rateLimitConfigs.moderate)(async (request: NextRequest) => {
   try {
-    // Get session token from HTTP-only cookie instead of request body
-    const sessionToken = request.cookies.get('adminSessionToken')?.value;
-    
-    // In production, verify against database/Redis
-    // For now, we'll use a simple approach
-    if (sessionToken && sessionToken.length === 64) {
-      return NextResponse.json({
-        success: true,
-        isAdmin: true
-      });
-    } else {
-      // Clear the invalid cookie
-      const response = NextResponse.json({
-        success: false,
-        isAdmin: false
-      });
-      
-      // If there was an invalid cookie, clear it
-      if (sessionToken) {
-        response.cookies.set({
-          name: 'adminSessionToken',
-          value: '',
-          expires: new Date(0),
-          path: '/'
-        });
-      }
-      
-      return response;
+    // Verify JWT authentication
+    const authResult = requireAdminAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    
+    // JWT is valid, return admin status
+    return NextResponse.json({
+      success: true,
+      isAdmin: true,
+      adminId: authResult.adminId
+    });
   } catch (error) {
     return NextResponse.json(
       { success: false, isAdmin: false },
       { status: 500 }
     );
   }
-}
+});
 
 // Add a GET endpoint for easier verification from client-side
-export async function GET(request: NextRequest) {
+export const GET = withRateLimit(rateLimitConfigs.moderate)(async (request: NextRequest) => {
   try {
-    const sessionToken = request.cookies.get('adminSessionToken')?.value;
-    
-    if (sessionToken && sessionToken.length === 64) {
-      return NextResponse.json({
-        success: true,
-        isAdmin: true
-      });
-    } else {
-      return NextResponse.json({
-        success: false,
-        isAdmin: false
-      });
+    // Verify JWT authentication
+    const authResult = requireAdminAuth(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    
+    // JWT is valid, return admin status
+    return NextResponse.json({
+      success: true,
+      isAdmin: true,
+      adminId: authResult.adminId
+    });
   } catch (error) {
     return NextResponse.json(
       { success: false, isAdmin: false },
       { status: 500 }
     );
   }
-}
+});
