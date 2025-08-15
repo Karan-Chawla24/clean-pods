@@ -35,13 +35,8 @@ export function extractTokenFromRequest(request: NextRequest): string | null {
   }
   
   // Fallback to cookie if header not present
-  // Add defensive check to prevent "cookies called outside request scope" error
-  if (request && request.cookies && typeof request.cookies.get === 'function') {
-    const token = request.cookies.get('adminJwt')?.value;
-    return token || null;
-  }
-  
-  return null;
+  const token = request.cookies.get('adminJwt')?.value;
+  return token || null;
 }
 
 export function requireAdminAuth(request: NextRequest): NextResponse | AdminJwtPayload {
