@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
+import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
+import { validateRequest, createOrderSchema } from '@/app/lib/security/validation';
 
 // Check if environment variables are set
 const keyId = process.env.RAZORPAY_KEY_ID;
@@ -14,7 +16,7 @@ const razorpay = new Razorpay({
   key_secret: keySecret || 'placeholder_secret',
 });
 
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit(rateLimitConfigs.moderate)(async (request: NextRequest) => {
   try {
     // Check if environment variables are set
     if (!keyId || !keySecret) {
@@ -27,12 +29,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const { amount, currency = 'INR', receipt } = body;
+    // Validate request body with Zod schema
+    const validationResult = await validateRequest(request, createOrderSchema);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { success: false, error: validationResult.error },
+        { status: 400 }
+      );
+    }
+
+    const { amount, currency, receipt } = validationResult.data;
 
     const options = {
       amount: amount * 100, // Razorpay expects amount in paise
-      currency,
+      currency: currency || 'INR',
       receipt,
     };
 
@@ -56,4 +66,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-} 
+});

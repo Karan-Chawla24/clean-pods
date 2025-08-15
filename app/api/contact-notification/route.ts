@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { IncomingWebhook } from '@slack/webhook';
+import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
+import { validateRequest, contactFormSchema, sanitizeString } from '@/app/lib/security/validation';
 
 // Initialize Slack webhook for contact form
 const webhook = new IncomingWebhook(process.env.SLACK_CONTACT_URL || '');
@@ -10,17 +12,23 @@ function displayEmail(email: string): string {
   return email;
 }
 
-interface ContactFormData {
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-}
-
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit(rateLimitConfigs.moderate)(async (request: NextRequest) => {
   try {
-    const body = await request.json();
-    const { name, email, subject, message }: ContactFormData = body;
+    // Validate request body with Zod schema
+    const validationResult = await validateRequest(request, contactFormSchema);
+    if (!validationResult.success) {
+      return NextResponse.json(
+        { success: false, error: validationResult.error },
+        { status: 400 }
+      );
+    }
+
+    const { name, email, subject, message } = validationResult.data;
+    
+    // Sanitize inputs to prevent injection attacks
+    const sanitizedName = sanitizeString(name);
+    const sanitizedSubject = sanitizeString(subject);
+    const sanitizedMessage = sanitizeString(message);
 
     if (!process.env.SLACK_CONTACT_URL) {
       return NextResponse.json({ success: true, message: 'Slack contact webhook not configured' });
@@ -43,7 +51,7 @@ export async function POST(request: NextRequest) {
           fields: [
             {
               type: 'mrkdwn',
-              text: `*Name:*\n${name}`
+              text: `*Name:*\n${sanitizedName}`
             },
             {
               type: 'mrkdwn',
@@ -51,7 +59,7 @@ export async function POST(request: NextRequest) {
             },
             {
               type: 'mrkdwn',
-              text: `*Subject:*\n${subject}`
+              text: `*Subject:*\n${sanitizedSubject}`
             },
             {
               type: 'mrkdwn',
@@ -70,7 +78,7 @@ export async function POST(request: NextRequest) {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: message
+            text: sanitizedMessage
           }
         },
         {
@@ -108,4 +116,4 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
-}
+});

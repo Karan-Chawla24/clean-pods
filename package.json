@@ -18,11 +18,13 @@
     "@react-google-maps/api": "^2.19.3",
     "@slack/webhook": "^7.0.5",
     "@types/bcryptjs": "^3.0.0",
+    "@types/jsonwebtoken": "^9.0.10",
     "axios": "^1.6.2",
     "bcryptjs": "^3.0.2",
     "clsx": "^2.0.0",
     "exceljs": "^4.4.0",
     "framer-motion": "^11.0.0",
+    "jsonwebtoken": "^9.0.2",
     "nanoid": "^5.1.5",
     "next": "15.3.2",
     "next-auth": "^4.24.11",
@@ -37,6 +39,7 @@
     "recharts": "^3.0.2",
     "slick-carousel": "^1.8.1",
     "tailwind-merge": "^2.0.0",
+    "zod": "^3.22.4",
     "zustand": "^4.4.7"
   },
   "devDependencies": {
