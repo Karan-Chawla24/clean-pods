@@ -1,6 +1,5 @@
 import jwt from 'jsonwebtoken';
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
 const JWT_EXPIRES_IN = '24h';
@@ -29,28 +28,24 @@ export function verifyAdminToken(token: string): AdminJwtPayload | null {
   }
 }
 
-export function extractTokenFromAuthHeader(request: NextRequest): string | null {
+export function extractTokenFromRequest(request: NextRequest): string | null {
   const authHeader = request.headers.get('authorization');
   if (authHeader && authHeader.startsWith('Bearer ')) {
     return authHeader.substring(7);
   }
+  
+  // Fallback to cookie if header not present
+  // Add defensive check to prevent "cookies called outside request scope" error
+  if (request && request.cookies && typeof request.cookies.get === 'function') {
+    const token = request.cookies.get('adminJwt')?.value;
+    return token || null;
+  }
+  
   return null;
 }
 
 export function requireAdminAuth(request: NextRequest): NextResponse | AdminJwtPayload {
-  // First try to get token from Authorization header
-  let token = extractTokenFromAuthHeader(request);
-  
-  // If no token in header, try to get from cookies
-  if (!token) {
-    try {
-      const cookieStore = cookies();
-      token = cookieStore.get('adminJwt')?.value || null;
-    } catch (error) {
-      // cookies() was called outside request scope, ignore and continue
-      token = null;
-    }
-  }
+  const token = extractTokenFromRequest(request);
   
   if (!token) {
     return NextResponse.json(
