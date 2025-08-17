@@ -4,20 +4,29 @@ import { IncomingWebhook } from '@slack/webhook';
 // Initialize Slack webhook
 const webhook = new IncomingWebhook(process.env.SLACK_WEBHOOK_URL || '');
 
-// Functions to display full data (no masking)
-function displayEmail(email: string): string {
+// Functions to mask sensitive data
+function maskEmail(email: string): string {
   if (!email) return '';
-  return email;
+  const [localPart, domain] = email.split('@');
+  if (!domain) return email;
+  const maskedLocal = localPart.length > 2 
+    ? localPart.substring(0, 2) + '*'.repeat(localPart.length - 2)
+    : localPart;
+  return `${maskedLocal}@${domain}`;
 }
 
-function displayPhone(phone: string): string {
+function maskPhone(phone: string): string {
   if (!phone) return '';
-  return phone;
+  if (phone.length <= 4) return phone;
+  return phone.substring(0, 2) + '*'.repeat(phone.length - 4) + phone.substring(phone.length - 2);
 }
 
-function displayAddress(address: string): string {
+function maskAddress(address: string): string {
   if (!address) return '';
-  return address;
+  const parts = address.split(',');
+  if (parts.length <= 1) return address.substring(0, 10) + '...';
+  // Show only city and state, mask detailed address
+  return `*****, ${parts.slice(-2).join(',').trim()}`;
 }
 
 interface OrderItem {
@@ -124,11 +133,11 @@ export async function POST(request: NextRequest) {
             },
             {
               type: 'mrkdwn',
-              text: `*Email:*\n${displayEmail(customerData.email)}`
+              text: `*Email:*\n${maskEmail(customerData.email)}`
             },
             {
               type: 'mrkdwn',
-              text: `*Phone:*\n${displayPhone(customerData.phone)}`
+              text: `*Phone:*\n${maskPhone(customerData.phone)}`
             }
           ]
         },
@@ -136,7 +145,24 @@ export async function POST(request: NextRequest) {
           type: 'section',
           text: {
             type: 'mrkdwn',
-            text: `*📍 Address:*\n${displayAddress(customerData.address)}`
+            text: `*📍 Address:*\n${maskAddress(customerData.address)}`
+          }
+        },
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: '*🔗 View Full Details:*'
+          },
+          accessory: {
+            type: 'button',
+            text: {
+              type: 'plain_text',
+              text: 'View in Admin Panel',
+              emoji: true
+            },
+            url: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/admin/orders/${orderData.id}`,
+            action_id: 'view_order_details'
           }
         },
         {
