@@ -128,7 +128,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
               alt={product.name}
               width={600}
               height={400}
-              className="w-full h-96 object-contain object-center rounded-lg mb-4"
+              className="w-full h-96 object-contain object-center rounded-lg mb-4 transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
             />
             {/* <div className="grid grid-cols-3 gap-4">
               <Image 

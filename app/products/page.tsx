@@ -1,27 +1,27 @@
-'use client';
+"use client";
 
-import { useAppStore } from '../lib/store';
-import { formatPrice } from '../lib/utils';
-import Header from '../components/Header';
-import toast from 'react-hot-toast';
-import Image from 'next/image';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import SinglePod from '../../images/Single.jpg';
+import { useAppStore } from "../lib/store";
+import { formatPrice } from "../lib/utils";
+import Header from "../components/Header";
+import toast from "react-hot-toast";
+import Image from "next/image";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import SinglePod from "../../images/Single.jpg";
 
 const products = [
   {
-    id: 'essential',
-    name: 'Essential Clean',
+    id: "essential",
+    name: "Essential Clean",
     price: 299,
     description:
-      'Pure detergent power for everyday cleaning. Removes dirt and stains effectively while being gentle on fabrics.',
+      "Pure detergent power for everyday cleaning. Removes dirt and stains effectively while being gentle on fabrics.",
     features: [
-      'Powerful stain removal',
-      'Gentle on all fabric types',
-      'Fresh scent',
-      '30 pods per pack',
+      "Powerful stain removal",
+      "Gentle on all fabric types",
+      "Fresh scent",
+      "30 pods per pack",
     ],
     image: SinglePod,
     isPopular: false,
@@ -35,12 +35,12 @@ export default function Products() {
   const { addToCart } = useAppStore();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin');
+    if (status === "unauthenticated") {
+      router.push("/auth/signin");
     }
   }, [status, router]);
 
-  if (status === 'loading' || status === 'unauthenticated') {
+  if (status === "loading" || status === "unauthenticated") {
     return (
       <div className="min-h-screen bg-orange-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
@@ -56,7 +56,7 @@ export default function Products() {
       quantity: 1,
       image: product.image,
     });
-    toast.success('Added to cart!');
+    toast.success("Added to cart!");
   };
 
   return (
@@ -75,41 +75,43 @@ export default function Products() {
 
         <div className="flex flex-col md:flex-row gap-8 w-full max-w-[1920px] mx-auto justify-center">
           {/* Product Section */}
-          <div className="bg-white bg-opacity-95 rounded-3xl shadow-xl p-6 lg:p-8 md:w-[48%] w-full flex flex-col items-start justify-start border border-orange-200 md:h-[520px]">
+          <div className="bg-white bg-opacity-95 rounded-3xl shadow-xl p-6 lg:p-8 md:w-[48%] w-full flex flex-col items-start justify-start border border-orange-200">
             <div className="w-full flex flex-col items-center">
-              <div className="w-40 h-40 mb-4 relative flex items-center justify-center bg-gradient-to-br from-orange-100 to-sky-100 rounded-full shadow-lg border-4 border-orange-300">
+              <div className="w-36 h-36 sm:w-40 sm:h-40 mb-4 relative flex items-center justify-center bg-gradient-to-br from-orange-100 to-sky-100 rounded-full shadow-lg border-4 border-orange-300">
                 <Image
                   src={product.image}
                   alt={product.name}
-                  layout="fill"
-                  objectFit="contain"
-                  className="rounded-full"
+                  fill
+                  className="object-contain rounded-full transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
                 />
               </div>
-              <h2 className="text-3xl font-extrabold text-orange-600 mb-2 text-center drop-shadow">
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-orange-600 mb-2 text-center drop-shadow break-words">
                 {product.name}
               </h2>
-              <p className="text-gray-700 mb-3 text-center text-base">
+              <p className="text-gray-700 mb-3 text-center text-sm sm:text-base break-words">
                 {product.description}
               </p>
             </div>
 
             <ul className="w-full mt-4 text-gray-600 text-left space-y-2">
               {product.features.map((feature, idx) => (
-                <li key={idx} className="flex items-center gap-3 text-base">
+                <li
+                  key={idx}
+                  className="flex items-center gap-3 text-sm sm:text-base break-words"
+                >
                   <span className="text-sky-500">✔</span> {feature}
                 </li>
               ))}
             </ul>
 
             <div className="w-full mt-auto pt-4">
-              <div className="flex items-center justify-between gap-4">
-                <span className="text-3xl font-bold text-orange-500">
+              <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-4">
+                <span className="text-2xl sm:text-3xl font-bold text-orange-500">
                   ₹{product.price}
                 </span>
                 <button
                   onClick={() => handleAddToCart(product)}
-                  className="bg-gradient-to-r from-sky-400 via-sky-500 to-orange-400 text-white px-8 py-3 rounded-full hover:from-sky-500 hover:via-sky-600 hover:to-orange-500 transition-all duration-300 shadow-lg shadow-sky-200"
+                  className="bg-gradient-to-r from-sky-400 via-sky-500 to-orange-400 text-white px-6 py-3 rounded-full hover:from-sky-500 hover:via-sky-600 hover:to-orange-500 transition-all duration-300 shadow-lg shadow-sky-200 w-full sm:w-auto"
                 >
                   Add to Cart
                 </button>
@@ -118,8 +120,8 @@ export default function Products() {
           </div>
 
           {/* FAQ Section */}
-          <div className="bg-white bg-opacity-95 rounded-3xl shadow-xl p-6 lg:p-8 md:w-[48%] w-full flex flex-col justify-start border border-sky-200 md:h-[520px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-sky-200 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb:hover]:bg-sky-300">
-            <h3 className="text-3xl font-bold text-sky-500 mb-8 text-center drop-shadow">
+          <div className="bg-white bg-opacity-95 rounded-3xl shadow-xl p-6 lg:p-8 md:w-[48%] w-full flex flex-col justify-start border border-sky-200 max-h-[520px] overflow-y-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-sky-200 [&::-webkit-scrollbar-track]:bg-gray-100 [&::-webkit-scrollbar-thumb:hover]:bg-sky-300">
+            <h3 className="text-2xl sm:text-3xl font-bold text-sky-500 mb-6 text-center drop-shadow">
               Frequently Asked Questions
             </h3>
             <div className="space-y-5">
@@ -147,7 +149,9 @@ function FAQItem({ faq }: { faq: { question: string; answer: string } }) {
         </span>
         <span className="ml-2 text-sky-500">
           <svg
-            className={`w-5 h-5 transform transition-transform duration-200 ${open ? 'rotate-90' : ''}`}
+            className={`w-5 h-5 transform transition-transform duration-200 ${
+              open ? "rotate-90" : ""
+            }`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -169,28 +173,28 @@ function FAQItem({ faq }: { faq: { question: string; answer: string } }) {
 
 const faqs = [
   {
-    question: 'What makes this laundry pod 5-in-1?',
+    question: "What makes this laundry pod 5-in-1?",
     answer:
-      'Our pod combines detergent, stain remover, fabric softener, brightener, and odor eliminator in one convenient capsule for a complete laundry solution.',
+      "Our pod combines detergent, stain remover, fabric softener, brightener, and odor eliminator in one convenient capsule for a complete laundry solution.",
   },
   {
-    question: 'Is it safe for all types of fabrics?',
+    question: "Is it safe for all types of fabrics?",
     answer:
-      'Yes, our 5-in-1 pod is formulated to be gentle yet effective on cotton, synthetics, delicates, and more. The special enzyme blend ensures fabric protection while maintaining cleaning power.',
+      "Yes, our 5-in-1 pod is formulated to be gentle yet effective on cotton, synthetics, delicates, and more. The special enzyme blend ensures fabric protection while maintaining cleaning power.",
   },
   {
-    question: 'How do I use the pod?',
+    question: "How do I use the pod?",
     answer:
-      'Simply place one pod directly into the drum of your washing machine before adding clothes. No need to cut or unwrap. For heavily soiled loads, you may use two pods.',
+      "Simply place one pod directly into the drum of your washing machine before adding clothes. No need to cut or unwrap. For heavily soiled loads, you may use two pods.",
   },
   {
-    question: 'Does it work in cold water?',
+    question: "Does it work in cold water?",
     answer:
-      'Absolutely! Our pods dissolve quickly and clean effectively in both cold and hot water cycles. The advanced formula activates even at temperatures as low as 15°C (60°F).',
+      "Absolutely! Our pods dissolve quickly and clean effectively in both cold and hot water cycles. The advanced formula activates even at temperatures as low as 15°C (60°F).",
   },
   {
-    question: 'Is the pod packaging eco-friendly?',
+    question: "Is the pod packaging eco-friendly?",
     answer:
-      'Yes, our pods and packaging are designed to minimize environmental impact. The outer container is made from 100% recycled materials and is fully recyclable. The water-soluble pod film is biodegradable.',
+      "Yes, our pods and packaging are designed to minimize environmental impact. The outer container is made from 100% recycled materials and is fully recyclable. The water-soluble pod film is biodegradable.",
   },
 ];

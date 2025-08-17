@@ -75,7 +75,7 @@ export default function Cart() {
                       alt={item.name}
                       width={96}
                       height={96}
-                      className="w-24 h-24 object-cover object-top rounded-lg mr-6"
+                      className="w-24 h-24 object-cover object-top rounded-lg mr-6 transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
                     />
                     
                     <div className="flex-1">
