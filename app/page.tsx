@@ -129,7 +129,7 @@ export default function Home() {
               <div className="mb-4">
                 <i className="ri-star-fill text-yellow-400 text-3xl"></i>
               </div>
-              <p className="text-lg text-gray-700 mb-4">"BubbleBeads pods are a game changer! My clothes have never felt so fresh and clean."</p>
+              <p className="text-lg text-gray-700 mb-4">&ldquo;BubbleBeads pods are a game changer! My clothes have never felt so fresh and clean.&rdquo;</p>
               <div className="font-bold text-blue-600">Priya S.</div>
             </div>
             <div className="bg-gray-50 rounded-2xl p-8 text-center shadow flex flex-col items-center">
@@ -137,7 +137,7 @@ export default function Home() {
               <div className="mb-4">
                 <i className="ri-star-fill text-yellow-400 text-3xl"></i>
               </div>
-              <p className="text-lg text-gray-700 mb-4">"Super easy to use and no mess. The scent lasts for days!"</p>
+              <p className="text-lg text-gray-700 mb-4">&ldquo;Super easy to use and no mess. The scent lasts for days!&rdquo;</p>
               <div className="font-bold text-blue-600">Rahul M.</div>
             </div>
             <div className="bg-gray-50 rounded-2xl p-8 text-center shadow flex flex-col items-center">
@@ -145,7 +145,7 @@ export default function Home() {
               <div className="mb-4">
                 <i className="ri-star-fill text-yellow-400 text-3xl"></i>
               </div>
-              <p className="text-lg text-gray-700 mb-4">"I love how eco-friendly these pods are. Highly recommend!"</p>
+              <p className="text-lg text-gray-700 mb-4">&ldquo;I love how eco-friendly these pods are. Highly recommend!&rdquo;</p>
               <div className="font-bold text-blue-600">Anjali K.</div>
             </div>
           </div>
