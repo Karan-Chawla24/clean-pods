@@ -78,21 +78,21 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
-            <Link href="/products" className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+            <Link href="/products" className="text-gray-700 hover:text-orange-600 transition-colors cursor-pointer">
               Products
             </Link>
-            <Link href="/blog" className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+            <Link href="/blog" className="text-gray-700 hover:text-orange-600 transition-colors cursor-pointer">
               Blog
             </Link>
-            <Link href="/about" className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+            <Link href="/about" className="text-gray-700 hover:text-orange-600 transition-colors cursor-pointer">
               About
             </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+            <Link href="/contact" className="text-gray-700 hover:text-orange-600 transition-colors cursor-pointer">
               Contact
             </Link>
             {isAdmin && (
               <>
-                <Link href="/admin" className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+                <Link href="/admin" className="text-gray-700 hover:text-orange-600 transition-colors cursor-pointer">
                   Admin
                 </Link>
                 <button
@@ -113,7 +113,7 @@ export default function Header() {
                 placeholder="Search products..."
                 value={localSearchQuery}
                 onChange={(e) => setLocalSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
               />
               <button 
                 type="submit"
@@ -131,8 +131,8 @@ export default function Header() {
               <div className="w-8 h-8 animate-pulse bg-gray-200 rounded-full"></div>
             ) : session ? (
               <div className="relative group">
-                <button className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors">
-                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                <button className="flex items-center space-x-2 text-gray-700 hover:text-orange-600 transition-colors">
+                  <div className="w-8 h-8 bg-gradient-to-r from-orange-400 to-amber-400 rounded-full flex items-center justify-center text-white text-sm font-medium">
                     {session.user.firstName?.[0] || session.user.name?.[0] || session.user.email?.[0]?.toUpperCase()}
                   </div>
                   <span className="hidden sm:block font-medium">
@@ -167,7 +167,7 @@ export default function Header() {
             ) : null}
 
             {/* Wishlist */}
-            <Link href="/wishlist" className="relative text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+            <Link href="/wishlist" className="relative text-gray-700 hover:text-orange-600 transition-colors cursor-pointer">
               <i className="ri-heart-line w-5 h-5"></i>
               {wishlist.length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
@@ -177,7 +177,7 @@ export default function Header() {
             </Link>
 
             {/* Cart */}
-            <Link href="/cart" className="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap">
+            <Link href="/cart" className="relative bg-gradient-to-r from-orange-400 to-amber-400 text-white px-4 py-2 rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer whitespace-nowrap">
               <i className="ri-shopping-cart-line w-5 h-5 inline-block mr-2"></i>
               Cart ({cartItemCount})
             </Link>
@@ -185,7 +185,7 @@ export default function Header() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="md:hidden text-gray-700 hover:text-blue-600 transition-colors cursor-pointer"
+              className="md:hidden text-gray-700 hover:text-orange-600 transition-colors cursor-pointer"
             >
               <i className={cn("ri-menu-line w-6 h-6", isMenuOpen && "ri-close-line")}></i>
             </button>
@@ -196,24 +196,24 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t">
             <div className="space-y-4">
-              <Link href="/products" className="block text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+              <Link href="/products" className="block text-gray-700 hover:text-orange-600 transition-colors cursor-pointer">
                 Products
               </Link>
-              <Link href="/blog" className="block text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+              <Link href="/blog" className="block text-gray-700 hover:text-orange-600 transition-colors cursor-pointer">
                 Blog
               </Link>
-              <Link href="/about" className="block text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+              <Link href="/about" className="block text-gray-700 hover:text-orange-600 transition-colors cursor-pointer">
                 About
               </Link>
-              <Link href="/contact" className="block text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+              <Link href="/contact" className="block text-gray-700 hover:text-orange-600 transition-colors cursor-pointer">
                 Contact
               </Link>
-              <Link href="/orders" className="block text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+              <Link href="/orders" className="block text-gray-700 hover:text-orange-600 transition-colors cursor-pointer">
                 Orders
               </Link>
               {isAdmin && (
                 <>
-                  <Link href="/admin" className="block text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+                  <Link href="/admin" className="block text-gray-700 hover:text-orange-600 transition-colors cursor-pointer">
                     Admin
                   </Link>
                   <button
@@ -231,7 +231,7 @@ export default function Header() {
                     placeholder="Search products..."
                     value={localSearchQuery}
                     onChange={(e) => setLocalSearchQuery(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
                   />
                   <button 
                     type="submit"

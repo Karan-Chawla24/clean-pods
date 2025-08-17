@@ -27,7 +27,7 @@ export default function Wishlist() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-orange-50">
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -43,7 +43,7 @@ export default function Wishlist() {
             </div>
             <h2 className="text-2xl font-semibold text-gray-600 mb-4">Your wishlist is empty</h2>
             <p className="text-gray-500 mb-8">Start adding products to your wishlist</p>
-            <Link href="/#products" className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap inline-block">
+            <Link href="/#products" className="bg-gradient-to-r from-orange-400 to-amber-400 text-white px-8 py-3 rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer whitespace-nowrap inline-block">
               Shop Products
             </Link>
           </div>
@@ -69,12 +69,12 @@ export default function Wishlist() {
                 
                 <div className="p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.name}</h3>
-                  <div className="text-2xl font-bold text-blue-600 mb-4">{formatPrice(item.price)}</div>
+                  <div className="text-2xl font-bold text-orange-600 mb-4">{formatPrice(item.price)}</div>
                   
                   <div className="flex space-x-3">
                     <button
                       onClick={() => handleAddToCart(item)}
-                      className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap"
+                      className="flex-1 bg-gradient-to-r from-orange-400 to-amber-400 text-white py-2 px-4 rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer whitespace-nowrap"
                     >
                       Add to Cart
                     </button>
@@ -93,4 +93,4 @@ export default function Wishlist() {
       </div>
     </div>
   );
-} 
+}

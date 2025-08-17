@@ -68,7 +68,7 @@ export default function SignUp() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-orange-50">
       {/* Brand Header */}
       <div className="text-center pt-12 pb-8">
         <div className="inline-block">

@@ -150,7 +150,7 @@ export default function Orders() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-orange-50">
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -163,7 +163,7 @@ export default function Orders() {
 
         {loading ? (
           <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400 mx-auto mb-4"></div>
             <p className="text-gray-600">Loading orders...</p>
           </div>
         ) : error ? (
@@ -175,7 +175,7 @@ export default function Orders() {
             <p className="text-gray-600 mb-6">{error}</p>
             <button 
               onClick={() => window.location.reload()}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
+              className="bg-gradient-to-r from-orange-400 to-amber-400 text-white px-6 py-3 rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer"
             >
               Retry
             </button>
@@ -189,7 +189,7 @@ export default function Orders() {
             <p className="text-gray-600 mb-6">You haven&apos;t placed any orders yet.</p>
             <Link
               href="/products"
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer inline-block"
+              className="bg-gradient-to-r from-orange-400 to-amber-400 text-white px-6 py-3 rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer inline-block"
             >
               Start Shopping
             </Link>
@@ -243,7 +243,7 @@ export default function Orders() {
                     <div>
                       <button 
                         onClick={() => handleDownloadInvoice(order.id)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer flex items-center space-x-2"
+                        className="px-4 py-2 bg-gradient-to-r from-orange-400 to-amber-400 text-white rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer flex items-center space-x-2"
                       >
                         <i className="ri-download-line w-4 h-4"></i>
                         <span>Download Invoice</span>

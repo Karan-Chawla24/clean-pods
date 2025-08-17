@@ -107,15 +107,15 @@ export default function ProductDetail({ productId }: { productId: string }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-orange-50">
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Breadcrumb */}
         <div className="flex items-center space-x-2 text-gray-600 mb-8">
-          <Link href="/" className="hover:text-blue-600 cursor-pointer">Home</Link>
+          <Link href="/" className="hover:text-orange-600 cursor-pointer">Home</Link>
           <i className="ri-arrow-right-s-line w-4 h-4"></i>
-          <Link href="/#products" className="hover:text-blue-600 cursor-pointer">Products</Link>
+          <Link href="/#products" className="hover:text-orange-600 cursor-pointer">Products</Link>
           <i className="ri-arrow-right-s-line w-4 h-4"></i>
           <span className="text-gray-900 font-medium">{product.name}</span>
         </div>
@@ -158,7 +158,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
           {/* Product Info */}
           <div className="bg-white rounded-2xl p-8">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">{product.name}</h1>
-            <div className="text-3xl font-bold text-blue-600 mb-6">{formatPrice(product.price)}</div>
+            <div className="text-3xl font-bold text-orange-600 mb-6">{formatPrice(product.price)}</div>
             
             <p className="text-gray-600 text-lg mb-8">{product.description}</p>
 
@@ -199,7 +199,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
             <div className="flex space-x-4 mb-4">
               <button 
                 onClick={handleAddToCart}
-                className="flex-1 bg-blue-600 text-white py-4 px-8 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap"
+                className="flex-1 bg-gradient-to-r from-orange-400 to-amber-400 text-white py-4 px-8 rounded-lg text-lg font-semibold hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer whitespace-nowrap"
               >
                 Add to Cart - {formatPrice(product.price * quantity)}
               </button>
@@ -222,7 +222,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
                 <span className="text-sm">Secure Payment</span>
               </div>
               <div className="flex items-center text-gray-600">
-                <i className="ri-truck-line text-blue-600 w-5 h-5 mr-2 flex items-center justify-center"></i>
+                <i className="ri-truck-line text-orange-600 w-5 h-5 mr-2 flex items-center justify-center"></i>
                 <span className="text-sm">Free Shipping</span>
               </div>
               <div className="flex items-center text-gray-600">
@@ -243,7 +243,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
                   onClick={() => setActiveTab(tab)}
                   className={`px-8 py-4 font-medium capitalize cursor-pointer whitespace-nowrap ${
                     activeTab === tab 
-                      ? 'border-b-2 border-blue-600 text-blue-600' 
+                      ? 'border-b-2 border-orange-600 text-orange-600' 
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
@@ -285,7 +285,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
               <div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Ingredients</h3>
                 <p className="text-gray-700 text-lg mb-6">{product.ingredients}</p>
-                <div className="bg-blue-50 p-6 rounded-lg">
+                <div className="bg-orange-50 p-6 rounded-lg">
                   <h4 className="font-semibold text-gray-900 mb-3">Safety Information:</h4>
                   <ul className="space-y-2 text-gray-700">
                     <li>• Keep out of reach of children</li>
@@ -303,22 +303,22 @@ export default function ProductDetail({ productId }: { productId: string }) {
                 <p className="text-gray-700 text-lg mb-6">{product.usage}</p>
                 <div className="grid md:grid-cols-3 gap-6">
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl font-bold text-blue-600">1</span>
+                    <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-2xl font-bold text-orange-600">1</span>
                     </div>
                     <h4 className="font-semibold text-gray-900 mb-2">Place Pod</h4>
                     <p className="text-gray-600 text-sm">Place pod in the drum before adding clothes</p>
                   </div>
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl font-bold text-blue-600">2</span>
+                    <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-2xl font-bold text-orange-600">2</span>
                     </div>
                     <h4 className="font-semibold text-gray-900 mb-2">Add Clothes</h4>
                     <p className="text-gray-600 text-sm">Add your laundry on top of the pod</p>
                   </div>
                   <div className="text-center">
-                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl font-bold text-blue-600">3</span>
+                    <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <span className="text-2xl font-bold text-orange-600">3</span>
                     </div>
                     <h4 className="font-semibold text-gray-900 mb-2">Start Wash</h4>
                     <p className="text-gray-600 text-sm">Run your regular wash cycle</p>
