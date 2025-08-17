@@ -10,6 +10,9 @@ out/
 build/
 dist/
 test-db/
+debug-admin/
+test-auth/
+health/
 
 # Environment variables
 .env
