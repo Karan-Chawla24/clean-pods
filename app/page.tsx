@@ -14,6 +14,9 @@ import HomeImg  from '../images/Home.jpg';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import Testimonial1 from '../images/Home.jpg';
+import Testimonial2 from '../images/three.jpg';
+import Testimonial3 from '../images/fivein1.jpg';
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -111,63 +114,40 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Products Section */}
-      <section id="products" className="py-20 bg-white">
+      {/* Testimonials Section (replaces Products Section) */}
+      <section id="testimonials" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h3 className="text-4xl font-bold text-gray-900 mb-4">Our Product Range</h3>
+            <h3 className="text-4xl font-bold text-gray-900 mb-4">What Our Customers Say</h3>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Choose from our three specially formulated detergent pods, each designed to meet your specific laundry needs.
+              Real stories from happy BubbleBeads users.
             </p>
           </div>
-
           <div className="grid md:grid-cols-3 gap-8">
-            {products.map((product) => (
-              <div key={product.id} className="bg-gray-50 rounded-2xl p-8 text-center hover:shadow-lg transition-shadow cursor-pointer relative">
-                {product.isPopular && (
-                  <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                    Most Popular
-                  </div>
-                )}
-                <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden">
-                  <Image 
-                    src={product.image}
-                    alt={product.name}
-                    width={128}
-                    height={128}
-                    className="w-full h-full object-cover object-top"
-                  />
-                </div>
-                <h4 className="text-2xl font-bold text-gray-900 mb-4">{product.name}</h4>
-                <p className="text-gray-600 mb-6">
-                  {product.description}
-                </p>
-                <div className="text-3xl font-bold text-blue-600 mb-6">{formatPrice(product.price)}</div>
-                
-                <div className="flex space-x-2 mb-4">
-                  <button
-                    onClick={() => handleAddToCart(product)}
-                    className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap"
-                  >
-                    Add to Cart
-                  </button>
-                  <button
-                    onClick={() => handleAddToWishlist(product)}
-                    className={`p-3 rounded-lg border transition-colors cursor-pointer ${
-                      wishlist.find(item => item.id === product.id)
-                        ? 'bg-red-50 border-red-200 text-red-600'
-                        : 'border-gray-300 text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    <i className={`w-5 h-5 ${wishlist.find(item => item.id === product.id) ? 'ri-heart-fill' : 'ri-heart-line'}`}></i>
-                  </button>
-                </div>
-                
-                <Link href={`/products/${product.id}`} className="w-full text-center bg-gray-100 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-200 transition-colors cursor-pointer whitespace-nowrap block">
-                  View Details
-                </Link>
+            <div className="bg-gray-50 rounded-2xl p-8 text-center shadow flex flex-col items-center">
+              <Image src={Testimonial1} alt="Priya S." width={80} height={80} className="rounded-full mb-4" />
+              <div className="mb-4">
+                <i className="ri-star-fill text-yellow-400 text-3xl"></i>
               </div>
-            ))}
+              <p className="text-lg text-gray-700 mb-4">"BubbleBeads pods are a game changer! My clothes have never felt so fresh and clean."</p>
+              <div className="font-bold text-blue-600">Priya S.</div>
+            </div>
+            <div className="bg-gray-50 rounded-2xl p-8 text-center shadow flex flex-col items-center">
+              <Image src={Testimonial2} alt="Rahul M." width={80} height={80} className="rounded-full mb-4" />
+              <div className="mb-4">
+                <i className="ri-star-fill text-yellow-400 text-3xl"></i>
+              </div>
+              <p className="text-lg text-gray-700 mb-4">"Super easy to use and no mess. The scent lasts for days!"</p>
+              <div className="font-bold text-blue-600">Rahul M.</div>
+            </div>
+            <div className="bg-gray-50 rounded-2xl p-8 text-center shadow flex flex-col items-center">
+              <Image src={Testimonial3} alt="Anjali K." width={80} height={80} className="rounded-full mb-4" />
+              <div className="mb-4">
+                <i className="ri-star-fill text-yellow-400 text-3xl"></i>
+              </div>
+              <p className="text-lg text-gray-700 mb-4">"I love how eco-friendly these pods are. Highly recommend!"</p>
+              <div className="font-bold text-blue-600">Anjali K.</div>
+            </div>
           </div>
         </div>
       </section>

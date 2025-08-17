@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import Link from 'next/link';
 import { formatPrice, formatDate, getOrderStatusColor } from '../lib/utils';
 import Header from '../components/Header';
 // Simple fetch wrapper for admin endpoints
@@ -80,7 +81,7 @@ export default function AdminDashboard() {
 
   const fetchOrders = async () => {
     try {
-      const response = await adminFetch('/api/orders');
+      const response = await adminFetch('/api/admin/orders');
       if (response.ok) {
         const ordersData = await response.json();
         setOrders(ordersData);
@@ -256,6 +257,9 @@ export default function AdminDashboard() {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Payment ID
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -288,6 +292,14 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="text-xs font-mono">{order.paymentId}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <Link 
+                          href={`/admin/orders/${order.id}`}
+                          className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
+                        >
+                          View Details
+                        </Link>
                       </td>
                     </tr>
                   ))}
