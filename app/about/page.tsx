@@ -17,13 +17,13 @@ export default function About() {
 
   if (status === 'loading' || status === 'unauthenticated') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
       </div>
     );
   }
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-orange-50">
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -49,9 +49,9 @@ export default function About() {
                 Today, BubbleBeads is proud to serve thousands of households across India, providing premium laundry solutions that make cleaning easier, more efficient, and better for our planet.
               </p>
             </div>
-            <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-8">
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-8">
               <div className="text-center">
-                <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+                <div className="w-24 h-24 bg-gradient-to-r from-orange-400 to-amber-400 rounded-full flex items-center justify-center mx-auto mb-6">
                   <i className="ri-drop-line text-white w-12 h-12"></i>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h3>
@@ -76,8 +76,8 @@ export default function About() {
           </div>
 
           <div className="bg-white rounded-2xl p-8 text-center">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <i className="ri-flask-line text-blue-600 w-8 h-8"></i>
+            <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <i className="ri-flask-line text-orange-600 w-8 h-8"></i>
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-4">Innovation</h3>
             <p className="text-gray-600">
@@ -126,7 +126,7 @@ export default function About() {
         {/* Stats Section */}
         <div className="grid md:grid-cols-4 gap-6">
           <div className="bg-white rounded-2xl p-6 text-center">
-            <div className="text-3xl font-bold text-blue-600 mb-2">50K+</div>
+            <div className="text-3xl font-bold text-orange-600 mb-2">50K+</div>
             <p className="text-gray-600">Happy Customers</p>
           </div>
           <div className="bg-white rounded-2xl p-6 text-center">

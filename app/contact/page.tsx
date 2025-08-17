@@ -35,8 +35,8 @@ export default function Contact() {
 
   if (status === 'loading' || status === 'unauthenticated') {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
       </div>
     );
   }
@@ -95,7 +95,7 @@ export default function Contact() {
   };
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-orange-50">
       <Header />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -118,8 +118,8 @@ export default function Contact() {
 
             <div className="space-y-4">
               <div className="flex items-start space-x-4">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <i className="ri-mail-line text-blue-600 w-5 h-5"></i>
+                <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <i className="ri-mail-line text-orange-600 w-5 h-5"></i>
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
@@ -193,7 +193,7 @@ export default function Contact() {
                       message: 'Name must be at least 2 characters',
                     },
                   })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
                   placeholder="Enter your name"
                 />
                 {errors.name && (
@@ -209,7 +209,7 @@ export default function Contact() {
                     required: 'Email is required',
                     validate: (value) => validateEmail(value) || 'Please enter a valid email',
                   })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
                   placeholder="Enter your email"
                 />
                 {errors.email && (
@@ -228,7 +228,7 @@ export default function Contact() {
                       message: 'Subject must be at least 5 characters',
                     },
                   })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
                   placeholder="Enter subject"
                 />
                 {errors.subject && (
@@ -247,7 +247,7 @@ export default function Contact() {
                     },
                   })}
                   rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
                   placeholder="Enter your message"
                 />
                 {errors.message && (
@@ -258,7 +258,7 @@ export default function Contact() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-orange-400 to-amber-400 text-white py-3 px-6 rounded-lg text-lg font-semibold hover:from-orange-500 hover:to-amber-500 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <div className="flex items-center justify-center">
