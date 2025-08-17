@@ -136,7 +136,7 @@ function SearchContent() {
                       alt={product.name}
                       width={300}
                       height={192}
-                      className="w-full h-48 object-cover object-center"
+                      className="w-full h-48 object-cover object-center transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
                     />
                     <button
                       onClick={() => handleWishlistToggle(product)}
