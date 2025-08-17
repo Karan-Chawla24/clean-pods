@@ -81,6 +81,9 @@ export default function Header() {
             <Link href="/products" className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
               Products
             </Link>
+            <Link href="/blog" className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+              Blog
+            </Link>
             <Link href="/about" className="text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
               About
             </Link>
@@ -161,16 +164,7 @@ export default function Header() {
                   </button>
                 </div>
               </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Link href="/auth/signin" className="text-gray-700 hover:text-blue-600 transition-colors font-medium">
-                  Sign In
-                </Link>
-                <Link href="/auth/signup" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                  Sign Up
-                </Link>
-              </div>
-            )}
+            ) : null}
 
             {/* Wishlist */}
             <Link href="/wishlist" className="relative text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
@@ -204,6 +198,9 @@ export default function Header() {
             <div className="space-y-4">
               <Link href="/products" className="block text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
                 Products
+              </Link>
+              <Link href="/blog" className="block text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
+                Blog
               </Link>
               <Link href="/about" className="block text-gray-700 hover:text-blue-600 transition-colors cursor-pointer">
                 About
