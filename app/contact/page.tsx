@@ -165,16 +165,6 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* FAQ Section */}
-            <div className="mt-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Frequently Asked Questions</h3>
-              <div className="space-y-3">
-                <div className="bg-white p-4 rounded-lg border">
-                  <h4 className="font-medium text-gray-900 mb-2 text-sm">Are your products eco-friendly?</h4>
-                  <p className="text-gray-600 text-sm">Yes! All our detergent pods are made with biodegradable ingredients and eco-friendly packaging.</p>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Contact Form */}
