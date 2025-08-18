@@ -13,7 +13,7 @@ function SignInContent() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/products';
+  const callbackUrl = searchParams.get('callbackUrl') || '/';
 
   const handleCredentialsSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
