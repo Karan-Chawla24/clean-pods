@@ -57,7 +57,7 @@ export default function SignUp() {
         toast.error(result.error);
       } else {
         toast.success('Account created successfully! Welcome to BubbleBeads!');
-        router.push('/products');
+        router.push('/');
       }
     } catch (error) {
       toast.error('An error occurred. Please try again.');
