@@ -38,7 +38,7 @@ export default function HelpCenter() {
     general: [
       {
         question: "What are bubble beads?",
-        answer: "Bubble beads are innovative sensory toys that provide a satisfying popping experience. They're made from high-quality, non-toxic materials and are perfect for stress relief and entertainment."
+        answer: "Bubble beads are innovative sensory toys that provide a satisfying popping experience. They&apos;re made from high-quality, non-toxic materials and are perfect for stress relief and entertainment."
       },
       {
         question: "Are your products safe for children?",
@@ -56,7 +56,7 @@ export default function HelpCenter() {
     orders: [
       {
         question: "How can I track my order?",
-        answer: "You can track your order by logging into your account and visiting the 'My Orders' section. You'll receive tracking information via email once your order ships."
+        answer: "You can track your order by logging into your account and visiting the &apos;My Orders&apos; section. You&apos;ll receive tracking information via email once your order ships."
       },
       {
         question: "Can I modify or cancel my order?",
@@ -64,11 +64,11 @@ export default function HelpCenter() {
       },
       {
         question: "What if I receive a damaged item?",
-        answer: "If you receive a damaged item, please contact us within 48 hours with photos of the damage. We'll arrange for a replacement or full refund immediately."
+        answer: "If you receive a damaged item, please contact us within 48 hours with photos of the damage. We&apos;ll arrange for a replacement or full refund immediately."
       },
       {
         question: "How long does order processing take?",
-        answer: "Orders are typically processed within 1-2 business days. You'll receive a confirmation email once your order ships."
+        answer: "Orders are typically processed within 1-2 business days. You&apos;ll receive a confirmation email once your order ships."
       }
     ],
     payment: [
@@ -92,7 +92,7 @@ export default function HelpCenter() {
     shipping: [
       {
         question: "How long does shipping take?",
-        answer: "Standard shipping takes 5-7 business days. Express shipping options are available for faster delivery."
+        answer: "Standard shipping takes 5-7 business days."
       },
       {
         question: "Do you ship internationally?",
@@ -100,11 +100,11 @@ export default function HelpCenter() {
       },
       {
         question: "What are your shipping charges?",
-        answer: "Shipping is free for orders above ₹500. For orders below ₹500, a flat shipping fee of ₹50 applies."
+        answer: "Shipping is on us — every order, every time."
       },
       {
         question: "Can I change my shipping address?",
-        answer: "Shipping addresses can be changed within 2 hours of order placement. After this, please contact customer support for assistance."
+        answer: "Shipping addresses cannot be changed after an order has been placed. For any issues, please contact our support team."
       }
     ],
     returns: [
