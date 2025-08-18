@@ -70,7 +70,9 @@ export default function Shipping() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">Order Confirmation</h3>
-                <p className="text-gray-600">You'll receive an email confirmation immediately after placing your order.</p>
+                <p className="text-gray-600">
+                  {"You'll receive an email confirmation immediately after placing your order."}
+                </p>
               </div>
             </div>
             <div className="flex items-start space-x-4">
@@ -79,7 +81,9 @@ export default function Shipping() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">Order Processing</h3>
-                <p className="text-gray-600">Your order will be processed and prepared for shipment within 1-2 business days.</p>
+                <p className="text-gray-600">
+                  {"Your order will be processed and prepared for shipment within 1-2 business days."}
+                </p>
               </div>
             </div>
             <div className="flex items-start space-x-4">
@@ -89,7 +93,7 @@ export default function Shipping() {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">Courier Pickup</h3>
                 <p className="text-gray-600">
-                  Once your order is picked up by our courier partner, you'll receive shipping details and tracking information via email and SMS.
+                  {"Once your order is picked up by our courier partner, you'll receive shipping details and tracking information via email and SMS."}
                 </p>
               </div>
             </div>
@@ -99,7 +103,9 @@ export default function Shipping() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">Delivery</h3>
-                <p className="text-gray-600">Your BubbleBeads will be delivered to your doorstep within the estimated timeframe.</p>
+                <p className="text-gray-600">
+                  {"Your BubbleBeads will be delivered to your doorstep within the estimated timeframe."}
+                </p>
               </div>
             </div>
           </div>
@@ -129,13 +135,13 @@ export default function Shipping() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">Address Accuracy</h3>
               <p className="text-gray-600 mb-4">
-                Please ensure your delivery address is accurate. We are not responsible for delays due to incorrect addresses.
+                {"Please ensure your delivery address is accurate. We are not responsible for delays due to incorrect addresses."}
               </p>
             </div>
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">Delivery Attempts</h3>
               <p className="text-gray-600 mb-4">
-                Our courier partners will make up to 3 delivery attempts. Please ensure someone is available to receive the package.
+                {"Our courier partners will make up to 3 delivery attempts. Please ensure someone is available to receive the package."}
               </p>
             </div>
           </div>
@@ -145,14 +151,26 @@ export default function Shipping() {
         <FadeInOnScroll delay={0.35} className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-8 mb-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Additional Information</h2>
           <ul className="list-disc list-inside text-gray-700 space-y-3">
-            <li><span className="font-semibold text-orange-700">International Shipping:</span> Currently, we only ship within India. Stay tuned for global shipping updates.</li>
-            <li><span className="font-semibold text-orange-700">Cash on Delivery:</span> At the moment, COD is not available. All orders must be prepaid online.</li>
-            <li><span className="font-semibold text-orange-700">Delayed / Lost Packages:</span> In rare cases of courier delays or lost packages, please contact our support team. We’ll ensure your order is either reshipped or refunded.</li>
-            <li><span className="font-semibold text-orange-700">Returns & Exchanges:</span> Please refer to our <a href="/returns" className="underline text-orange-600 hover:text-orange-700">Returns & Refund Policy</a> for more details.</li>
+            <li>
+              <span className="font-semibold text-orange-700">International Shipping:</span> 
+              {" Currently, we only ship within India. Stay tuned for global shipping updates."}
+            </li>
+            <li>
+              <span className="font-semibold text-orange-700">Cash on Delivery:</span> 
+              {" At the moment, COD is not available. All orders must be prepaid online."}
+            </li>
+            <li>
+              <span className="font-semibold text-orange-700">Delayed / Lost Packages:</span> 
+              {" In rare cases of courier delays or lost packages, please contact our support team. We’ll ensure your order is either reshipped or refunded."}
+            </li>
+            <li>
+              <span className="font-semibold text-orange-700">Returns & Exchanges:</span> 
+              {" Please refer to our "}
+              <a href="/returns" className="underline text-orange-600 hover:text-orange-700">Returns & Refund Policy</a>
+              {" for more details."}
+            </li>
           </ul>
         </FadeInOnScroll>
-
-``
       </div>
     </div>
   );
