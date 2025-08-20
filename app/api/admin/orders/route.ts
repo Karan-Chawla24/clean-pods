@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllOrders } from '../../../lib/database';
-import { requireAdminAuth } from '../../../lib/security/jwt';
+import { requireClerkAdminAuth } from '../../../lib/clerk-admin';
 
 export async function GET(request: NextRequest) {
   try {
-    // Check admin authorization using JWT
-    const authResult = requireAdminAuth(request);
+    // Check admin authorization using Clerk
+    const authResult = await requireClerkAdminAuth(request);
     
     if (authResult instanceof NextResponse) {
       // Authentication failed, return the error response

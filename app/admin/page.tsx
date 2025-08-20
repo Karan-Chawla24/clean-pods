@@ -2,17 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser, useAuth, useClerk } from '@clerk/nextjs';
 import Image from 'next/image';
 import Link from 'next/link';
-import { formatPrice, formatDate, getOrderStatusColor } from '../lib/utils';
-import Header from '../components/Header';
-// Simple fetch wrapper for admin endpoints
-const adminFetch = (url: string, options: RequestInit = {}) => {
-  return fetch(url, {
-    ...options,
-    credentials: 'include',
-  });
-};
+import { formatPrice, formatDate, getOrderStatusColor } from '@/app/lib/utils';
+import Header from '@/app/components/Header';
 
 interface OrderItem {
   id: string;
@@ -34,57 +28,49 @@ interface Order {
   items: OrderItem[];
 }
 
-function downloadOrdersExcel() {
-  adminFetch('/api/admin-download-orders')
-    .then(res => res.blob())
-    .then(blob => {
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'orders.xlsx';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-    });
-}
-
 export default function AdminDashboard() {
   const router = useRouter();
+  const { user, isLoaded } = useUser();
+  const { isSignedIn, getToken } = useAuth();
+  const clerk = useClerk();
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState('all');
-  const [isAuthorized, setIsAuthorized] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Check admin authorization using HTTP-only cookie
+  // Check admin authorization using Clerk
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Verify with server using HTTP-only cookie
-      adminFetch('/api/admin-verify', {
-        method: 'GET',
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success && data.isAdmin) {
-          setIsAuthorized(true);
-          // Fetch orders from database
-          fetchOrders();
-        } else {
-          router.push('/admin-login');
-        }
-      })
-      .catch(() => {
-        router.push('/admin-login');
-      });
+    // Only run once when component mounts or auth state changes
+    if (isLoaded === false || user === undefined) {
+      // Still loading auth state
+      return;
     }
-  }, [router]);
+
+    if (!isSignedIn || user?.publicMetadata?.role !== 'admin') {
+      // Not authenticated or not admin, redirect
+      router.replace('/');
+      return;
+    }
+
+    // User is authenticated and is admin, fetch orders
+    fetchOrders();
+  }, [isLoaded, isSignedIn, user, router]);
 
   const fetchOrders = async () => {
     try {
-      const response = await adminFetch('/api/admin/orders');
+      setLoading(true);
+      const token = await getToken();
+      const response = await fetch('/api/admin/orders', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
       if (response.ok) {
         const ordersData = await response.json();
         setOrders(ordersData);
+      } else {
+        console.error('Failed to fetch orders:', response.statusText);
       }
     } catch (error) {
       console.error('Failed to fetch orders:', error);
@@ -93,16 +79,51 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogout = async () => {
-    // Call logout endpoint to clear the HTTP-only cookie
-    await adminFetch('/api/admin-logout', {
-      method: 'POST',
-    });
-    router.push('/');
+  const handleLogout = () => {
+    clerk.signOut({ redirectUrl: '/' });
   };
 
-  // Don't render if not authorized
-  if (!isAuthorized) {
+  const downloadOrdersExcel = async () => {
+    try {
+      const token = await getToken();
+      const response = await fetch('/api/admin-download-orders', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        }
+      });
+      
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'orders.xlsx';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error('Failed to download orders:', error);
+    }
+  };
+
+  // Show loading state while Clerk is loading
+  if (!isLoaded || !user) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <div className="text-gray-500">Loading...</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render if not authorized (redirect will happen in useEffect)
+  if (!isSignedIn || user?.publicMetadata?.role !== 'admin') {
     return null;
   }
 
@@ -149,20 +170,7 @@ export default function AdminDashboard() {
             <div className="flex items-center space-x-4">
               <div className="text-sm text-gray-600">Admin Dashboard</div>
               <button
-                onClick={() => {
-                adminFetch('/api/admin-download-orders')
-                    .then(res => res.blob())
-                    .then(blob => {
-                      const url = window.URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = 'orders.xlsx';
-                      document.body.appendChild(a);
-                      a.click();
-                      a.remove();
-                      window.URL.revokeObjectURL(url);
-                    });
-                }}
+                onClick={downloadOrdersExcel}
                 className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
               >
                 Download Orders

@@ -161,7 +161,7 @@ export async function POST(request: NextRequest) {
               text: 'View in Admin Panel',
               emoji: true
             },
-            url: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/admin/orders/${orderData.id}`,
+            url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/orders/${orderData.id}`,
             action_id: 'view_order_details'
           }
         },

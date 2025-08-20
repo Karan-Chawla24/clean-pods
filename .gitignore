@@ -13,6 +13,8 @@ test-db/
 debug-admin/
 test-auth/
 health/
+debug-orders/
+debug-user-orders/
 
 # Environment variables
 .env

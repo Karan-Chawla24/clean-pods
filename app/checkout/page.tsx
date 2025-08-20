@@ -10,7 +10,7 @@ import Header from '../components/Header';
 import toast from 'react-hot-toast';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { useSession, getCsrfToken } from 'next-auth/react';
+import { useUser, useAuth } from '@clerk/nextjs';
 
 interface CheckoutForm {
   firstName: string;
@@ -30,24 +30,12 @@ declare global {
 }
 
 export default function Checkout() {
-  const { data: session } = useSession();
+  const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
   const { cart, cartTotal, clearCart, addOrder } = useAppStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
-
-  // Helper function to make CSRF-protected API calls
-  const fetchWithCsrf = async (url: string, options: RequestInit = {}) => {
-    const csrfToken = await getCsrfToken();
-    return fetch(url, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-        'X-CSRF-Token': csrfToken || '',
-      },
-    });
-  };
 
   const {
     register,
@@ -58,12 +46,12 @@ export default function Checkout() {
 
   // Pre-fill form with user data if signed in
   useEffect(() => {
-    if (session?.user) {
-      if (session.user.firstName) setValue('firstName', session.user.firstName);
-      if (session.user.lastName) setValue('lastName', session.user.lastName);
-      if (session.user.email) setValue('email', session.user.email);
+    if (user) {
+      if (user.firstName) setValue('firstName', user.firstName);
+      if (user.lastName) setValue('lastName', user.lastName);
+      if (user.emailAddresses?.[0]?.emailAddress) setValue('email', user.emailAddresses[0].emailAddress);
     }
-  }, [session, setValue]);
+  }, [user, setValue]);
 
   const subtotal = cartTotal;
   const tax = calculateTax(subtotal);
@@ -79,7 +67,7 @@ export default function Checkout() {
 
     try {
       // Create Razorpay order
-      const orderResponse = await fetchWithCsrf('/api/create-order', {
+      const orderResponse = await fetch('/api/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,7 +115,7 @@ export default function Checkout() {
           
           try {
             // Verify payment
-            const verifyResponse = await fetchWithCsrf('/api/verify-payment', {
+            const verifyResponse = await fetch('/api/verify-payment', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -147,7 +135,7 @@ export default function Checkout() {
               
               // Save order to database (authenticated users get it saved to their account)
                 try {
-                  const orderApiUrl = session ? '/api/user/orders' : '/api/orders';
+                  const orderApiUrl = user ? '/api/user/orders' : '/api/orders';
                   
                   const orderPayload: any = {
                     razorpayOrderId: response.razorpay_order_id,
@@ -165,7 +153,7 @@ export default function Checkout() {
                   };
                   
                   // For non-authenticated users, use the legacy format expected by /api/orders
-                  if (!session) {
+                  if (!user) {
                     orderPayload.customer = {
                       firstName: data.firstName,
                       lastName: data.lastName,
@@ -176,16 +164,23 @@ export default function Checkout() {
                       state: data.state,
                       pincode: data.pincode
                     };
-                  } else if (session.user?.id) {
-                    // For authenticated users, include the user ID
-                    orderPayload.userId = session.user.id;
                   }
+                  // Note: For authenticated users, userId is handled by the server via Clerk's auth()
                   
                   console.log('Sending order payload:', orderPayload);
                   
-                  const orderResponse = await fetchWithCsrf(orderApiUrl, {
+                  // Get auth token for authenticated users
+                  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+                  if (user) {
+                    const token = await getToken();
+                    if (token) {
+                      headers.Authorization = `Bearer ${token}`;
+                    }
+                  }
+                  
+                  const orderResponse = await fetch(orderApiUrl, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers,
                     body: JSON.stringify(orderPayload),
                   });
                 
@@ -214,7 +209,7 @@ export default function Checkout() {
 
               // Send Slack notification
               try {
-                await fetchWithCsrf('/api/slack-notification', {
+                await fetch('/api/slack-notification', {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
@@ -243,7 +238,7 @@ export default function Checkout() {
               }
 
               // Store order in user's localStorage for privacy (only for unauthenticated users)
-              if (!session) {
+              if (!user) {
                 try {
                   const userOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
                   const orderForStorage = {

@@ -1,32 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../../lib/auth';
+import { auth } from '@clerk/nextjs/server';
 import { prisma } from '../../../lib/prisma';
 
-// Helper function to validate CSRF token using NextAuth's approach
-async function validateCsrfToken(request: NextRequest): Promise<boolean> {
-  const csrfToken = request.headers.get('X-CSRF-Token');
-  
-  if (!csrfToken) {
-    return false;
-  }
-  
-  try {
-    // For NextAuth CSRF validation, we can make a request to the NextAuth CSRF endpoint
-    // to verify the token is valid. In a real implementation, you might want to 
-    // implement server-side CSRF validation, but for now, we'll trust that NextAuth
-    // handles this correctly on the client side.
-    return true;
-  } catch {
-    return false;
-  }
-}
+// CSRF validation is handled by Clerk's built-in security measures
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -39,16 +21,25 @@ export async function PUT(request: NextRequest) {
       }, { status: 400 });
     }
 
-    // Update user profile
-    const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
-      data: {
+    // Update or create user profile
+    const updatedUser = await prisma.user.upsert({
+      where: { id: userId },
+      update: {
         firstName,
         lastName,
         name: `${firstName} ${lastName}`,
         phone: phone || null,
         address: address || null,
         updatedAt: new Date(),
+      },
+      create: {
+        id: userId,
+        email: 'unknown@example.com', // Will be updated by Clerk webhook
+        firstName,
+        lastName,
+        name: `${firstName} ${lastName}`,
+        phone: phone || null,
+        address: address || null,
       },
       select: {
         id: true,
@@ -77,15 +68,15 @@ export async function PUT(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Get user profile
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    // Get user profile, create if doesn't exist
+    let user = await prisma.user.findUnique({
+      where: { id: userId },
       select: {
         id: true,
         email: true,
@@ -98,8 +89,22 @@ export async function GET(request: NextRequest) {
       }
     });
 
+    // If user doesn't exist in database, return empty profile data
+    // The frontend will use Clerk data as primary source
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({
+        success: true,
+        user: {
+          id: userId,
+          email: null,
+          firstName: null,
+          lastName: null,
+          name: null,
+          phone: null,
+          address: null,
+          createdAt: new Date()
+        }
+      });
     }
 
     return NextResponse.json({

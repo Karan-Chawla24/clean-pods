@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession, getSession, getCsrfToken } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Header from '../components/Header';
 import toast from 'react-hot-toast';
 
 export default function Profile() {
-  const { data: session, status, update } = useSession();
+  const { user, isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -20,52 +20,44 @@ export default function Profile() {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin?callbackUrl=' + encodeURIComponent('/profile'));
+    if (isLoaded && !isSignedIn) {
+      router.push('/auth/signin');
     }
-  }, [status, router]);
+  }, [isLoaded, isSignedIn, router]);
 
-  // Load user data when session is available
+  // Load user data when user is available
   useEffect(() => {
     const loadUserData = async () => {
-      if (session?.user) {
+      if (user) {
+        // Always use Clerk user data as the primary source
+        setFormData({
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          email: user.primaryEmailAddress?.emailAddress || '',
+          phone: user.phoneNumbers?.[0]?.phoneNumber || '',
+          address: '',
+        });
+        
+        // Try to load additional data from database (like address)
         try {
           const response = await fetch('/api/user/profile');
           if (response.ok) {
             const data = await response.json();
-            setFormData({
-              firstName: data.user.firstName || '',
-              lastName: data.user.lastName || '',
-              email: data.user.email || '',
-              phone: data.user.phone || '',
-              address: data.user.address || '',
-            });
-          } else {
-            // Fallback to session data if API fails
-            setFormData({
-              firstName: session.user.firstName || '',
-              lastName: session.user.lastName || '',
-              email: session.user.email || '',
-              phone: '',
-              address: '',
-            });
+            // Only update fields that Clerk doesn't provide
+            setFormData(prev => ({
+              ...prev,
+              phone: data.user.phone || prev.phone,
+              address: data.user.address || prev.address,
+            }));
           }
         } catch (error) {
-          console.error('Error loading user data:', error);
-          // Fallback to session data
-          setFormData({
-            firstName: session.user.firstName || '',
-            lastName: session.user.lastName || '',
-            email: session.user.email || '',
-            phone: '',
-            address: '',
-          });
+          console.log('Could not load additional profile data:', error);
         }
       }
     };
 
     loadUserData();
-  }, [session]);
+  }, [user]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -80,21 +72,15 @@ export default function Profile() {
     setLoading(true);
 
     try {
-      // Get CSRF token using NextAuth's built-in method
-      const csrfToken = await getCsrfToken();
-
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken || '',
         },
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        // Update the session with new data
-        await update();
         toast.success('Profile updated successfully!');
       } else {
         const error = await response.json();
@@ -109,7 +95,7 @@ export default function Profile() {
   };
 
   // Show loading state while checking authentication
-  if (status === 'loading') {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-orange-50">
         <Header />
@@ -124,7 +110,7 @@ export default function Profile() {
   }
 
   // Don't render anything if not authenticated (will redirect)
-  if (status === 'unauthenticated') {
+  if (!isSignedIn) {
     return null;
   }
 
@@ -136,7 +122,7 @@ export default function Profile() {
         <div className="bg-white rounded-2xl shadow-sm border p-8">
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-amber-400 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-              {session?.user?.firstName?.[0] || session?.user?.name?.[0] || session?.user?.email?.[0]?.toUpperCase()}
+              {user?.firstName?.[0] || user?.primaryEmailAddress?.emailAddress?.[0]?.toUpperCase()}
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
             <p className="text-gray-600">Manage your account information</p>
@@ -249,7 +235,7 @@ export default function Profile() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Account created:</span>
                 <span className="text-gray-900">
-                  {session?.user?.email && 'Recently'} {/* We can add actual creation date later */}
+                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Recently'}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -259,7 +245,7 @@ export default function Profile() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Sign-in method:</span>
                 <span className="text-gray-900">
-                  {session?.user?.image ? 'Google' : 'Email/Password'}
+                  {user?.externalAccounts?.length ? 'OAuth Provider' : 'Email/Password'}
                 </span>
               </div>
             </div>

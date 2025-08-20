@@ -47,13 +47,6 @@ export const razorpayWebhookSchema = z.object({
   // Add other fields as needed based on your webhook payload
 });
 
-// Admin login validation schema
-export const adminLoginSchema = z.object({
-  password: z.string()
-    .min(1, 'Password is required')
-    .max(100, 'Password too long')
-});
-
 // Generic validation function
 export async function validateRequest<T>(
   request: Request,
@@ -79,4 +72,4 @@ export function sanitizeString(input: string): string {
     .replace(/javascript:/gi, '') // Remove javascript: protocol
     .replace(/on\w+=/gi, '') // Remove event handlers
     .trim();
-} 
+}
