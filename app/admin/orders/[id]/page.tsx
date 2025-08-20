@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { useAuth, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { formatPrice, formatDate } from '../../../lib/utils';
 
@@ -25,48 +26,48 @@ interface Order {
   items: OrderItem[];
 }
 
-// Simple fetch wrapper for admin endpoints
-const adminFetch = (url: string, options: RequestInit = {}) => {
-  return fetch(url, {
-    ...options,
-    credentials: 'include',
-  });
-};
+
 
 export default function AdminOrderDetails() {
   const params = useParams();
   const router = useRouter();
+  const { getToken } = useAuth();
+  const { user, isLoaded } = useUser();
   const orderId = params.id as string;
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthorized, setIsAuthorized] = useState(false);
 
-  // Check admin authorization
+  // Check admin authorization using Clerk
   useEffect(() => {
-    adminFetch('/api/admin-verify', {
-      method: 'GET',
-    })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success && data.isAdmin) {
-        setIsAuthorized(true);
-      } else {
-        router.push('/admin-login');
+    if (isLoaded && user) {
+      // Check if user has admin role
+      const isAdmin = user?.publicMetadata?.role === 'admin';
+      
+      if (!isAdmin) {
+        // Redirect non-admin users to home page
+        router.push('/');
+        return;
       }
-    })
-    .catch(() => {
-      router.push('/admin-login');
-    });
-  }, [router]);
+    }
+  }, [isLoaded, user, router]);
 
   // Fetch order details
   useEffect(() => {
-    if (!isAuthorized || !orderId) return;
+    if (!isLoaded || !user || !orderId) return;
+    
+    // Only fetch if user is admin
+    const isAdmin = user?.publicMetadata?.role === 'admin';
+    if (!isAdmin) return;
 
     const fetchOrder = async () => {
       try {
-        const response = await adminFetch(`/api/admin/orders/${orderId}`);
+        const token = await getToken();
+        const response = await fetch(`/api/admin/orders/${orderId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
         if (response.ok) {
           const orderData = await response.json();
           setOrder(orderData);
@@ -81,9 +82,9 @@ export default function AdminOrderDetails() {
     };
 
     fetchOrder();
-  }, [orderId, isAuthorized]);
+  }, [orderId, isLoaded, user]);
 
-  if (!isAuthorized) {
+  if (!isLoaded || !user || user?.publicMetadata?.role !== 'admin') {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">

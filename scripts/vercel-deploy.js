@@ -22,9 +22,7 @@ const isCI = process.env.CI || process.env.VERCEL;
 // Check for required environment variables
 const requiredEnvVars = [
   'DATABASE_URL',
-  'DIRECT_URL',
-  'NEXTAUTH_URL',
-  'NEXTAUTH_SECRET'
+  'DIRECT_URL'
 ];
 
 const missingVars = [];

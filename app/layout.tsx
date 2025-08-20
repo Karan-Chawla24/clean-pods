@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Pacifico } from "next/font/google";
 import "./globals.css";
 import ToastProvider from "./components/ToastProvider";
-import AuthProvider from "./components/AuthProvider";
+import { ClerkProvider } from '@clerk/nextjs';
 
 const pacifico = Pacifico({
   weight: '400',
@@ -52,10 +52,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pacifico.variable} antialiased bg-gradient-to-br from-orange-50 to-amber-50 min-h-screen`}
       >
-        <AuthProvider>
+        <ClerkProvider
+          signInUrl="/auth/signin"
+          signUpUrl="/auth/signup"
+          afterSignInUrl="/"
+          afterSignUpUrl="/"
+        >
           {children}
           <ToastProvider />
-        </AuthProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

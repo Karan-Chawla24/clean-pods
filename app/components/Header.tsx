@@ -6,35 +6,27 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '../lib/store';
 import { cn } from '../lib/utils';
-import { useSession, signOut } from 'next-auth/react';
-
-const adminFetch = (url: string, options: RequestInit = {}) => {
-  return fetch(url, {
-    ...options,
-    credentials: 'include',
-  });
-};
+import { useUser, useClerk, UserButton, SignInButton } from '@clerk/nextjs';
 
 export default function Header() {
   const { cart, setSearchQuery } = useAppStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const { data: session, status } = useSession();
+  const { user, isLoaded, isSignedIn } = useUser();
+  const { signOut } = useClerk();
   const router = useRouter();
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      adminFetch('/api/admin-verify', { method: 'GET' })
-        .then(res => res.json())
-        .then(data => setIsAdmin(data.success && data.isAdmin))
-        .catch(() => setIsAdmin(false));
+    if (isLoaded && user) {
+      const adminRole = user.publicMetadata?.role === 'admin';
+      setIsAdmin(adminRole);
+    } else {
+      setIsAdmin(false);
     }
-  }, []);
+  }, [isLoaded, user]);
 
-  const handleLogout = async () => {
-    await adminFetch('/api/admin-logout', { method: 'POST' });
-    setIsAdmin(false);
-    router.push('/');
+  const handleLogout = () => {
+    signOut({ redirectUrl: '/' });
   };
 
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -74,41 +66,57 @@ export default function Header() {
           <div className="hidden md:flex flex-1 justify-center overflow-hidden">
             <div className="relative w-full max-w-md overflow-hidden h-6">
               <p className="absolute whitespace-nowrap text-xl font-semibold bg-gradient-to-r from-sky-500 via-amber-600 to-orange-500 bg-clip-text text-transparent animate-ticker">
-                Hard on Stains Soft on Clothes
+                Soft on Clothes Hard on Stains 
               </p>
             </div>
           </div>
 
           {/* RIGHT SIDE: User + Cart + Menu */}
           <div className="flex items-center space-x-4">
-            {status === 'loading' ? (
+            {!isLoaded ? (
               <div className="w-8 h-8 animate-pulse bg-gray-200 rounded-full"></div>
-            ) : session ? (
-              <div className="relative group">
-                <button className="flex items-center space-x-2 text-gray-700 hover:text-orange-600">
-                  <div className="w-8 h-8 bg-gradient-to-r from-orange-400 to-amber-400 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                    {session.user.firstName?.[0] || session.user.name?.[0] || session.user.email?.[0]?.toUpperCase()}
-                  </div>
-                  <span className="hidden sm:block font-medium">
-                    {session.user.firstName || session.user.name?.split(' ')[0] || 'User'}
-                  </span>
-                  <i className="ri-arrow-down-s-line w-4 h-4"></i>
-                </button>
-
-                {/* Dropdown */}
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border py-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                  <div className="px-4 py-2 border-b">
-                    <p className="font-medium text-gray-900 truncate">{session.user.name}</p>
-                    <p className="text-sm text-gray-500 truncate">{session.user.email}</p>
-                  </div>
-                  <Link href="/profile" className="block px-4 py-2 hover:bg-gray-50">Profile</Link>
-                  <Link href="/orders" className="block px-4 py-2 hover:bg-gray-50">My Orders</Link>
-                  <button onClick={() => signOut({ callbackUrl: '/' })} className="block w-full text-left px-4 py-2 hover:bg-gray-50">
-                    Sign Out
-                  </button>
-                </div>
+            ) : isSignedIn && user ? (
+              <div className="flex items-center space-x-3">
+                <span className="hidden sm:block text-gray-700 font-medium">
+                  Hello, {user.firstName || 'User'}!
+                </span>
+                <UserButton 
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-8 h-8",
+                      userButtonPopoverCard: "shadow-lg border",
+                      userButtonPopoverActionButton: "hover:bg-orange-50",
+                      userButtonPopoverActionButtonText: "text-gray-700",
+                      userButtonPopoverFooter: "hidden"
+                    }
+                  }}
+                  userProfileProps={{
+                    additionalOAuthScopes: {
+                      google: ['profile', 'email']
+                    }
+                  }}
+                >
+                  <UserButton.MenuItems>
+                    <UserButton.Link 
+                      label="My Orders" 
+                      labelIcon={<i className="ri-shopping-bag-line"></i>}
+                      href="/orders"
+                    />
+                    <UserButton.Link 
+                      label="Profile" 
+                      labelIcon={<i className="ri-user-line"></i>}
+                      href="/profile"
+                    />
+                  </UserButton.MenuItems>
+                </UserButton>
               </div>
-            ) : null}
+            ) : (
+              <SignInButton mode="modal">
+                <button className="text-gray-700 hover:text-orange-600 font-medium transition-colors">
+                  Sign In
+                </button>
+              </SignInButton>
+            )}
 
             {/* Cart */}
             <Link

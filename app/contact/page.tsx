@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import Header from '../components/Header';
 import { validateEmail } from '../lib/utils';
 import toast from 'react-hot-toast';
-import { useSession, getCsrfToken } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 
 interface ContactForm {
@@ -16,7 +16,7 @@ interface ContactForm {
 }
 
 export default function Contact() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
@@ -28,12 +28,12 @@ export default function Contact() {
   } = useForm<ContactForm>();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (isLoaded && !user) {
       router.push('/auth/signin');
     }
-  }, [status, router]);
+  }, [isLoaded, user, router]);
 
-  if (status === 'loading' || status === 'unauthenticated') {
+  if (!isLoaded || !user) {
     return (
       <div className="min-h-screen bg-orange-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>
@@ -45,15 +45,11 @@ export default function Contact() {
     setIsSubmitting(true);
     
     try {
-      // Get CSRF token using NextAuth's built-in method
-      const csrfToken = await getCsrfToken();
-
       // Send contact form data to Slack
       const response = await fetch('/api/contact-notification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRF-Token': csrfToken || '',
         },
         body: JSON.stringify({
           name: data.name,
@@ -65,15 +61,6 @@ export default function Contact() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-        
-        if (response.status === 403) {
-          console.error('CSRF token error:', errorData);
-          toast.error('Security token expired. Please refresh the page and try again.');
-          // Refresh the page to get a new CSRF token
-          setTimeout(() => window.location.reload(), 2000);
-          return;
-        }
-        
         throw new Error(errorData.error || `Server error: ${response.status}`);
       }
 

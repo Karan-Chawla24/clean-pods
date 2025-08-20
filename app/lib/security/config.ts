@@ -1,12 +1,5 @@
 // Security configuration constants
 export const SECURITY_CONFIG = {
-  // JWT Configuration
-  JWT: {
-    SECRET: process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production',
-    EXPIRES_IN: '24h',
-    REFRESH_EXPIRES_IN: '7d'
-  },
-  
   // Rate Limiting Configuration
   RATE_LIMIT: {
     STRICT: { maxRequests: 5, windowMs: 60000 },
@@ -71,4 +64,4 @@ export const buildCSPString = (): string => {
     .join('; ');
   
   return csp;
-}; 
+};

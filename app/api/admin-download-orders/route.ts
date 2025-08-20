@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../lib/prisma';
 import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
-import { requireAdminAuth } from '@/app/lib/security/jwt';
+import { requireClerkAdminAuth } from '@/app/lib/clerk-admin';
 
 // Dynamic import for ExcelJS to avoid build issues
 let ExcelJS: any;
 
 export const GET = withRateLimit(rateLimitConfigs.moderate)(async (request: NextRequest) => {
   try {
-    // Verify JWT authentication
-    const authResult = requireAdminAuth(request);
+    // Verify Clerk authentication
+    const authResult = await requireClerkAdminAuth(request);
     if (authResult instanceof NextResponse) {
       return authResult;
     }

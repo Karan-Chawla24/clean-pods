@@ -6,7 +6,7 @@ import Header from '../components/Header';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAppStore } from '../lib/store';
-import { useSession } from 'next-auth/react';
+import { useUser, useAuth } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
@@ -43,7 +43,8 @@ const productImageMap: { [key: string]: string } = {
 };
 
 export default function Orders() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,15 +52,22 @@ export default function Orders() {
   const { orders: storeOrders, clearCart } = useAppStore();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/auth/signin?callbackUrl=' + encodeURIComponent('/orders'));
+    if (!isLoaded || !user) {
+      if (isLoaded && !user) {
+        router.push('/auth/signin?callbackUrl=' + encodeURIComponent('/orders'));
+      }
       return;
     }
 
-    if (status === 'authenticated') {
+    if (isLoaded && user) {
       const fetchOrders = async () => {
         try {
-          const response = await fetch('/api/user/orders');
+          const token = await getToken();
+          const response = await fetch('/api/user/orders', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
           if (!response.ok) {
             throw new Error('Failed to fetch orders');
           }
@@ -76,7 +84,7 @@ export default function Orders() {
 
       fetchOrders();
     }
-  }, [status, router]);
+  }, [isLoaded, user, router]);
 
   // Generate token for invoice security (matching server HMAC-SHA256)
   const generateInvoiceToken = async (orderId: string): Promise<string> => {

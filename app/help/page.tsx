@@ -1,19 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import FadeInOnScroll from '../components/FadeInOnScroll';
 import Header from '../components/Header';
 
 export default function HelpCenter() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('general');
   const [searchQuery, setSearchQuery] = useState('');
 
-  if (status === 'loading') {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500"></div>
@@ -21,7 +21,7 @@ export default function HelpCenter() {
     );
   }
 
-  if (!session) {
+  if (!user) {
     router.push('/auth/signin');
     return null;
   }

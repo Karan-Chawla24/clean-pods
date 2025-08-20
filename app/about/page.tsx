@@ -1,21 +1,21 @@
 'use client';
 
 import Header from '../components/Header';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function About() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (isLoaded && !user) {
       router.push('/auth/signin');
     }
-  }, [status, router]);
+  }, [isLoaded, user, router]);
 
-  if (status === 'loading' || status === 'unauthenticated') {
+  if (!isLoaded || !user) {
     return (
       <div className="min-h-screen bg-orange-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>

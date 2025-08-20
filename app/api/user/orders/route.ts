@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '../../../lib/auth';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '../../../lib/prisma';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
+
+    
     const orders = await prisma.order.findMany({
       where: {
-        userId: session.user.id
+        userId: userId
       },
       include: {
         items: true
@@ -35,9 +36,9 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const { userId } = await auth();
     
-    if (!session?.user?.id) {
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
@@ -57,6 +58,30 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Ensure user exists in database (sync with Clerk)
+    const clerkUser = await currentUser();
+    if (!clerkUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 401 });
+    }
+    
+    // Create or update user in database
+    await prisma.user.upsert({
+      where: { id: userId },
+      update: {
+        email: clerkUser.emailAddresses[0]?.emailAddress || '',
+        firstName: clerkUser.firstName,
+        lastName: clerkUser.lastName,
+        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
+      },
+      create: {
+        id: userId,
+        email: clerkUser.emailAddresses[0]?.emailAddress || '',
+        firstName: clerkUser.firstName,
+        lastName: clerkUser.lastName,
+        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
+      },
+    });
+    
     // Create order with user association
     const order = await prisma.order.create({
       data: {
@@ -67,7 +92,7 @@ export async function POST(request: NextRequest) {
         customerEmail: data.customerEmail,
         customerPhone: data.customerPhone,
         address: data.address,
-        userId: session.user.id, // Associate with authenticated user
+        userId: userId, // Associate with authenticated user
         items: {
           create: data.items.map((item: any) => ({
             name: item.name,

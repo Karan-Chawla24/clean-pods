@@ -5,7 +5,7 @@ This directory contains security utilities and configurations for the applicatio
 ## Overview
 
 The security implementation provides:
-- JWT-based authentication for admin routes
+- Clerk-based authentication for admin routes
 - Rate limiting for API endpoints
 - Input validation using Zod schemas
 - Razorpay webhook signature verification
@@ -14,13 +14,13 @@ The security implementation provides:
 
 ## Files
 
-### `jwt.ts`
-JWT utilities for admin authentication:
-- `generateAdminToken()` - Generate JWT tokens for admin users
-- `verifyAdminToken()` - Verify JWT tokens
-- `requireAdminAuth()` - Middleware to require admin authentication
-- `extractTokenFromRequest()` - Extract JWT from request headers or cookies
-- `setAdminCookie()` - Set secure JWT cookies
+### `clerk-admin.ts`
+Authentication utilities:
+- `requireClerkAdminAuth()` - Middleware to require admin authentication via Clerk
+- `grantAdminRole()` - Grant admin role to a user
+- `revokeAdminRole()` - Remove admin role from a user
+- `getAdminUsers()` - Get all users with admin role
+- Authentication is handled through Clerk with role-based access control
 
 ### `rateLimit.ts`
 Rate limiting implementation:
@@ -46,7 +46,7 @@ Razorpay security utilities:
 
 ### `config.ts`
 Centralized security configuration:
-- JWT settings
+- Security configurations
 - Rate limiting configurations
 - Password requirements
 - Session security
@@ -58,16 +58,17 @@ Centralized security configuration:
 
 ### Protecting Admin Routes
 ```typescript
-import { requireAdminAuth } from '@/src/lib/security/jwt';
+import { requireClerkAdminAuth } from '@/lib/clerk-admin';
 
 export const GET = async (request: NextRequest) => {
-  const authResult = requireAdminAuth(request);
-  if (authResult instanceof NextResponse) {
-    return authResult; // Unauthorized response
+  try {
+    await requireClerkAdminAuth();
+    // User is authenticated as admin
+  } catch (error) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   
   // Proceed with admin logic
-  const adminId = authResult.adminId;
   // ... rest of the code
 };
 ```
@@ -112,14 +113,12 @@ if (!isValid) {
 ## Environment Variables
 
 Required environment variables:
-- `JWT_SECRET` - Secret key for JWT signing (change in production)
 - `RAZORPAY_WEBHOOK_SECRET` - Secret for verifying Razorpay webhooks
-- `ADMIN_PASSWORD` - Admin password hash
-- `ADMIN_PASSWORD_SALT` - Salt for admin password
+- Clerk environment variables for authentication (see Clerk documentation)
 
 ## Security Features
 
-1. **JWT Authentication**: Secure token-based authentication for admin routes
+1. **Clerk Authentication**: Secure authentication for admin routes with role-based access control
 2. **Rate Limiting**: Prevents API abuse and brute force attacks
 3. **Input Validation**: Zod schemas ensure data integrity
 4. **Signature Verification**: Razorpay webhook authenticity verification
@@ -132,18 +131,18 @@ Required environment variables:
 
 1. Always use the provided validation schemas
 2. Apply rate limiting to all public API endpoints
-3. Use JWT authentication for all admin routes
+3. Use Clerk authentication for all admin routes
 4. Sanitize all user inputs before processing
 5. Verify external webhook signatures
-6. Keep JWT secrets secure and unique per environment
-7. Regularly rotate secrets and tokens
+6. Configure Clerk properly for your environment
+7. Regularly review user roles and permissions
 8. Monitor rate limiting and security events
 
 ## Testing
 
 Test the security implementation by:
-1. Attempting to access admin routes without JWT
+1. Attempting to access admin routes without proper Clerk authentication
 2. Sending malformed payloads to validated endpoints
 3. Testing rate limiting by making multiple rapid requests
 4. Verifying security headers are present in responses
-5. Testing CSP violations in browser console 
+5. Testing CSP violations in browser console
