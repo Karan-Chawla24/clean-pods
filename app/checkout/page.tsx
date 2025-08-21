@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -33,7 +32,7 @@ export default function Checkout() {
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
   const router = useRouter();
-  const { cart, cartTotal, clearCart, addOrder } = useAppStore();
+  const { cart, cartTotal, clearCart, addOrder, addToCart, updateCartItemPrice } = useAppStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
@@ -57,6 +56,33 @@ export default function Checkout() {
   const tax = calculateTax(subtotal);
   const total = calculateTotal(subtotal);
 
+  // Validate and update cart item prices on component mount
+  useEffect(() => {
+    const validateCartPrices = async () => {
+      if (cart.length === 0) return;
+      
+      try {
+        const response = await fetch('/api/products');
+        const data = await response.json();
+        const products = data.products;
+        
+        // Check each cart item against current API prices
+        cart.forEach(cartItem => {
+          const currentProduct = products.find((p: any) => p.id === cartItem.id);
+          if (currentProduct && currentProduct.price !== cartItem.price) {
+            console.log(`Updating price for ${cartItem.name} from ${cartItem.price} to ${currentProduct.price}`);
+            updateCartItemPrice(cartItem.id, currentProduct.price);
+          }
+        });
+      } catch (error) {
+        console.error('Failed to validate cart prices:', error);
+      }
+    };
+    
+    validateCartPrices();
+  }, [cart.length]); // Only run when cart length changes to avoid infinite loops
+
+
   const processPayment = handleSubmit(async (data: CheckoutForm) => {
     if (cart.length === 0) {
       toast.error('Your cart is empty');
@@ -66,17 +92,27 @@ export default function Checkout() {
     setIsProcessing(true);
 
     try {
-      // Create Razorpay order
+      // Create Razorpay order with cart validation
+      const requestBody = {
+        amount: total,
+        currency: 'INR',
+        receipt: generateOrderId(),
+        cart: cart.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity
+        }))
+      };
+      
+      console.log('Sending request to /api/create-order:', requestBody);
+      
       const orderResponse = await fetch('/api/create-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          amount: total,
-          currency: 'INR',
-          receipt: generateOrderId(),
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!orderResponse.ok) {
@@ -299,25 +335,6 @@ export default function Checkout() {
     }
   });
 
-  if (cart.length === 0) {
-    return (
-      <div className="min-h-screen bg-orange-50">
-        <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">Your Cart is Empty</h1>
-            <p className="text-gray-600 mb-8">Add some products to your cart before checkout.</p>
-            <Link
-              href="/products"
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer inline-block"
-            >
-              Continue Shopping
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-orange-50">
@@ -470,11 +487,10 @@ export default function Checkout() {
                   )}
                 </div>
               </div>
-
               <button
                 type="submit"
                 disabled={isProcessing}
-                className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-gradient-to-r from-orange-400 to-amber-500 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isProcessing ? (
                   <div className="flex items-center justify-center">
@@ -485,6 +501,7 @@ export default function Checkout() {
                   `Pay ${formatPrice(total)}`
                 )}
               </button>
+
             </form>
           </div>
 

@@ -52,6 +52,7 @@ interface AppState {
   setLoading: (loading: boolean) => void;
   setSearchQuery: (query: string) => void;
   setSelectedCategory: (category: string) => void;
+  updateCartItemPrice: (id: string, newPrice: number) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -140,6 +141,17 @@ export const useAppStore = create<AppState>()(
       setSearchQuery: (searchQuery) => set({ searchQuery }),
 
       setSelectedCategory: (selectedCategory) => set({ selectedCategory }),
+
+      updateCartItemPrice: (id, newPrice) => {
+        const { cart } = get();
+        const updatedCart = cart.map(item =>
+          item.id === id ? { ...item, price: newPrice } : item
+        );
+        set({
+          cart: updatedCart,
+          cartTotal: updatedCart.reduce((total, item) => total + (item.price * item.quantity), 0)
+        });
+      },
     }),
     {
       name: 'bubblebeads-store',

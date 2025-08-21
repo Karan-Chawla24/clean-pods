@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAppStore } from '../../lib/store';
 import { formatPrice } from '../../lib/utils';
@@ -20,75 +20,94 @@ interface Product {
   usage: string;
 }
 
-const products: Record<string, Product> = {
-  essential: {
-    id: 'essential',
-    name: 'Essential Clean',
-    price: 299,
-    description: 'Pure detergent power for everyday cleaning. Removes dirt and stains effectively while being gentle on fabrics.',
-    features: [
-      'Powerful stain removal',
-      'Gentle on all fabric types',
-      'Fresh scent',
-      '30 pods per pack'
-    ],
-    image: '/Single.jpg',
-    ingredients: 'Surfactants, Enzymes, Brightening agents, Fragrance',
-    usage: 'Use 1 pod for regular loads, 2 pods for heavily soiled items. Place in drum before adding clothes.'
-  },
-  'soft-fresh': {
-    id: 'soft-fresh',
-    name: 'Soft & Fresh',
-    price: 449,
-    description: 'Complete care with detergent and fabric softener. Cleans thoroughly while making clothes soft and fragrant.',
-    features: [
-      'Deep cleaning formula',
-      'Built-in fabric softener',
-      'Long-lasting freshness',
-      '25 pods per pack'
-    ],
-    image: '/Threein1.jpg',
-    ingredients: 'Surfactants, Enzymes, Fabric softener, Brightening agents, Fragrance',
-    usage: 'Use 1 pod for regular loads. The dual-chamber design releases softener at the right time during the wash cycle.'
-  },
-  ultimate: {
-    id: 'ultimate',
-    name: 'Ultimate Care',
-    price: 599,
-    description: 'The complete solution with detergent, fabric softener, and stain remover for the toughest cleaning challenges.',
-    features: [
-      'Triple-action formula',
-      'Advanced stain removal',
-      'Fabric protection',
-      '20 pods per pack'
-    ],
-    image: '/fivein1.jpg',
-    ingredients: 'Surfactants, Enzymes, Stain removers, Fabric softener, Brightening agents, Fragrance',
-    usage: 'Use 1 pod for most loads. Perfect for tough stains, delicate fabrics, and everything in between.'
+// Fetch product data from server-side API
+async function fetchProduct(id: string): Promise<Product | null> {
+  try {
+    const response = await fetch(`/api/products?id=${id}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch product');
+    }
+    const data = await response.json();
+    return data.product;
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    return null;
   }
-};
+}
 
 export default function ProductDetail({ productId }: { productId: string }) {
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useAppStore();
-  const product = products[productId];
 
-  if (!product) {
-    return <div>Product not found</div>;
+  useEffect(() => {
+    async function loadProduct() {
+      setLoading(true);
+      setError(null);
+      
+      const productData = await fetchProduct(productId);
+      if (productData) {
+        setProduct(productData);
+      } else {
+        setError('Product not found');
+      }
+      setLoading(false);
+    }
+
+    loadProduct();
+  }, [productId]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading product...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 text-lg mb-4">{error || 'Product not found'}</p>
+          <Link href="/products" className="text-orange-600 hover:text-orange-700 underline">
+            Back to Products
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   const isInWishlist = wishlist.find(item => item.id === product.id);
 
-  const handleAddToCart = () => {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: quantity,
-      image: product.image
-    });
-    toast.success('Added to cart!');
+  const handleAddToCart = async () => {
+    try {
+      // Fetch latest price from API to ensure consistency
+      const response = await fetch(`/api/products?id=${product.id}`);
+      const data = await response.json();
+      
+      if (data.product) {
+        addToCart({
+          id: data.product.id,
+          name: data.product.name,
+          price: data.product.price,
+          quantity: quantity,
+          image: data.product.image
+        });
+        toast.success('Added to cart!');
+      } else {
+        toast.error('Failed to add item to cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add item to cart');
+    }
   };
 
   const handleWishlistToggle = () => {
@@ -115,7 +134,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
         <div className="flex items-center space-x-2 text-gray-600 mb-8">
           <Link href="/" className="hover:text-orange-600 cursor-pointer">Home</Link>
           <i className="ri-arrow-right-s-line w-4 h-4"></i>
-          <Link href="/#products" className="hover:text-orange-600 cursor-pointer">Products</Link>
+          <Link href="/products" className="hover:text-orange-600 cursor-pointer">Products</Link>
           <i className="ri-arrow-right-s-line w-4 h-4"></i>
           <span className="text-gray-900 font-medium">{product.name}</span>
         </div>
@@ -127,32 +146,9 @@ export default function ProductDetail({ productId }: { productId: string }) {
               src={product.image}
               alt={product.name}
               width={600}
-              height={400}
-              className="w-full h-96 object-contain object-center rounded-lg mb-4 transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
+              height={500}
+              className="w-full max-h-[600px] object-cover rounded-lg mb-4 transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
             />
-            {/* <div className="grid grid-cols-3 gap-4">
-              <Image 
-                src={product.image}
-                alt={product.name}
-                width={100}
-                height={100}
-                className="w-full h-24 object-contain object-center rounded-lg border-2 border-blue-200 cursor-pointer"
-              />
-              <Image 
-                src={product.image}
-                alt={product.name}
-                width={100}
-                height={100}
-                className="w-full h-24 object-contain object-center rounded-lg border cursor-pointer hover:border-blue-200"
-              />
-              <Image 
-                src={product.image}
-                alt={product.name}
-                width={100}
-                height={100}
-                className="w-full h-24 object-contain object-center rounded-lg border cursor-pointer hover:border-blue-200"
-              />
-            </div> */}
           </div>
 
           {/* Product Info */}
@@ -203,16 +199,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
               >
                 Add to Cart - {formatPrice(product.price * quantity)}
               </button>
-              <button
-                onClick={handleWishlistToggle}
-                className={`p-4 rounded-lg border transition-colors cursor-pointer ${
-                  isInWishlist
-                    ? 'bg-red-50 border-red-200 text-red-600'
-                    : 'border-gray-300 text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                <i className={`w-6 h-6 ${isInWishlist ? 'ri-heart-fill' : 'ri-heart-line'}`}></i>
-              </button>
+
             </div>
 
             {/* Security Features */}
@@ -224,10 +211,6 @@ export default function ProductDetail({ productId }: { productId: string }) {
               <div className="flex items-center text-gray-600">
                 <i className="ri-truck-line text-orange-600 w-5 h-5 mr-2 flex items-center justify-center"></i>
                 <span className="text-sm">Free Shipping</span>
-              </div>
-              <div className="flex items-center text-gray-600">
-                <i className="ri-refresh-line text-purple-600 w-5 h-5 mr-2 flex items-center justify-center"></i>
-                <span className="text-sm">Easy Returns</span>
               </div>
             </div>
           </div>

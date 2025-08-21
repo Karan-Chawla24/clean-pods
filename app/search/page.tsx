@@ -17,40 +17,52 @@ interface Product {
   image: string;
 }
 
-const allProducts: Product[] = [
-  {
-    id: 'essential',
-    name: 'Essential Clean',
-    price: 299,
-    description: 'Pure detergent power for everyday cleaning. Removes dirt and stains effectively while being gentle on fabrics.',
-    image: '/Single.jpg',
-    //image: 'https://readdy.ai/api/search-image?query=Single%20blue%20detergent%20pod%20on%20clean%20white%20background%2C%20modern%20product%20photography%2C%20premium%20household%20cleaning%20product%2C%20glossy%20finish%2C%20professional%20lighting%2C%20minimalist%20composition%2C%20fresh%20and%20clean%20aesthetic&width=300&height=300&seq=product-basic&orientation=squarish',
-  },
-  {
-    id: 'soft-fresh',
-    name: 'Soft & Fresh',
-    price: 449,
-    description: 'Complete care with detergent and fabric softener. Cleans thoroughly while making clothes soft and fragrant.',
-    image: '/Threein1.jpg',
-    //image: 'https://readdy.ai/api/search-image?query=Dual-colored%20detergent%20pod%20with%20blue%20and%20green%20swirls%20on%20clean%20white%20background%2C%20premium%20household%20cleaning%20product%2C%20professional%20product%20photography%2C%20modern%20design%2C%20glossy%20finish%2C%20fresh%20and%20soft%20aesthetic&width=300&height=300&seq=product-softener&orientation=squarish',
-  },
-  {
-    id: 'ultimate',
-    name: 'Ultimate Care',
-    price: 599,
-    description: 'The complete solution with detergent, fabric softener, and stain remover for the toughest cleaning challenges.',
-    image: 'fivein1.jpg', 
-    //image: 'https://readdy.ai/api/search-image?query=Triple-layered%20detergent%20pod%20with%20blue%2C%20green%2C%20and%20white%20sections%20on%20clean%20white%20background%2C%20premium%20all-in-one%20cleaning%20product%2C%20professional%20product%20photography%2C%20modern%20design%2C%20glossy%20finish%2C%20complete%20care%20aesthetic&width=300&height=300&seq=product-complete&orientation=squarish',
-  },
-];
+// Fetch products from server-side API
+async function fetchProducts(): Promise<Product[]> {
+  try {
+    const response = await fetch('/api/products');
+    if (!response.ok) {
+      throw new Error('Failed to fetch products');
+    }
+    const data = await response.json();
+    return data.products;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
+}
 
 function SearchContent() {
   const searchParams = useSearchParams();
   const { searchQuery, addToCart, addToWishlist, removeFromWishlist, wishlist } = useAppStore();
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [currentQuery, setCurrentQuery] = useState('');
 
+  // Load products from API
   useEffect(() => {
+    async function loadProducts() {
+      setLoading(true);
+      setError(null);
+      
+      const productData = await fetchProducts();
+      if (productData.length > 0) {
+        setAllProducts(productData);
+      } else {
+        setError('No products available');
+      }
+      setLoading(false);
+    }
+
+    loadProducts();
+  }, []);
+
+  // Filter products based on search query
+  useEffect(() => {
+    if (allProducts.length === 0) return;
+    
     // Get query from URL params or store
     const urlQuery = searchParams.get('q') || '';
     const query = urlQuery || searchQuery;
@@ -65,17 +77,30 @@ function SearchContent() {
       );
       setFilteredProducts(filtered);
     }
-  }, [searchParams, searchQuery]);
+  }, [searchParams, searchQuery, allProducts]);
 
-  const handleAddToCart = (product: Product) => {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: product.image,
-    });
-    toast.success('Added to cart!');
+  const handleAddToCart = async (product: Product) => {
+    try {
+      // Fetch latest price from API to ensure consistency
+      const response = await fetch(`/api/products?id=${product.id}`);
+      const data = await response.json();
+      
+      if (data.product) {
+        addToCart({
+          id: data.product.id,
+          name: data.product.name,
+          price: data.product.price,
+          quantity: 1,
+          image: data.product.image,
+        });
+        toast.success('Added to cart!');
+      } else {
+        toast.error('Failed to add item to cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add item to cart');
+    }
   };
 
   const handleWishlistToggle = (product: Product) => {
@@ -94,6 +119,36 @@ function SearchContent() {
       toast.success('Added to wishlist!');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-orange-50">
+        <Header />
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading products...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-orange-50">
+        <Header />
+        <div className="flex items-center justify-center py-16">
+          <div className="text-center">
+            <p className="text-red-600 text-lg mb-4">{error}</p>
+            <Link href="/" className="text-orange-600 hover:text-orange-700 underline">
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-orange-50">

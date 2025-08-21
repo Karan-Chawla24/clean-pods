@@ -10,15 +10,28 @@ import Image from 'next/image';
 export default function Wishlist() {
   const { wishlist, removeFromWishlist, addToCart } = useAppStore();
 
-  const handleAddToCart = (item: any) => {
-    addToCart({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      quantity: 1,
-      image: item.image,
-    });
-    toast.success('Added to cart!');
+  const handleAddToCart = async (item: WishlistItem) => {
+    try {
+      // Fetch latest price from API to ensure consistency
+      const response = await fetch(`/api/products?id=${item.id}`);
+      const data = await response.json();
+      
+      if (data.product) {
+        addToCart({
+          id: data.product.id,
+          name: data.product.name,
+          price: data.product.price,
+          quantity: 1,
+          image: data.product.image,
+        });
+        toast.success('Added to cart!');
+      } else {
+        toast.error('Failed to add item to cart');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Failed to add item to cart');
+    }
   };
 
   const handleRemoveFromWishlist = (id: string) => {

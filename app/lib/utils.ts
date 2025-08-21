@@ -14,7 +14,13 @@ export function formatPrice(price: number): string {
 }
 
 export function generateOrderId(): string {
-  return 'CP' + Math.random().toString(36).substr(2, 9).toUpperCase();
+  // Generate a random string with only alphanumeric characters
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let result = 'CP';
+  for (let i = 0; i < 9; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
 }
 
 export function calculateTax(amount: number): number {
@@ -58,4 +64,4 @@ export function validateEmail(email: string): boolean {
 export function validatePhone(phone: string): boolean {
   const phoneRegex = /^[6-9]\d{9}$/;
   return phoneRegex.test(phone);
-} 
+}
