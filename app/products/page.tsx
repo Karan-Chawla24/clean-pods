@@ -8,37 +8,66 @@ import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import SinglePod from "../../images/Single.jpg";
 
-const products = [
-  {
-    id: "essential",
-    name: "Essential Clean",
-    price: 299,
-    description:
-      "Pure detergent power for everyday cleaning. Removes dirt and stains effectively while being gentle on fabrics.",
-    features: [
-      "Powerful stain removal",
-      "Gentle on all fabric types",
-      "Fresh scent",
-      "30 pods per pack",
-    ],
-    image: SinglePod,
-    isPopular: false,
-  },
-];
-const product = products[0];
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  features: string[];
+  image: string;
+  ingredients: string;
+  usage: string;
+}
+
+// Fetch products from server-side API
+async function fetchProducts(): Promise<Product[]> {
+  try {
+    const response = await fetch('/api/products');
+    if (!response.ok) {
+      throw new Error('Failed to fetch products');
+    }
+    const data = await response.json();
+    return data.products;
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return [];
+  }
+}
 
 export default function Products() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const { addToCart } = useAppStore();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isLoaded && !user) {
       router.push("/auth/signin");
     }
   }, [isLoaded, user, router]);
+
+  useEffect(() => {
+    async function loadProducts() {
+      setLoading(true);
+      setError(null);
+      
+      const productData = await fetchProducts();
+      if (productData.length > 0) {
+        setProducts(productData);
+      } else {
+        setError('No products available');
+      }
+      setLoading(false);
+    }
+
+    if (isLoaded && user) {
+      loadProducts();
+    }
+  }, [isLoaded, user]);
 
   if (!isLoaded || !user) {
     return (
@@ -48,15 +77,52 @@ export default function Products() {
     );
   }
 
-  const handleAddToCart = (product: any) => {
-    addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: 1,
-      image: product.image,
-    });
-    toast.success("Added to cart!");
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || products.length === 0) {
+    return (
+      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 text-lg mb-4">{error || 'No products available'}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Use the first product for display (maintaining current single-product layout)
+  const product = products[0];
+
+  const handleAddToCart = async (product: any) => {
+    try {
+      // Fetch latest price from API to ensure consistency
+      const response = await fetch(`/api/products?id=${product.id}`);
+      const data = await response.json();
+      
+      if (data.product) {
+        addToCart({
+          id: data.product.id,
+          name: data.product.name,
+          price: data.product.price,
+          quantity: 1,
+          image: data.product.image,
+        });
+        toast.success("Added to cart!");
+      } else {
+        toast.error("Failed to add item to cart");
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error("Failed to add item to cart");
+    }
   };
 
   return (
@@ -82,7 +148,7 @@ export default function Products() {
                   src={product.image}
                   alt={product.name}
                   fill
-                  className="object-contain rounded-full transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
+                  className="object-contain rounded-full transition-transform duration-300"
                 />
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-orange-600 mb-2 text-center drop-shadow break-words">
@@ -109,12 +175,20 @@ export default function Products() {
                 <span className="text-2xl sm:text-3xl font-bold text-orange-500">
                   ₹{product.price}
                 </span>
-                <button
-                  onClick={() => handleAddToCart(product)}
-                  className="bg-gradient-to-r from-sky-400 via-sky-500 to-orange-400 text-white px-6 py-3 rounded-full hover:from-sky-500 hover:via-sky-600 hover:to-orange-500 transition-all duration-300 shadow-lg shadow-sky-200 w-full sm:w-auto"
-                >
-                  Add to Cart
-                </button>
+                <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                  <button
+                    onClick={() => router.push(`/products/${product.id}`)}
+                    className="bg-gradient-to-r from-orange-400 via-orange-500 to-sky-400 text-white px-6 py-3 rounded-full hover:from-orange-500 hover:via-orange-600 hover:to-sky-500 transition-all duration-300 shadow-lg shadow-orange-200 w-full sm:w-auto"
+                  >
+                    View Details
+                  </button>
+                  <button
+                    onClick={() => handleAddToCart(product)}
+                    className="bg-gradient-to-r from-sky-400 via-sky-500 to-orange-400 text-white px-6 py-3 rounded-full hover:from-sky-500 hover:via-sky-600 hover:to-orange-500 transition-all duration-300 shadow-lg shadow-sky-200 w-full sm:w-auto"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
               </div>
             </div>
           </div>

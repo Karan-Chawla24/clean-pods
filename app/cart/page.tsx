@@ -75,12 +75,12 @@ export default function Cart() {
                       alt={item.name}
                       width={96}
                       height={96}
-                      className="w-24 h-24 object-cover object-top rounded-lg mr-6 transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
+                      className="w-24 h-24 object-fill object-center rounded-lg mr-6 transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
                     />
                     
                     <div className="flex-1">
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.name}</h3>
-                      <p className="text-blue-600 font-semibold text-lg">{formatPrice(item.price)}</p>
+                      <p className="text-amber-600 font-semibold text-lg">{formatPrice(item.price)}</p>
                     </div>
 
                     <div className="flex items-center space-x-4">
@@ -126,7 +126,7 @@ export default function Cart() {
                 >
                   Clear Cart
                 </button>
-                <Link href="/#products" className="text-blue-600 hover:text-blue-700 font-medium cursor-pointer">
+                <Link href="/#products" className="text-orange-600 hover:text-blue-700 font-medium cursor-pointer">
                   Continue Shopping
                 </Link>
               </div>
@@ -159,7 +159,7 @@ export default function Cart() {
 
               <button 
                 onClick={handleProceedToCheckout}
-                className="w-full bg-blue-600 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap mb-4"
+                className="w-full bg-gradient-to-r from-orange-400 to-amber-400 text-white py-4 px-6 rounded-lg text-lg font-semibold hover:bg-orange-700 transition-colors cursor-pointer whitespace-nowrap mb-4"
               >
                 Proceed to Checkout
               </button>
@@ -175,10 +175,6 @@ export default function Cart() {
                   <div className="flex items-center text-gray-600">
                     <i className="ri-truck-line text-blue-600 w-5 h-5 mr-3 flex items-center justify-center"></i>
                     <span className="text-sm">Free Shipping on All Orders</span>
-                  </div>
-                  <div className="flex items-center text-gray-600">
-                    <i className="ri-refresh-line text-purple-600 w-5 h-5 mr-3 flex items-center justify-center"></i>
-                    <span className="text-sm">30-Day Money Back Guarantee</span>
                   </div>
                 </div>
               </div>

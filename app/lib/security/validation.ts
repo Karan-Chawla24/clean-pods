@@ -22,6 +22,14 @@ export const contactFormSchema = z.object({
     .regex(/^[a-zA-Z0-9\s\-_.,!?@#$%^&*()+=<>{}[\]|\\/:;"'`~]+$/, 'Message contains invalid characters')
 });
 
+// Cart item validation schema
+export const cartItemSchema = z.object({
+  id: z.string().min(1, 'Product ID is required'),
+  name: z.string().min(1, 'Product name is required'),
+  price: z.number().positive('Price must be positive'),
+  quantity: z.number().int().positive('Quantity must be a positive integer')
+});
+
 // Order creation validation schema
 export const createOrderSchema = z.object({
   amount: z.number()
@@ -36,7 +44,11 @@ export const createOrderSchema = z.object({
   receipt: z.string()
     .min(1, 'Receipt is required')
     .max(100, 'Receipt must be less than 100 characters')
-    .regex(/^[a-zA-Z0-9\-_]+$/, 'Receipt can only contain letters, numbers, hyphens, and underscores')
+    .regex(/^[a-zA-Z0-9\-_]+$/, 'Receipt can only contain letters, numbers, hyphens, and underscores'),
+  
+  cart: z.array(cartItemSchema)
+    .min(1, 'Cart must contain at least one item')
+    .max(50, 'Cart cannot contain more than 50 items')
 });
 
 // Razorpay webhook validation schema

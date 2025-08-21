@@ -33,11 +33,11 @@ interface Order {
 // Product image mapping based on product names and IDs
 const productImageMap: { [key: string]: string } = {
   // By ID
-  'essential': '/Single.jpg',
+  'essential': '/pod_image.jpg',
   'soft-fresh': '/Threein1.jpg',
   'ultimate': '/fivein1.jpg',
   // By name (for backward compatibility)
-  'Essential Clean': '/Single.jpg',
+  'Essential Clean': '/pod_image.jpg',
   'Soft & Fresh': '/Threein1.jpg',
   'Ultimate Care': '/fivein1.jpg',
 };
