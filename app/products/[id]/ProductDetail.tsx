@@ -139,63 +139,63 @@ export default function ProductDetail({ productId }: { productId: string }) {
           <span className="text-gray-900 font-medium">{product.name}</span>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
           {/* Product Image */}
-          <div className="bg-white rounded-2xl p-8">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8">
             <Image 
               src={product.image}
               alt={product.name}
               width={600}
               height={500}
-              className="w-full max-h-[600px] object-cover rounded-lg mb-4 transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
+              className="w-full max-h-[400px] sm:max-h-[500px] lg:max-h-[600px] object-cover rounded-lg mb-4 transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
             />
           </div>
 
           {/* Product Info */}
-          <div className="bg-white rounded-2xl p-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">{product.name}</h1>
-            <div className="text-3xl font-bold text-orange-600 mb-6">{formatPrice(product.price)}</div>
+          <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 break-words">{product.name}</h1>
+            <div className="text-2xl sm:text-3xl font-bold text-orange-600 mb-6">{formatPrice(product.price)}</div>
             
-            <p className="text-gray-600 text-lg mb-8">{product.description}</p>
+            <p className="text-gray-600 text-base sm:text-lg mb-8 break-words">{product.description}</p>
 
             {/* Features */}
             <div className="mb-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Key Features</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Key Features</h3>
               <ul className="space-y-2">
                 {product.features.map((feature, index) => (
-                  <li key={index} className="flex items-center text-gray-700">
-                    <i className="ri-check-line text-green-600 w-5 h-5 mr-3 flex items-center justify-center"></i>
-                    {feature}
+                  <li key={index} className="flex items-start text-gray-700 text-sm sm:text-base">
+                    <span className="text-green-600 mr-3 mt-1 flex-shrink-0">✓</span>
+                    <span className="break-words">{feature}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
             {/* Quantity Selector */}
-            <div className="flex items-center space-x-4 mb-8">
-              <span className="text-gray-700 font-medium">Quantity:</span>
-              <div className="flex items-center border border-gray-300 rounded-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-8">
+              <span className="text-gray-700 font-medium text-sm sm:text-base">Quantity:</span>
+              <div className="flex items-center border border-gray-300 rounded-lg w-fit">
                 <button 
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-900 cursor-pointer"
+                  className="px-3 sm:px-4 py-2 text-gray-600 hover:text-gray-900 cursor-pointer text-lg"
                 >
-                  <i className="ri-subtract-line w-4 h-4 flex items-center justify-center"></i>
+                  −
                 </button>
-                <span className="px-4 py-2 bg-gray-50 font-medium">{quantity}</span>
+                <span className="px-3 sm:px-4 py-2 bg-gray-50 font-medium min-w-[3rem] text-center">{quantity}</span>
                 <button 
                   onClick={() => setQuantity(quantity + 1)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-900 cursor-pointer"
+                  className="px-3 sm:px-4 py-2 text-gray-600 hover:text-gray-900 cursor-pointer text-lg"
                 >
-                  <i className="ri-add-line w-4 h-4 flex items-center justify-center"></i>
+                  +
                 </button>
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex space-x-4 mb-4">
+            <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 mb-4">
               <button 
                 onClick={handleAddToCart}
-                className="flex-1 bg-gradient-to-r from-orange-400 to-amber-400 text-white py-4 px-8 rounded-lg text-lg font-semibold hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer whitespace-nowrap"
+                className="flex-1 bg-gradient-to-r from-orange-400 to-amber-400 text-white py-3 sm:py-4 px-4 sm:px-8 rounded-lg text-base sm:text-lg font-semibold hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer text-center break-words"
               >
                 Add to Cart - {formatPrice(product.price * quantity)}
               </button>
@@ -217,14 +217,14 @@ export default function ProductDetail({ productId }: { productId: string }) {
         </div>
 
         {/* Product Details Tabs */}
-        <div className="bg-white rounded-2xl mt-12">
-          <div className="border-b">
-            <div className="flex">
+        <div className="bg-white rounded-2xl mt-8 sm:mt-12">
+          <div className="border-b overflow-x-auto">
+            <div className="flex min-w-full">
               {['description', 'ingredients', 'usage'].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
-                  className={`px-8 py-4 font-medium capitalize cursor-pointer whitespace-nowrap ${
+                  className={`px-4 sm:px-6 lg:px-8 py-3 sm:py-4 font-medium capitalize cursor-pointer whitespace-nowrap text-sm sm:text-base flex-shrink-0 ${
                     activeTab === tab 
                       ? 'border-b-2 border-orange-600 text-orange-600' 
                       : 'text-gray-600 hover:text-gray-900'
@@ -236,24 +236,24 @@ export default function ProductDetail({ productId }: { productId: string }) {
             </div>
           </div>
           
-          <div className="p-8">
+          <div className="p-4 sm:p-6 md:p-8">
             {activeTab === 'description' && (
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Product Description</h3>
-                <p className="text-gray-700 text-lg leading-relaxed mb-6">{product.description}</p>
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Product Description</h3>
+                <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-6 break-words">{product.description}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                  <div className="w-full">
                     <h4 className="font-semibold text-gray-900 mb-3">Perfect For:</h4>
-                    <ul className="space-y-2 text-gray-700">
+                    <ul className="space-y-2 text-gray-700 text-sm sm:text-base">
                       <li>• Daily laundry loads</li>
                       <li>• All fabric types</li>
                       <li>• Front and top-load washers</li>
                       <li>• Cold and warm water washing</li>
                     </ul>
                   </div>
-                  <div>
+                  <div className="w-full">
                     <h4 className="font-semibold text-gray-900 mb-3">Benefits:</h4>
-                    <ul className="space-y-2 text-gray-700">
+                    <ul className="space-y-2 text-gray-700 text-sm sm:text-base">
                       <li>• Convenient pre-measured pods</li>
                       <li>• No measuring or mess</li>
                       <li>• Concentrated formula</li>
@@ -266,11 +266,11 @@ export default function ProductDetail({ productId }: { productId: string }) {
             
             {activeTab === 'ingredients' && (
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">Ingredients</h3>
-                <p className="text-gray-700 text-lg mb-6">{product.ingredients}</p>
-                <div className="bg-orange-50 p-6 rounded-lg">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Ingredients</h3>
+                <p className="text-gray-700 text-base sm:text-lg mb-6 break-words">{product.ingredients}</p>
+                <div className="bg-orange-50 p-4 sm:p-6 rounded-lg">
                   <h4 className="font-semibold text-gray-900 mb-3">Safety Information:</h4>
-                  <ul className="space-y-2 text-gray-700">
+                  <ul className="space-y-2 text-gray-700 text-sm sm:text-base">
                     <li>• Keep out of reach of children</li>
                     <li>• Do not bite or chew pods</li>
                     <li>• Store in cool, dry place</li>
@@ -282,29 +282,29 @@ export default function ProductDetail({ productId }: { productId: string }) {
             
             {activeTab === 'usage' && (
               <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">How to Use</h3>
-                <p className="text-gray-700 text-lg mb-6">{product.usage}</p>
-                <div className="grid md:grid-cols-3 gap-6">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">How to Use</h3>
+                <p className="text-gray-700 text-base sm:text-lg mb-6 break-words">{product.usage}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-2xl font-bold text-orange-600">1</span>
                     </div>
                     <h4 className="font-semibold text-gray-900 mb-2">Place Pod</h4>
-                    <p className="text-gray-600 text-sm">Place pod in the drum before adding clothes</p>
+                    <p className="text-gray-600 text-sm break-words">Place pod in the drum before adding clothes</p>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-2xl font-bold text-orange-600">2</span>
                     </div>
                     <h4 className="font-semibold text-gray-900 mb-2">Add Clothes</h4>
-                    <p className="text-gray-600 text-sm">Add your laundry on top of the pod</p>
+                    <p className="text-gray-600 text-sm break-words">Add your laundry on top of the pod</p>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-2xl font-bold text-orange-600">3</span>
                     </div>
                     <h4 className="font-semibold text-gray-900 mb-2">Start Wash</h4>
-                    <p className="text-gray-600 text-sm">Run your regular wash cycle</p>
+                    <p className="text-gray-600 text-sm break-words">Run your regular wash cycle</p>
                   </div>
                 </div>
               </div>
