@@ -1,4 +1,3 @@
-
 'use client';
 
 import Image from 'next/image';
@@ -67,52 +66,100 @@ export default function Cart() {
           <div className="grid lg:grid-cols-3 gap-12">
             {/* Cart Items */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-2xl overflow-hidden">
+              <div className="bg-white rounded-2xl overflow-hidden shadow-lg">
                 {cart.map((item, index) => (
-                  <div key={item.id} className={`flex items-center p-6 ${index !== cart.length - 1 ? 'border-b' : ''}`}>
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      width={96}
-                      height={96}
-                      className="w-24 h-24 object-fill object-center rounded-lg mr-6 transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
-                    />
-                    
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.name}</h3>
-                      <p className="text-amber-600 font-semibold text-lg">{formatPrice(item.price)}</p>
+                  <div key={item.id} className={`p-4 md:p-6 ${index !== cart.length - 1 ? 'border-b' : ''}`}>
+                    {/* Mobile Layout */}
+                    <div className="block md:hidden">
+                      <div className="flex items-start space-x-3 mb-3">
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          width={80}
+                          height={80}
+                          className="w-20 h-20 object-fill object-center rounded-lg flex-shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-base font-semibold text-gray-900 mb-1 line-clamp-2">{item.name}</h3>
+                          <p className="text-amber-600 font-semibold text-base">{formatPrice(item.price)}</p>
+                        </div>
+                        <button 
+                          onClick={() => handleRemoveItem(item.id)}
+                          className="text-red-500 hover:text-red-700 p-1 cursor-pointer bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center justify-center"
+                          title="Remove item"
+                        >
+                          <span className="text-lg font-bold">×</span>
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center border border-gray-300 rounded-lg">
+                          <button 
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                            className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer flex items-center justify-center"
+                          >
+                            <span className="text-lg font-bold">−</span>
+                          </button>
+                          <span className="px-4 py-2 bg-gray-50 font-medium min-w-[3rem] text-center">{item.quantity}</span>
+                          <button 
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                            className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer flex items-center justify-center"
+                          >
+                            <span className="text-lg font-bold">+</span>
+                          </button>
+                        </div>
+                        <div className="text-lg font-bold text-gray-900">
+                          {formatPrice(item.price * item.quantity)}
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex items-center space-x-4">
-                      {/* Quantity Controls */}
-                      <div className="flex items-center border border-gray-300 rounded-lg">
-                        <button 
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
-                          className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer"
-                        >
-                          <i className="ri-subtract-line w-4 h-4 flex items-center justify-center"></i>
-                        </button>
-                        <span className="px-4 py-2 bg-gray-50 font-medium min-w-[3rem] text-center">{item.quantity}</span>
-                        <button 
-                          onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
-                          className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer"
-                        >
-                          <i className="ri-add-line w-4 h-4 flex items-center justify-center"></i>
-                        </button>
+                    {/* Desktop/Tablet Layout */}
+                    <div className="hidden md:flex md:items-center md:space-x-6">
+                      <Image
+                        src={item.image}
+                        alt={item.name}
+                        width={96}
+                        height={96}
+                        className="w-24 h-24 object-fill object-center rounded-lg transition-transform duration-300 hover:scale-105 hover:-translate-y-1 flex-shrink-0"
+                      />
+                      
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.name}</h3>
+                        <p className="text-amber-600 font-semibold text-lg">{formatPrice(item.price)}</p>
                       </div>
 
-                      {/* Total Price */}
-                      <div className="text-lg font-bold text-gray-900 min-w-[5rem] text-right">
-                        {formatPrice(item.price * item.quantity)}
-                      </div>
+                      <div className="flex items-center space-x-6">
+                        {/* Quantity Controls */}
+                        <div className="flex items-center border border-gray-300 rounded-lg">
+                          <button 
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
+                            className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer flex items-center justify-center"
+                          >
+                            <span className="text-lg font-bold">−</span>
+                          </button>
+                          <span className="px-4 py-2 bg-gray-50 font-medium min-w-[3rem] text-center">{item.quantity}</span>
+                          <button 
+                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
+                            className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer flex items-center justify-center"
+                          >
+                            <span className="text-lg font-bold">+</span>
+                          </button>
+                        </div>
 
-                      {/* Remove Button */}
-                      <button 
-                        onClick={() => handleRemoveItem(item.id)}
-                        className="text-red-500 hover:text-red-700 p-2 cursor-pointer"
-                      >
-                        <i className="ri-delete-bin-line w-5 h-5 flex items-center justify-center"></i>
-                      </button>
+                        {/* Total Price */}
+                        <div className="text-lg font-bold text-gray-900 min-w-[5rem] text-right">
+                          {formatPrice(item.price * item.quantity)}
+                        </div>
+
+                        {/* Remove Button */}
+                        <button 
+                          onClick={() => handleRemoveItem(item.id)}
+                          className="text-red-500 hover:text-red-700 p-2 cursor-pointer bg-red-50 hover:bg-red-100 rounded-lg transition-colors flex items-center justify-center"
+                          title="Remove item"
+                        >
+                          <span className="text-lg font-bold">×</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
