@@ -40,18 +40,8 @@ export const POST = withRateLimit(rateLimitConfigs.strict)(async (request: NextR
     }
 
     // Process webhook here
-    console.log('Razorpay webhook processed successfully:', {
-      orderId: sanitizedPayload.razorpay_order_id,
-      paymentId: sanitizedPayload.razorpay_payment_id,
-      timestamp: new Date().toISOString()
-    });
-
-    return NextResponse.json({
-      success: true,
-      message: 'Webhook processed successfully',
-      orderId: sanitizedPayload.razorpay_order_id,
-      paymentId: sanitizedPayload.razorpay_payment_id
-    });
+    console.log('Razorpay webhook processed successfully');
+    return NextResponse.json({ success: true });
 
   } catch (error) {
     console.error('Razorpay webhook error:', error);

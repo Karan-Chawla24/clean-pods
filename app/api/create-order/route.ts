@@ -30,14 +30,13 @@ export const POST = withRateLimit(rateLimitConfigs.moderate)(async (request: Nex
       );
     }
 
-    // Get and log request body for debugging
+    // Get request body
     const body = await request.json();
-    console.log('Received request body:', JSON.stringify(body, null, 2));
     
     // Validate request body with Zod schema
     const validationResult = createOrderSchema.safeParse(body);
     if (!validationResult.success) {
-      console.log('Validation failed:', validationResult.error.issues);
+-      console.log('Validation failed:', validationResult.error.issues);
       const errorDetails = validationResult.error.issues.map(issue => 
         `${issue.path.join('.')}: ${issue.message}`
       ).join(', ');
@@ -47,7 +46,7 @@ export const POST = withRateLimit(rateLimitConfigs.moderate)(async (request: Nex
       );
     }
     
-    console.log('Validation successful:', validationResult.data);
+    // Validation successful
 
     const { amount, currency, receipt, cart } = validationResult.data;
 
@@ -87,6 +86,7 @@ export const POST = withRateLimit(rateLimitConfigs.moderate)(async (request: Nex
 
     return NextResponse.json({
       success: true,
+      key: keyId,
       order: {
         id: order.id,
         amount: order.amount,

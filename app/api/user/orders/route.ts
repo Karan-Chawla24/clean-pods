@@ -43,7 +43,8 @@ export async function POST(request: NextRequest) {
     }
     
     const data = await request.json();
-    console.log('POST /api/user/orders - Received data:', JSON.stringify(data, null, 2));
+    // ...existing code ...
+    // Received user order request
     
     // Validate required fields
     if (!data.paymentId || !data.items || !data.total) {
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
       include: { items: true },
     });
     
-    console.log('POST /api/user/orders - Order created successfully with ID:', order.id);
+    // Order created successfully
     
     return NextResponse.json({ success: true, orderId: order.id });
   } catch (error) {
