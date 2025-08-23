@@ -25,7 +25,7 @@ export async function saveOrder(orderData: {
   }>;
   total: number;
 }) {
-  console.log('saveOrder called with data:', JSON.stringify(orderData, null, 2));
+  // saveOrder invoked
   
   try {
     // Handle both legacy format (with customer object) and new format (with direct fields)
@@ -57,7 +57,7 @@ export async function saveOrder(orderData: {
       include: { items: true },
     });
     
-    console.log('Order created successfully:', order);
+    // Order created
     return order.id;
   } catch (error) {
     console.error('Error in saveOrder:', error);

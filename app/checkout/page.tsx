@@ -70,7 +70,6 @@ export default function Checkout() {
         cart.forEach(cartItem => {
           const currentProduct = products.find((p: any) => p.id === cartItem.id);
           if (currentProduct && currentProduct.price !== cartItem.price) {
-            console.log(`Updating price for ${cartItem.name} from ${cartItem.price} to ${currentProduct.price}`);
             updateCartItemPrice(cartItem.id, currentProduct.price);
           }
         });
@@ -105,7 +104,7 @@ export default function Checkout() {
         }))
       };
       
-      console.log('Sending request to /api/create-order:', requestBody);
+      // Request sent to /api/create-order
       
       const orderResponse = await fetch('/api/create-order', {
         method: 'POST',
@@ -132,10 +131,9 @@ export default function Checkout() {
       }
 
       // Initialize Razorpay
-      const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
-      
+      const razorpayKey = orderData.key;
       if (!razorpayKey) {
-        throw new Error('Razorpay key not configured. Please check your environment variables.');
+        throw new Error('Razorpay key missing from server response');
       }
       
       const options = {
@@ -203,8 +201,7 @@ export default function Checkout() {
                   }
                   // Note: For authenticated users, userId is handled by the server via Clerk's auth()
                   
-                  console.log('Sending order payload:', orderPayload);
-                  
+                  // Sending order payload to server
                   // Get auth token for authenticated users
                   const headers: Record<string, string> = { 'Content-Type': 'application/json' };
                   if (user) {
@@ -224,8 +221,7 @@ export default function Checkout() {
                   const errorText = await orderResponse.text();
                   console.error('Order creation failed:', errorText);
                 } else {
-                  const orderResult = await orderResponse.json();
-                  console.log('Order created successfully:', orderResult);
+                  await orderResponse.json();
                 }
               } catch (dbError) {
                 console.error('Order creation error:', dbError);

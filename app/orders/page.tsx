@@ -36,10 +36,12 @@ const productImageMap: { [key: string]: string } = {
   'essential': '/pod_image.jpg',
   'soft-fresh': '/Threein1.jpg',
   'ultimate': '/fivein1.jpg',
-  // By name (for backward compatibility)
+  // By name (for backward compatibility with old orders)
   'Essential Clean': '/pod_image.jpg',
   'Soft & Fresh': '/Threein1.jpg',
   'Ultimate Care': '/fivein1.jpg',
+  // Current product name (post August 20th)
+  'Essential Clean Pod': '/pod_image.jpg',
 };
 
 export default function Orders() {

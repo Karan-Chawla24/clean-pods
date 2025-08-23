@@ -29,7 +29,8 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
-    console.log('POST /api/orders - Received data:', JSON.stringify(data, null, 2));
+    // ...existing code ...
+    // Received order request
     
     // Prepare order data for saving
     const orderData: any = {
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
     }
     
     const orderId = await saveOrder(orderData);
-    console.log('POST /api/orders - Order created successfully with ID:', orderId);
+    // Order created successfully
     
     return NextResponse.json({ success: true, orderId });
   } catch (error) {
