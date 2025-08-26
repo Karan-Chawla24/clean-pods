@@ -139,8 +139,8 @@ async function handleUserDeleted(userData: any) {
     await prisma.user.delete({
       where: { id: id },
     });
-    console.log('User deleted from database:', id);
+    safeLog('info', 'User deleted from database', { userId: id });
   } catch (error) {
-    console.error('Error deleting user from database:', error);
+    safeLogError('Error deleting user from database', error);
   }
 }

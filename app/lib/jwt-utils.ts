@@ -1,10 +1,13 @@
 import { SignJWT, jwtVerify, JWTPayload } from 'jose';
 import { safeLogError } from './security/logging';
 
-// JWT secret - should be a strong random string in production
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production-min-32-chars'
-);
+// Validate JWT secret is provided
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required');
+}
+
+// JWT secret - must be provided via environment variable
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 // Token expiry time (5 minutes)
 const TOKEN_EXPIRY = '5m';

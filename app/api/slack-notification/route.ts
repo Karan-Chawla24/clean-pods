@@ -265,10 +265,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to send Slack notification',
-        details: error && typeof error === 'object' && 'message' in error 
-          ? (error as any).message 
-          : 'Unknown error'
+        error: 'Failed to send Slack notification'
       },
       { status: 500 }
     );

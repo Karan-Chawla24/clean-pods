@@ -11,6 +11,7 @@
 
 const https = require('https');
 const http = require('http');
+const { safeLog, safeLogError } = require('../app/lib/security/logging');
 
 // Data masking functions for sensitive information
 function maskEmail(email) {
@@ -34,9 +35,9 @@ const SITE_URL = process.env.SITE_URL || 'http://localhost:3000';
 const ADMIN_KEY = process.env.ADMIN_ORDERS_KEY;
 
 if (!ADMIN_KEY) {
-  console.error('❌ ADMIN_ORDERS_KEY environment variable is required');
-  console.log('Set it in your .env.local file or export it:');
-  console.log('export ADMIN_ORDERS_KEY="your_secret_admin_key_here"');
+  safeLogError('❌ ADMIN_ORDERS_KEY environment variable is required');
+  safeLog('info', 'Set it in your .env.local file or export it:');
+  safeLog('info', 'export ADMIN_ORDERS_KEY="your_secret_admin_key_here"');
   process.exit(1);
 }
 
@@ -44,7 +45,7 @@ async function fetchOrders() {
   const url = `${SITE_URL}/api/orders`;
   const requestModule = url.startsWith('https') ? https : http;
   
-  console.log(`🔍 Fetching orders from: ${url}`);
+  safeLog('info', `🔍 Fetching orders from: ${url}`);
   
   const options = {
     method: 'GET',
@@ -87,39 +88,39 @@ async function fetchOrders() {
 
 async function main() {
   try {
-    console.log('🔐 Admin Orders Dashboard');
-    console.log('========================\n');
+    safeLog('info', '🔐 Admin Orders Dashboard');
+    safeLog('info', '========================\n');
     
     const orders = await fetchOrders();
     
     if (!orders || orders.length === 0) {
-      console.log('📪 No orders found in the database.\n');
+      safeLog('info', '📪 No orders found in the database.\n');
       return;
     }
     
-    console.log(`📦 Found ${orders.length} orders:\n`);
+    safeLog('info', `📦 Found ${orders.length} orders:\n`);
     
     orders.forEach((order, index) => {
-      console.log(`Order #${index + 1}:`);
-      console.log(`  ID: ${order.id}`);
-      console.log(`  Payment ID: ${order.paymentId}`);
-      console.log(`  Customer: ${order.customer?.firstName} ${order.customer?.lastName}`);
-      console.log(`  Email: ${maskEmail(order.customer?.email)}`);
-      console.log(`  Phone: ${maskPhone(order.customer?.phone)}`);
-      console.log(`  Total: ₹${order.total}`);
-      console.log(`  Items: ${order.items?.length || 0} items`);
-      console.log(`  Created: ${new Date(order.createdAt).toLocaleString()}`);
-      console.log('  ---------------');
+      safeLog('info', `Order #${index + 1}:`);
+      safeLog('info', `  ID: ${order.id}`);
+      safeLog('info', `  Payment ID: ${order.paymentId}`);
+      safeLog('info', `  Customer: ${order.customer?.firstName} ${order.customer?.lastName}`);
+      safeLog('info', `  Email: ${maskEmail(order.customer?.email)}`);
+      safeLog('info', `  Phone: ${maskPhone(order.customer?.phone)}`);
+      safeLog('info', `  Total: ₹${order.total}`);
+      safeLog('info', `  Items: ${order.items?.length || 0} items`);
+      safeLog('info', `  Created: ${new Date(order.createdAt).toLocaleString()}`);
+      safeLog('info', '  ---------------');
     });
     
-    console.log(`\n✅ Total orders: ${orders.length}`);
-    console.log(`💰 Total revenue: ₹${orders.reduce((sum, order) => sum + (order.total || 0), 0)}`);
+    safeLog('info', `\n✅ Total orders: ${orders.length}`);
+    safeLog('info', `💰 Total revenue: ₹${orders.reduce((sum, order) => sum + (order.total || 0), 0)}`);
     
   } catch (error) {
-    console.error('❌ Error fetching orders:', error.message);
+    safeLogError('❌ Error fetching orders', error);
     
-    if (error.message.includes('403')) {
-      console.log('\n💡 Make sure your ADMIN_ORDERS_KEY is correct and matches the server configuration.');
+    if (error.message && error.message.includes('403')) {
+      safeLog('info', '\n💡 Make sure your ADMIN_ORDERS_KEY is correct and matches the server configuration.');
     }
     
     process.exit(1);
