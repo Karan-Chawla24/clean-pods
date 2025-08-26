@@ -88,74 +88,61 @@ export default function Orders() {
     }
   }, [isLoaded, user, router]);
 
-  // Generate token for invoice security (matching server HMAC-SHA256)
+  // Generate secure JWT token for invoice access
   const generateInvoiceToken = async (orderId: string): Promise<string> => {
     try {
-      // Use the same secret as server
-      const secret = 'fallback-secret-key-change-in-production'; // Should match server
-      
-      // Create HMAC-SHA256 using Web Crypto API
-      const encoder = new TextEncoder();
-      const keyData = encoder.encode(secret);
-      const messageData = encoder.encode(orderId);
-      
-      // Import the key
-      const cryptoKey = await crypto.subtle.importKey(
-        'raw',
-        keyData,
-        { name: 'HMAC', hash: 'SHA-256' },
-        false,
-        ['sign']
-      );
-      
-      // Generate HMAC
-      const signature = await crypto.subtle.sign('HMAC', cryptoKey, messageData);
-      
-      // Convert to hex and take first 16 characters
-      const hashArray = Array.from(new Uint8Array(signature));
-      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-      return hashHex.substring(0, 16);
-    } catch (error) {
-      console.error('Error generating HMAC token:', error);
-      
-      // Fallback: simplified hash (less secure but should work)
-      const secret = 'fallback-secret-key-change-in-production';
-      let hash = 0;
-      const str = orderId + secret;
-      for (let i = 0; i < str.length; i++) {
-        const char = str.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32bit integer
+      const token = await getToken();
+      if (!token) {
+        throw new Error('User not authenticated');
       }
-      return Math.abs(hash).toString(16).padStart(16, '0').substring(0, 16);
+
+      const response = await fetch('/api/generate-invoice-token', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ orderId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate access token');
+      }
+
+      const data = await response.json();
+      return data.token;
+    } catch (error) {
+      console.error('Error generating invoice token:', error);
+      toast.error('Failed to generate invoice access token');
+      throw error;
     }
   };
 
   const handleDownloadInvoice = async (orderId: string) => {
     try {
+      // Show loading state
+      toast.loading('Generating secure invoice link...', { id: 'invoice-loading' });
+      
       const token = await generateInvoiceToken(orderId);
       
-      // Find the order data from localStorage
-      const orderData = orders.find(order => order.id === orderId);
-      
-      let url = `/api/download-invoice/${orderId}?token=${token}`;
-      
-      // If we have order data, include it in the URL as backup
-      if (orderData) {
-        const encodedOrderData = encodeURIComponent(JSON.stringify(orderData));
-        url += `&orderData=${encodedOrderData}`;
-      }
+      // Create secure URL with JWT token only
+      const url = `/api/download-invoice/${orderId}?token=${token}`;
       
       // Open in new window with proper sizing
       const invoiceWindow = window.open(url, '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
       
+      toast.dismiss('invoice-loading');
+      
       if (!invoiceWindow) {
-        // Fallback if popup blocked
-        alert('Please allow popups to view your invoice. You can also right-click and select "Open link in new tab".');
+        toast.error('Please allow popups to view your invoice. You can also right-click and select "Open link in new tab".');
+      } else {
+        toast.success('Invoice opened in new window');
       }
     } catch (error) {
+      toast.dismiss('invoice-loading');
       console.error('Error generating invoice token:', error);
-      alert('Unable to generate secure invoice link. Please try again.');
+      toast.error('Unable to generate secure invoice link. Please try again.');
     }
   };
 

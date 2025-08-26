@@ -1,6 +1,6 @@
 'use client';
 
-import { useAppStore } from '../lib/store';
+import { useAppStore, WishlistItem } from '../lib/store';
 import { formatPrice } from '../lib/utils';
 import Header from '../components/Header';
 import toast from 'react-hot-toast';
