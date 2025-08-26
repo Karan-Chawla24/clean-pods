@@ -8,7 +8,7 @@ export default function SetupAdmin() {
   const { user, isLoaded } = useUser();
   const { isSignedIn, getToken } = useAuth();
   const router = useRouter();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'already-admin'>('loading');
+  const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'already-admin' | 'unavailable'>('loading');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
@@ -25,11 +25,27 @@ export default function SetupAdmin() {
       return;
     }
 
-    // Grant admin role
-    const grantAdminRole = async () => {
+    // Check bootstrap availability and attempt admin bootstrap
+    const bootstrapAdmin = async () => {
       try {
+        // First check if bootstrap is available
+        const availabilityResponse = await fetch('/api/admin/bootstrap', {
+          method: 'GET'
+        });
+        
+        if (availabilityResponse.ok) {
+          const availabilityData = await availabilityResponse.json();
+          
+          if (!availabilityData.bootstrapAvailable) {
+            setStatus('unavailable');
+            setMessage('Admin setup is no longer available. Admin users already exist in the system.');
+            return;
+          }
+        }
+
+        // Attempt bootstrap
         const token = await getToken();
-        const response = await fetch('/api/admin/grant-role', {
+        const response = await fetch('/api/admin/bootstrap', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -40,7 +56,7 @@ export default function SetupAdmin() {
         if (response.ok) {
           const data = await response.json();
           setStatus('success');
-          setMessage('Admin role granted successfully! You can now access the admin dashboard.');
+          setMessage('Admin bootstrap successful! You are now the first admin user.');
           
           // Redirect to admin page after 2 seconds
           setTimeout(() => {
@@ -48,17 +64,22 @@ export default function SetupAdmin() {
           }, 2000);
         } else {
           const errorData = await response.json();
-          setStatus('error');
-          setMessage(`Failed to grant admin role: ${errorData.error}`);
+          if (response.status === 403) {
+            setStatus('unavailable');
+            setMessage('Admin setup is no longer available. Admin users already exist in the system.');
+          } else {
+            setStatus('error');
+            setMessage(`Failed to setup admin: ${errorData.error}`);
+          }
         }
       } catch (error) {
         setStatus('error');
-        setMessage('An error occurred while granting admin role');
-        console.error('Admin role grant error:', error);
+        setMessage('An error occurred during admin setup');
+        console.error('Admin bootstrap error:', error);
       }
     };
 
-    grantAdminRole();
+    bootstrapAdmin();
   }, [isLoaded, isSignedIn, user, getToken, router]);
 
   if (!isLoaded) {
@@ -89,7 +110,7 @@ export default function SetupAdmin() {
             {status === 'loading' && (
               <>
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                <p className="mt-4 text-gray-600">Granting admin privileges...</p>
+                <p className="mt-4 text-gray-600">Checking admin setup availability...</p>
               </>
             )}
             
@@ -110,6 +131,20 @@ export default function SetupAdmin() {
                   className="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   Go to Admin Dashboard
+                </button>
+              </>
+            )}
+            
+            {status === 'unavailable' && (
+              <>
+                <div className="text-yellow-600 text-4xl mb-4">🔒</div>
+                <p className="text-yellow-600 font-medium">{message}</p>
+                <p className="mt-2 text-sm text-gray-500">Admin setup is only available for the first admin user.</p>
+                <button
+                  onClick={() => router.push('/')}
+                  className="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                >
+                  Go to Home
                 </button>
               </>
             )}

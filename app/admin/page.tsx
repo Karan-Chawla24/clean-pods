@@ -36,6 +36,7 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
 
   // Check admin authorization using Clerk
   useEffect(() => {
@@ -51,7 +52,8 @@ export default function AdminDashboard() {
       return;
     }
 
-    // User is authenticated and is admin, fetch orders
+    // User is authenticated and is admin
+    setAuthChecked(true);
     fetchOrders();
   }, [isLoaded, isSignedIn, user, router]);
 
@@ -108,14 +110,15 @@ export default function AdminDashboard() {
     }
   };
 
-  // Show loading state while Clerk is loading
-  if (!isLoaded || !user) {
+  // Show loading state while Clerk is loading or auth is being checked
+  if (!isLoaded || !user || !authChecked) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="text-center">
-            <div className="text-gray-500">Loading...</div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="mt-4 text-gray-500">Verifying access...</div>
           </div>
         </div>
       </div>
@@ -124,7 +127,16 @@ export default function AdminDashboard() {
 
   // Don't render if not authorized (redirect will happen in useEffect)
   if (!isSignedIn || user?.publicMetadata?.role !== 'admin') {
-    return null;
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <div className="text-red-500">Access denied. Redirecting...</div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const filteredOrders = orders.filter(order => {
