@@ -43,13 +43,16 @@ export function safeLog(level: LogLevel, message: string, data?: any): void {
  * Safe error logging function
  * @param message - Error message
  * @param error - Error object or data
+ * @param context - Optional context data
  */
-export function safeLogError(message: string, error?: any): void {
+export function safeLogError(message: string, error?: any, context?: any): void {
   const errorData = error instanceof Error 
     ? { name: error.name, message: error.message, stack: error.stack }
     : error;
-    
-  safeLog('error', message, errorData);
+  
+  const logData = context ? { error: errorData, context } : errorData;
+     
+   safeLog('error', message, logData);
 }
 
 /**

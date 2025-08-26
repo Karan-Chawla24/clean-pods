@@ -5,6 +5,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAppStore } from '../../lib/store';
 import { formatPrice } from '../../lib/utils';
+import { 
+  safeDisplayProductName, 
+  safeDisplayText,
+  safeDisplayError
+} from '../../lib/security/ui-escaping';
 import Header from '../../components/Header';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
@@ -153,10 +158,10 @@ export default function ProductDetail({ productId }: { productId: string }) {
 
           {/* Product Info */}
           <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 break-words">{product.name}</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 break-words">{safeDisplayProductName(product.name)}</h1>
             <div className="text-2xl sm:text-3xl font-bold text-orange-600 mb-6">{formatPrice(product.price)}</div>
             
-            <p className="text-gray-600 text-base sm:text-lg mb-8 break-words">{product.description}</p>
+            <p className="text-gray-600 text-base sm:text-lg mb-8 break-words">{safeDisplayText(product.description)}</p>
 
             {/* Features */}
             <div className="mb-8">
@@ -165,7 +170,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
                 {product.features.map((feature, index) => (
                   <li key={index} className="flex items-start text-gray-700 text-sm sm:text-base">
                     <span className="text-green-600 mr-3 mt-1 flex-shrink-0">✓</span>
-                    <span className="break-words">{feature}</span>
+                    <span className="break-words">{safeDisplayText(feature, 100)}</span>
                   </li>
                 ))}
               </ul>
@@ -240,7 +245,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
             {activeTab === 'description' && (
               <div>
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Product Description</h3>
-                <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-6 break-words">{product.description}</p>
+                <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-6 break-words">{safeDisplayText(product.description)}</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                   <div className="w-full">
                     <h4 className="font-semibold text-gray-900 mb-3">Perfect For:</h4>
@@ -267,7 +272,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
             {activeTab === 'ingredients' && (
               <div>
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Ingredients</h3>
-                <p className="text-gray-700 text-base sm:text-lg mb-6 break-words">{product.ingredients}</p>
+                <p className="text-gray-700 text-base sm:text-lg mb-6 break-words">{safeDisplayText(product.ingredients)}</p>
                 <div className="bg-orange-50 p-4 sm:p-6 rounded-lg">
                   <h4 className="font-semibold text-gray-900 mb-3">Safety Information:</h4>
                   <ul className="space-y-2 text-gray-700 text-sm sm:text-base">
@@ -283,7 +288,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
             {activeTab === 'usage' && (
               <div>
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">How to Use</h3>
-                <p className="text-gray-700 text-base sm:text-lg mb-6 break-words">{product.usage}</p>
+                <p className="text-gray-700 text-base sm:text-lg mb-6 break-words">{safeDisplayText(product.usage)}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">

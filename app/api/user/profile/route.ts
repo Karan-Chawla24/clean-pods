@@ -1,25 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { prisma } from '../../../lib/prisma';
+import { validateRequest, userProfileSchema, sanitizeObject } from '../../../lib/security/validation';
+import { safeLogError } from '../../../lib/security/logging';
 
 // CSRF validation is handled by Clerk's built-in security measures
 
 export async function PUT(request: NextRequest) {
+  let userId: string | null = null;
+  
   try {
-    const { userId } = await auth();
+    const authResult = await auth();
+    userId = authResult.userId;
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { firstName, lastName, phone, address } = await request.json();
-
-    // Validate required fields
-    if (!firstName || !lastName) {
+    // Validate request body
+    const validationResult = await validateRequest(request, userProfileSchema);
+    if (!validationResult.success) {
       return NextResponse.json({ 
-        error: 'First name and last name are required' 
+        error: 'Invalid input data' 
       }, { status: 400 });
     }
+
+    // Sanitize the validated data
+    const sanitizedData = sanitizeObject(validationResult.data);
+    const { name, email, phone, address } = sanitizedData;
+    
+    // Convert address object to string if it exists
+    const addressString = address ? 
+      `${address.street}, ${address.city}, ${address.state} ${address.zipCode}, ${address.country}` : 
+      null;
+    
+    // Extract first and last name from the name field
+    const nameParts = name.trim().split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
 
     // Update or create user profile
     const updatedUser = await prisma.user.upsert({
@@ -28,18 +46,19 @@ export async function PUT(request: NextRequest) {
         firstName,
         lastName,
         name: `${firstName} ${lastName}`,
+        email: email || undefined,
         phone: phone || null,
-        address: address || null,
+        address: addressString,
         updatedAt: new Date(),
       },
       create: {
         id: userId,
-        email: 'unknown@example.com', // Will be updated by Clerk webhook
+        email: email || 'unknown@example.com', // Will be updated by Clerk webhook
         firstName,
         lastName,
         name: `${firstName} ${lastName}`,
         phone: phone || null,
-        address: address || null,
+        address: addressString,
       },
       select: {
         id: true,
@@ -59,7 +78,7 @@ export async function PUT(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error updating user profile:', error);
+    safeLogError('Error updating user profile', error, { userId });
     return NextResponse.json({ 
       error: 'Internal server error' 
     }, { status: 500 });
@@ -67,15 +86,18 @@ export async function PUT(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  let userId: string | null = null;
+  
   try {
-    const { userId } = await auth();
+    const authResult = await auth();
+    userId = authResult.userId;
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Get user profile, create if doesn't exist
-    let user = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
@@ -113,7 +135,7 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error fetching user profile:', error);
+    safeLogError('Error fetching user profile', error, { userId });
     return NextResponse.json({ 
       error: 'Internal server error' 
     }, { status: 500 });

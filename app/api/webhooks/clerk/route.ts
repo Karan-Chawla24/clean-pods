@@ -2,6 +2,7 @@ import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { WebhookEvent } from '@clerk/nextjs/server';
 import { prisma } from '@/app/lib/prisma';
+import { safeLog, safeLogError } from '@/app/lib/security/logging';
 
 export async function POST(req: Request) {
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
@@ -41,7 +42,7 @@ export async function POST(req: Request) {
       'svix-signature': svix_signature,
     }) as WebhookEvent;
   } catch (err) {
-    console.error('Error verifying webhook:', err);
+    safeLogError('Clerk webhook signature verification failed', err);
     return new Response('Error occured', {
       status: 400,
     });
@@ -51,7 +52,7 @@ export async function POST(req: Request) {
   const { id } = evt.data;
   const eventType = evt.type;
 
-  console.log(`Clerk webhook received: id=${id}, type=${eventType}`);
+  safeLog('info', 'Clerk webhook received', { id, eventType });
 
   try {
     switch (eventType) {
@@ -65,10 +66,10 @@ export async function POST(req: Request) {
         await handleUserDeleted(evt.data);
         break;
       default:
-        console.log(`Unhandled webhook event type: ${eventType}`);
+        safeLog('warn', 'Unhandled Clerk webhook event type', { eventType });
     }
   } catch (error) {
-    console.error('Error handling webhook:', error);
+    safeLogError('Error handling Clerk webhook', error);
     return new Response('Error processing webhook', { status: 500 });
   }
 

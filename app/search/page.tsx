@@ -4,6 +4,10 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAppStore } from '../lib/store';
 import { formatPrice } from '../lib/utils';
+import { 
+  safeDisplayProductName, 
+  safeDisplayText
+} from '../lib/security/ui-escaping';
 import Header from '../components/Header';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
@@ -158,7 +162,7 @@ function SearchContent() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Search Results</h1>
           <p className="text-gray-600">
-            {currentQuery ? `Results for "${currentQuery}"` : 'All products'}
+            {currentQuery ? `Results for "${safeDisplayText(currentQuery, 50)}"` : 'All products'}
           </p>
         </div>
 
@@ -170,7 +174,7 @@ function SearchContent() {
             <h2 className="text-2xl font-semibold text-gray-600 mb-4">No products found</h2>
             <p className="text-gray-500 mb-8">
               {currentQuery 
-                ? `No products match "${currentQuery}". Try a different search term.`
+                ? `No products match "${safeDisplayText(currentQuery, 50)}". Try a different search term.`
                 : 'No products available.'
               }
             </p>
@@ -202,8 +206,8 @@ function SearchContent() {
                   </div>
                   
                   <div className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">{product.description}</p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{safeDisplayProductName(product.name)}</h3>
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">{safeDisplayText(product.description, 100)}</p>
                     <div className="text-2xl font-bold text-orange-600 mb-4">{formatPrice(product.price)}</div>
                     
                     <div className="flex space-x-3">

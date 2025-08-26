@@ -1,4 +1,5 @@
 import { prisma } from './prisma';
+import { safeLogError } from './security/logging';
 
 export async function saveOrder(orderData: {
   razorpayOrderId: string;
@@ -60,7 +61,7 @@ export async function saveOrder(orderData: {
     // Order created
     return order.id;
   } catch (error) {
-    console.error('Error in saveOrder:', error);
+    safeLogError('Error in saveOrder', error);
     throw error;
   }
 }

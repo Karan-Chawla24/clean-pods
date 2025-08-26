@@ -2,6 +2,7 @@
 'use client';
 
 import Link from 'next/link';
+import { safeDisplayOrderId } from '../lib/security/ui-escaping';
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
@@ -53,7 +54,7 @@ function OrderSuccessContent() {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-3">Order Information</h3>
                 <div className="space-y-2 text-gray-600">
-                  <p><strong>Order Number:</strong> {orderNumber}</p>
+                  <p><strong>Order Number:</strong> {safeDisplayOrderId(orderNumber)}</p>
                   <p><strong>Order Date:</strong> {new Date().toLocaleDateString()}</p>
                   <p><strong>Payment Status:</strong> <span className="text-green-600">Confirmed</span></p>
                 </div>

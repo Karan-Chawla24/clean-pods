@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify, JWTPayload } from 'jose';
+import { safeLogError } from './security/logging';
 
 // JWT secret - should be a strong random string in production
 const JWT_SECRET = new TextEncoder().encode(
@@ -39,7 +40,7 @@ export async function generateInvoiceToken(
 
     return token;
   } catch (error) {
-    console.error('Error generating JWT token:', error);
+    safeLogError('Error generating JWT token', error);
     throw new Error('Failed to generate access token');
   }
 }
@@ -61,7 +62,7 @@ export async function verifyInvoiceToken(
 
     return payload as InvoiceTokenPayload;
   } catch (error) {
-    console.error('Error verifying JWT token:', error);
+    safeLogError('Error verifying JWT token', error);
     throw new Error('Invalid or expired access token');
   }
 }

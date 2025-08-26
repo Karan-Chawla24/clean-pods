@@ -5,6 +5,15 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '../../components/Header';
 import { formatPrice } from '../../lib/utils';
+import { 
+  safeDisplayName, 
+  safeDisplayEmail, 
+  safeDisplayPhone, 
+  safeDisplayAddress, 
+  safeDisplayProductName,
+  safeDisplayOrderId,
+  safeDisplayError
+} from '../../lib/security/ui-escaping';
 
 interface OrderItem {
   id: number;
@@ -101,14 +110,14 @@ export default function OrderDetails() {
         <div className="flex items-center space-x-2 text-gray-600 mb-8">
           <Link href="/" className="hover:text-blue-600">Home</Link>
           <i className="ri-arrow-right-s-line w-4 h-4"></i>
-          <span className="text-gray-900 font-medium">Order #{order.id}</span>
+          <span className="text-gray-900 font-medium">Order #{safeDisplayOrderId(order.id)}</span>
         </div>
 
         {/* Order Header */}
         <div className="bg-white rounded-2xl p-8 mb-8">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Order #{order.id}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Order #{safeDisplayOrderId(order.id)}</h1>
               <p className="text-gray-600">Placed on {new Date(order.created_at).toLocaleDateString()}</p>
             </div>
             <div className="text-right">
@@ -127,10 +136,10 @@ export default function OrderDetails() {
             <div>
               <h3 className="font-semibold text-gray-900 mb-3">Customer Information</h3>
               <div className="space-y-2 text-gray-600">
-                <p><strong>Name:</strong> {order.customer_name}</p>
-                <p><strong>Email:</strong> {order.customer_email}</p>
-                <p><strong>Phone:</strong> {order.customer_phone}</p>
-                <p><strong>Address:</strong> {order.shipping_address}</p>
+                <p><strong>Name:</strong> {safeDisplayName(order.customer_name)}</p>
+                <p><strong>Email:</strong> {safeDisplayEmail(order.customer_email)}</p>
+                <p><strong>Phone:</strong> {safeDisplayPhone(order.customer_phone)}</p>
+                <p><strong>Address:</strong> {safeDisplayAddress(order.shipping_address)}</p>
               </div>
             </div>
             <div>
@@ -143,7 +152,7 @@ export default function OrderDetails() {
                     {order.payment_status.charAt(0).toUpperCase() + order.payment_status.slice(1)}
                   </span>
                 </p>
-                <p><strong>Payment ID:</strong> {order.payment_id}</p>
+                <p><strong>Payment ID:</strong> {safeDisplayOrderId(order.payment_id)}</p>
                 <p><strong>Total Amount:</strong> {formatPrice(order.total_amount)}</p>
               </div>
             </div>
@@ -157,7 +166,7 @@ export default function OrderDetails() {
             {order.items.map((item) => (
               <div key={item.id} className="flex justify-between items-center py-4 border-b border-gray-200 last:border-b-0">
                 <div>
-                  <h4 className="font-semibold text-gray-900">{item.product_name}</h4>
+                  <h4 className="font-semibold text-gray-900">{safeDisplayProductName(item.product_name)}</h4>
                   <p className="text-gray-600">Quantity: {item.quantity}</p>
                 </div>
                 <div className="text-right">
@@ -190,4 +199,4 @@ export default function OrderDetails() {
       </div>
     </div>
   );
-} 
+}

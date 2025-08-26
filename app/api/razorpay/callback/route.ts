@@ -6,6 +6,7 @@ import {
   validateRazorpayPayment,
   sanitizeRazorpayPayload 
 } from '@/app/lib/security/razorpay';
+import { safeLog, safeLogError } from '@/app/lib/security/logging';
 
 // Required to access raw body in Next.js App Router
 export const config = {
@@ -27,7 +28,13 @@ export const POST = withRateLimit(rateLimitConfigs.strict)(async (request: NextR
 
     // Signature from Razorpay headers
     const signature = request.headers.get('x-razorpay-signature') || '';
+    
+    // Use timing-safe comparison for signature verification
     if (!verifyRazorpaySignature(rawBody, signature, razorpaySecret)) {
+      safeLogError('Razorpay webhook signature verification failed', {
+        orderId: sanitizedPayload.razorpay_order_id,
+        paymentId: sanitizedPayload.razorpay_payment_id
+      });
       return NextResponse.json({ success: false, error: 'Invalid signature' }, { status: 401 });
     }
 
@@ -40,13 +47,16 @@ export const POST = withRateLimit(rateLimitConfigs.strict)(async (request: NextR
     }
 
     // Process webhook here
-    console.log('Razorpay webhook processed successfully');
+    safeLog('info', 'Razorpay webhook processed successfully', {
+      orderId: sanitizedPayload.razorpay_order_id,
+      paymentId: sanitizedPayload.razorpay_payment_id
+    });
     return NextResponse.json({ success: true });
 
   } catch (error) {
-    console.error('Razorpay webhook error:', error);
+    safeLogError('Razorpay webhook processing error', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      { success: false, error: 'Internal server error' },
       { status: 500 }
     );
   }

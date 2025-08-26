@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { generateInvoiceToken } from '../../lib/jwt-utils';
 import { getOrder } from '../../lib/database';
+import { safeLogError } from '@/app/lib/security/logging';
+import { validateRequest, invoiceTokenSchema, sanitizeObject } from '@/app/lib/security/validation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,14 +16,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { orderId } = await request.json();
-    
-    if (!orderId) {
+    // Validate request body
+    const validationResult = await validateRequest(request, invoiceTokenSchema);
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: 'Order ID is required' },
+        { error: 'Invalid request data' },
         { status: 400 }
       );
     }
+
+    // Sanitize the validated data
+    const sanitizedData = sanitizeObject(validationResult.data);
+    const { orderId } = sanitizedData;
 
     // Verify the order exists and belongs to the user
     // Note: This is a basic check. In a production system, you might want
@@ -43,7 +49,7 @@ export async function POST(request: NextRequest) {
       orderId
     });
   } catch (error) {
-    console.error('Error generating invoice token:', error);
+    safeLogError('Error generating invoice token', error);
     return NextResponse.json(
       { error: 'Failed to generate access token' },
       { status: 500 }

@@ -1,4 +1,4 @@
-import { getProductPrice } from '@/app/api/products/route';
+import { getProductPrice } from '@/app/lib/products';
 
 export interface CartItem {
   id: string;
