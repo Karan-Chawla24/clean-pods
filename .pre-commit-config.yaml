@@ -1,0 +1,153 @@
+# Pre-commit hooks configuration for Clean Pods
+# Install with: pip install pre-commit && pre-commit install
+
+repos:
+  # Code formatting and linting
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: detect-private-key
+      - id: detect-aws-credentials
+
+  # JavaScript/TypeScript linting
+  - repo: local
+    hooks:
+      - id: eslint
+        name: ESLint
+        entry: npx eslint
+        language: node
+        files: \.(js|jsx|ts|tsx)$
+        args: [--fix]
+
+      - id: prettier
+        name: Prettier
+        entry: npx prettier
+        language: node
+        files: \.(js|jsx|ts|tsx|json|css|md|yml|yaml)$
+        args: [--write]
+
+      - id: typescript-check
+        name: TypeScript Check
+        entry: npx tsc
+        language: node
+        files: \.(ts|tsx)$
+        args: [--noEmit]
+        pass_filenames: false
+
+  # Security checks
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.0
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: npm-audit
+        name: NPM Security Audit
+        entry: npm audit
+        language: node
+        args: [--audit-level=moderate]
+        pass_filenames: false
+        stages: [commit]
+
+      - id: secret-scan
+        name: Local Secret Scan
+        entry: bash
+        language: system
+        args:
+          - -c
+          - |
+            echo "Running local secret scan..."
+            # Check for potential API keys and secrets
+            if grep -r -i --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" \
+              -E "(api[_-]?key|secret[_-]?key|access[_-]?token|auth[_-]?token)\s*[:=]\s*['\"][^'\"]{20,}['\"]" .; then
+              echo "❌ Potential secrets found in code!"
+              exit 1
+            fi
+            
+            # Check for hardcoded passwords
+            if grep -r -i --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" \
+              -E "(password|passwd|pwd)\s*[:=]\s*['\"][^'\"]{8,}['\"]" .; then
+              echo "❌ Potential hardcoded passwords found!"
+              exit 1
+            fi
+            
+            # Check for database URLs
+            if grep -r -i --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" \
+              -E "(mongodb|mysql|postgres|redis)://[^\s]+" .; then
+              echo "❌ Potential database connection strings found!"
+              exit 1
+            fi
+            
+            echo "✅ No obvious secrets detected."
+        pass_filenames: false
+        stages: [commit]
+
+      - id: env-file-check
+        name: Environment File Check
+        entry: bash
+        language: system
+        args:
+          - -c
+          - |
+            echo "Checking for .env files in repository..."
+            if find . -name ".env*" -not -path "./node_modules/*" -not -name ".env.example" -not -name ".env.vercel.example" | grep -q .; then
+              echo "❌ Found .env files in repository! These should not be committed."
+              find . -name ".env*" -not -path "./node_modules/*" -not -name ".env.example" -not -name ".env.vercel.example"
+              exit 1
+            fi
+            echo "✅ No .env files found in repository."
+        pass_filenames: false
+        stages: [commit]
+
+  # License checking
+  - repo: local
+    hooks:
+      - id: license-check
+        name: License Compliance Check
+        entry: bash
+        language: system
+        args:
+          - -c
+          - |
+            echo "Checking license compliance..."
+            if command -v npx >/dev/null 2>&1; then
+              # Check for problematic licenses
+              if npx license-checker --json 2>/dev/null | jq -r 'to_entries[] | select(.value.licenses | type == "string" and (contains("GPL") or contains("AGPL") or contains("LGPL") or contains("CDDL") or contains("EPL"))) | .key + ": " + .value.licenses' 2>/dev/null | grep -q .; then
+                echo "⚠️ Potentially problematic licenses found. Please review."
+                npx license-checker --json 2>/dev/null | jq -r 'to_entries[] | select(.value.licenses | type == "string" and (contains("GPL") or contains("AGPL") or contains("LGPL") or contains("CDDL") or contains("EPL"))) | .key + ": " + .value.licenses' 2>/dev/null || true
+              else
+                echo "✅ No problematic licenses detected."
+              fi
+            else
+              echo "⚠️ npx not available, skipping license check."
+            fi
+        pass_filenames: false
+        stages: [push]
+
+# Global configuration
+default_stages: [commit]
+fail_fast: false
+
+# Exclude patterns
+exclude: |
+  (?x)^(
+    node_modules/.*|
+    .next/.*|
+    dist/.*|
+    build/.*|
+    coverage/.*|
+    .git/.*|
+    .*\.lock$|
+    package-lock\.json$|
+    yarn\.lock$|
+    pnpm-lock\.yaml$
+  )$

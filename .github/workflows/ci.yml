@@ -1,0 +1,295 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+  CACHE_KEY_PREFIX: 'clean-pods-v1'
+
+jobs:
+  # Code Quality and Linting
+  lint-and-format:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run ESLint
+      run: npm run lint
+      
+    - name: Check TypeScript
+      run: npx tsc --noEmit
+      
+    - name: Check Prettier formatting
+      run: npx prettier --check .
+      
+  # Security Audits
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run npm audit
+      run: |
+        echo "Running npm audit..."
+        npm audit --audit-level=moderate
+        
+    - name: Generate audit report
+      run: |
+        npm audit --json > audit-report.json || true
+        npm audit --audit-level=low > audit-summary.txt || true
+        
+    - name: Check for critical vulnerabilities
+      run: |
+        CRITICAL_VULNS=$(npm audit --json | jq '.metadata.vulnerabilities.critical // 0')
+        HIGH_VULNS=$(npm audit --json | jq '.metadata.vulnerabilities.high // 0')
+        
+        echo "Critical vulnerabilities: $CRITICAL_VULNS"
+        echo "High vulnerabilities: $HIGH_VULNS"
+        
+        if [ "$CRITICAL_VULNS" -gt 0 ]; then
+          echo "❌ Critical vulnerabilities found!"
+          exit 1
+        fi
+        
+    - name: Upload audit reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-audit-reports-${{ github.sha }}
+        path: |
+          audit-report.json
+          audit-summary.txt
+        retention-days: 30
+        
+  # Secret Scanning
+  secret-scan:
+    name: Secret Scanning
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Run GitLeaks
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: Custom secret pattern search
+      run: |
+        echo "Running custom secret pattern search..."
+        
+        # Check for potential secrets in code
+        SECRET_PATTERNS_FOUND=false
+        
+        # API keys and tokens
+        if grep -r -i --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" \
+          -E "(api[_-]?key|secret[_-]?key|access[_-]?token|auth[_-]?token)\s*[:=]\s*['\"][^'\"]{20,}['\"]" .; then
+          echo "⚠️ Potential API keys found"
+          SECRET_PATTERNS_FOUND=true
+        fi
+        
+        # Hardcoded passwords
+        if grep -r -i --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" \
+          -E "(password|passwd|pwd)\s*[:=]\s*['\"][^'\"]{8,}['\"]" .; then
+          echo "⚠️ Potential hardcoded passwords found"
+          SECRET_PATTERNS_FOUND=true
+        fi
+        
+        # Database URLs
+        if grep -r -i --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" \
+          -E "(mongodb|mysql|postgres|redis)://[^\s]+" .; then
+          echo "⚠️ Potential database connection strings found"
+          SECRET_PATTERNS_FOUND=true
+        fi
+        
+        if [ "$SECRET_PATTERNS_FOUND" = true ]; then
+          echo "❌ Potential secrets detected in code. Please review."
+          exit 1
+        else
+          echo "✅ No obvious secret patterns detected."
+        fi
+        
+  # Build and Test
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: [lint-and-format, security-audit, secret-scan]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build application
+      run: npm run build
+      env:
+        # Provide dummy environment variables for build
+        NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 'pk_test_dummy' }}
+        CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY || 'sk_test_dummy' }}
+        DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://dummy:dummy@localhost:5432/dummy' }}
+        NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'dummy-secret-for-build' }}
+        NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL || 'http://localhost:3000' }}
+        
+    - name: Run tests
+      run: |
+        if [ -f "package.json" ] && grep -q '"test"' package.json; then
+          npm test
+        else
+          echo "No tests configured, skipping..."
+        fi
+        
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-artifacts-${{ github.sha }}
+        path: |
+          .next/
+          out/
+        retention-days: 7
+        
+  # Dependency Review (PR only)
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Dependency Review
+      uses: actions/dependency-review-action@v4
+      with:
+        fail-on-severity: moderate
+        allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, Unlicense
+        
+  # License Compliance
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Install license-checker
+      run: npm install -g license-checker
+      
+    - name: Check licenses
+      run: |
+        echo "Generating license report..."
+        license-checker --summary > license-summary.txt
+        license-checker --json > license-report.json
+        
+        echo "License Summary:"
+        cat license-summary.txt
+        
+    - name: Check for problematic licenses
+      run: |
+        echo "Checking for problematic licenses..."
+        
+        # Check for copyleft licenses that might be problematic
+        PROBLEMATIC=$(license-checker --json | jq -r 'to_entries[] | select(.value.licenses | type == "string" and (contains("GPL") or contains("AGPL") or contains("LGPL") or contains("CDDL") or contains("EPL"))) | .key + ": " + .value.licenses')
+        
+        if [ -n "$PROBLEMATIC" ]; then
+          echo "⚠️ Potentially problematic licenses found:"
+          echo "$PROBLEMATIC"
+          echo "Please review these licenses for compliance."
+          # Uncomment to fail on problematic licenses
+          # exit 1
+        else
+          echo "✅ No problematic licenses detected."
+        fi
+        
+    - name: Upload license reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: license-reports-${{ github.sha }}
+        path: |
+          license-summary.txt
+          license-report.json
+        retention-days: 30
+        
+  # Final Status Check
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [lint-and-format, security-audit, secret-scan, build-and-test, license-check]
+    if: always()
+    
+    steps:
+    - name: Check all jobs status
+      run: |
+        echo "# 🚀 CI Pipeline Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+        echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+        echo "| Lint and Format | ${{ needs.lint-and-format.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Security Audit | ${{ needs.security-audit.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Secret Scan | ${{ needs.secret-scan.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| Build and Test | ${{ needs.build-and-test.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "| License Check | ${{ needs.license-check.result }} |" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        # Check if any critical jobs failed
+        if [[ "${{ needs.lint-and-format.result }}" == "failure" || 
+              "${{ needs.security-audit.result }}" == "failure" || 
+              "${{ needs.secret-scan.result }}" == "failure" || 
+              "${{ needs.build-and-test.result }}" == "failure" ]]; then
+          echo "❌ CI pipeline failed. Please check the failed jobs above."
+          echo "**Status:** ❌ Failed" >> $GITHUB_STEP_SUMMARY
+          exit 1
+        else
+          echo "✅ All CI checks passed successfully!"
+          echo "**Status:** ✅ Passed" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "**Completed at:** $(date)" >> $GITHUB_STEP_SUMMARY

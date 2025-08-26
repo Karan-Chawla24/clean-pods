@@ -10,7 +10,15 @@
     "postinstall": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:push": "prisma db push",
-    "db:setup": "prisma db push --skip-generate && prisma generate"
+    "db:setup": "prisma db push --skip-generate && prisma generate",
+    "security:audit": "npm audit --audit-level=moderate",
+    "security:audit-fix": "npm audit fix",
+    "security:audit-report": "npm audit --json > audit-report.json && npm audit > audit-summary.txt",
+    "security:licenses": "npx license-checker --summary",
+    "security:licenses-report": "npx license-checker --json > license-report.json && npx license-checker --summary > license-summary.txt",
+    "security:secrets": "echo Running local secret scan... && powershell -Command \"Get-ChildItem -Recurse -Include *.ts,*.js,*.tsx,*.jsx | Select-String -Pattern '(api[_-]?key|secret[_-]?key|access[_-]?token|auth[_-]?token)' -CaseSensitive:$false\" || echo No obvious secrets found",
+    "security:check-all": "npm run security:audit && npm run security:licenses && npm run security:secrets",
+    "security:pre-commit": "npm run lint && npm run security:check-all && npx tsc --noEmit"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.31.2",

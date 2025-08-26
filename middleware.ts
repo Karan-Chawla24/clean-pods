@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
+import { getSecurityHeaders, buildCSPString } from './app/lib/security/config'
 
 // Define public routes that don't require authentication
 const isPublicRoute = createRouteMatcher([
@@ -37,6 +38,24 @@ export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
     auth.protect();
   }
+
+  // Apply security headers to all responses
+  const response = NextResponse.next();
+  
+  // Get security headers
+  const securityHeaders = getSecurityHeaders();
+  
+  // Apply each security header
+  Object.entries(securityHeaders).forEach(([key, value]) => {
+    if (value) {
+      response.headers.set(key, value);
+    }
+  });
+  
+  // Apply Content Security Policy
+  response.headers.set('Content-Security-Policy', buildCSPString());
+  
+  return response;
 })
 
 export const config = {
