@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getOrder } from '../../../lib/database';
 import { verifyInvoiceToken } from '../../../lib/jwt-utils';
 import { auth } from '@clerk/nextjs/server';
+import { safeLogError } from '../../../lib/security/logging';
 
 export async function GET(
   request: NextRequest,
@@ -83,7 +84,7 @@ export async function GET(
       },
     });
   } catch (error) {
-    console.error('Error generating invoice:', error);
+    safeLogError('Error generating invoice', error);
     return NextResponse.json(
       { error: 'Failed to generate invoice' },
       { status: 500 }

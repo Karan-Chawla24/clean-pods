@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOrder } from '../../../lib/database';
+import { safeLogError } from '../../../lib/security/logging';
 
 export async function GET(
   request: NextRequest,
@@ -26,9 +27,10 @@ export async function GET(
 
     return NextResponse.json(order);
   } catch (error) {
+    safeLogError('Error fetching order', error);
     return NextResponse.json(
       { error: 'Failed to fetch order' },
       { status: 500 }
     );
   }
-} 
+}

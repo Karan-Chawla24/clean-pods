@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { IncomingWebhook } from '@slack/webhook';
 import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
 import { validateRequest, contactFormSchema, sanitizeString } from '@/app/lib/security/validation';
+import { safeLogError } from '@/app/lib/security/logging';
 
 // Initialize Slack webhook for contact form
 const webhook = new IncomingWebhook(process.env.SLACK_CONTACT_URL || '');
@@ -106,12 +107,11 @@ export const POST = withRateLimit(rateLimitConfigs.moderate)(async (request: Nex
     });
 
   } catch (error) {
-    console.error('Contact notification error:', error);
+    safeLogError('Contact notification error', error);
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to send contact notification',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: 'Failed to send contact notification'
       },
       { status: 500 }
     );

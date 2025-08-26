@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     safeLogError('POST /api/orders error', error);
     return NextResponse.json(
-      { error: 'Failed to create order', details: error instanceof Error ? error.message : 'Unknown error' },
+      { error: 'Failed to create order' },
       { status: 500 }
     );
   }
