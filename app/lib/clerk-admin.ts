@@ -95,6 +95,19 @@ export async function getAdminUsers(): Promise<User[]> {
 }
 
 /**
+ * Check if any admin users exist in the system
+ */
+export async function hasAdminUsers(): Promise<boolean> {
+  try {
+    const adminUsers = await getAdminUsers();
+    return adminUsers.length > 0;
+  } catch (error) {
+    console.error('Error checking admin users:', error);
+    throw new Error('Failed to check admin users');
+  }
+}
+
+/**
  * Verify admin access for API routes
  */
 export async function verifyAdminAccess(): Promise<{ success: boolean; userId?: string; error?: string }> {
