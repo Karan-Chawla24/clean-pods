@@ -1,7 +1,11 @@
 "use client";
 
 import { useAppStore } from "../lib/store";
-import { formatPrice } from "../lib/utils";
+import { formatPrice } from '../lib/utils';
+import { 
+  safeDisplayProductName, 
+  safeDisplayText
+} from '../lib/security/ui-escaping';
 import Header from "../components/Header";
 import toast from "react-hot-toast";
 import Image from "next/image";
@@ -152,10 +156,10 @@ export default function Products() {
                 />
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-orange-600 mb-2 text-center drop-shadow break-words">
-                {product.name}
+                {safeDisplayProductName(product.name)}
               </h2>
               <p className="text-gray-700 mb-3 text-center text-sm sm:text-base break-words">
-                {product.description}
+                {safeDisplayText(product.description)}
               </p>
             </div>
 
@@ -165,7 +169,7 @@ export default function Products() {
                   key={idx}
                   className="flex items-center gap-3 text-sm sm:text-base break-words"
                 >
-                  <span className="text-sky-500">✔</span> {feature}
+                  <span className="text-sky-500">✔</span> {safeDisplayText(feature, 100)}
                 </li>
               ))}
             </ul>

@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, createClerkClient } from '@clerk/nextjs/server';
 import { grantAdminRole, hasAdminUsers } from '../../../lib/clerk-admin';
+import { safeLog, safeLogError } from '../../../lib/security/logging';
 
 // Create Clerk client instance
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 // Security logging function
 function logSecurityEvent(event: string, userId: string | null, details: any = {}) {
-  const timestamp = new Date().toISOString();
   const logData = {
-    timestamp,
     event,
     userId,
     userAgent: details.userAgent || 'unknown',
@@ -17,7 +16,7 @@ function logSecurityEvent(event: string, userId: string | null, details: any = {
     ...details
   };
   
-  console.log(`[SECURITY] ${event}:`, JSON.stringify(logData));
+  safeLog('warn', `[SECURITY] ${event}`, logData);
   
   // In production, you might want to send this to a security monitoring service
   // Example: await sendToSecurityMonitoring(logData);
@@ -30,11 +29,13 @@ function logSecurityEvent(event: string, userId: string | null, details: any = {
 export async function POST(request: NextRequest) {
   const userAgent = request.headers.get('user-agent') || 'unknown';
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  let userId: string | null = null;
   
   try {
-    console.log('Admin bootstrap attempt initiated');
+    safeLog('info', 'Admin bootstrap attempt initiated');
     
-    const { userId } = await auth();
+    const authResult = await auth();
+    userId = authResult.userId;
     
     if (!userId) {
       logSecurityEvent('ADMIN_BOOTSTRAP_UNAUTHORIZED_ATTEMPT', null, {
@@ -43,7 +44,7 @@ export async function POST(request: NextRequest) {
         reason: 'No authenticated user'
       });
       
-      console.log('Bootstrap failed: No authentication');
+
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
@@ -60,7 +61,7 @@ export async function POST(request: NextRequest) {
         reason: 'Admin users already exist'
       });
       
-      console.log(`Bootstrap blocked: Admin users already exist. User ${userId} attempted bootstrap.`);
+
       return NextResponse.json(
         { 
           success: false, 
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
     const user = await clerk.users.getUser(userId);
     const userEmail = user.emailAddresses[0]?.emailAddress || 'unknown';
     
-    console.log(`Creating first admin user: ${userId} (${userEmail})`);
+    safeLog('info', `Creating first admin user: ${userId} (${userEmail})`);
     
     // Grant admin role to the current user (first admin)
     await grantAdminRole(userId);
@@ -89,7 +90,7 @@ export async function POST(request: NextRequest) {
       message: 'First admin user created successfully'
     });
     
-    console.log(`Admin bootstrap successful: ${userId} (${userEmail}) is now the first admin`);
+    safeLog('info', `Admin bootstrap successful: ${userId} (${userEmail}) is now the first admin`);
     
     return NextResponse.json({
       success: true,
@@ -108,7 +109,7 @@ export async function POST(request: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined
     });
     
-    console.error('Admin bootstrap error:', error);
+    safeLogError('Admin bootstrap error', error);
     return NextResponse.json(
       { success: false, error: 'Failed to bootstrap admin user' },
       { status: 500 }
@@ -132,7 +133,7 @@ export async function GET(request: NextRequest) {
         : 'Bootstrap is available - no admin users found'
     });
   } catch (error) {
-    console.error('Bootstrap availability check error:', error);
+    safeLogError('Bootstrap availability check error', error);
     return NextResponse.json(
       { success: false, error: 'Failed to check bootstrap availability' },
       { status: 500 }

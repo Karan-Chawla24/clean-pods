@@ -5,6 +5,15 @@ import { useParams, useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { formatPrice, formatDate } from '../../../lib/utils';
+import { 
+  safeDisplayName, 
+  safeDisplayEmail, 
+  safeDisplayPhone, 
+  safeDisplayAddress, 
+  safeDisplayProductName,
+  safeDisplayOrderId,
+  safeDisplayError
+} from '../../../lib/security/ui-escaping';
 
 interface OrderItem {
   id: string;
@@ -141,7 +150,7 @@ export default function AdminOrderDetails() {
               </svg>
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">Order Not Found</h3>
-            <p className="text-gray-600 mb-6">{error}</p>
+            <p className="text-gray-600 mb-6">{safeDisplayError(error)}</p>
             <Link 
               href="/admin"
               className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
@@ -168,7 +177,7 @@ export default function AdminOrderDetails() {
               <h1 className="text-2xl font-bold text-gray-900">Order Details</h1>
             </div>
             <div className="text-sm text-gray-500">
-              Order ID: {order.razorpayOrderId}
+              Order ID: {safeDisplayOrderId(order.razorpayOrderId)}
             </div>
           </div>
         </div>
@@ -179,7 +188,7 @@ export default function AdminOrderDetails() {
         <div className="bg-white rounded-2xl p-8 mb-8 shadow-sm border">
           <div className="flex justify-between items-start mb-6">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Order #{order.razorpayOrderId}</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">Order #{safeDisplayOrderId(order.razorpayOrderId)}</h2>
               <p className="text-gray-600">Placed on {formatDate(order.orderDate)}</p>
             </div>
             <div className="text-right">
@@ -195,15 +204,15 @@ export default function AdminOrderDetails() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600 font-medium">Name:</span>
-                  <span className="text-gray-900">{order.customerName}</span>
+                  <span className="text-gray-900">{safeDisplayName(order.customerName)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 font-medium">Email:</span>
-                  <span className="text-gray-900">{order.customerEmail}</span>
+                  <span className="text-gray-900">{safeDisplayEmail(order.customerEmail)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 font-medium">Phone:</span>
-                  <span className="text-gray-900">{order.customerPhone}</span>
+                  <span className="text-gray-900">{safeDisplayPhone(order.customerPhone)}</span>
                 </div>
               </div>
             </div>
@@ -218,7 +227,7 @@ export default function AdminOrderDetails() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 font-medium">Payment ID:</span>
-                  <span className="text-gray-900 font-mono text-sm">{order.paymentId}</span>
+                  <span className="text-gray-900 font-mono text-sm">{safeDisplayOrderId(order.paymentId)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600 font-medium">Total:</span>
@@ -232,7 +241,7 @@ export default function AdminOrderDetails() {
           <div className="mt-8 pt-6 border-t">
             <h3 className="font-semibold text-gray-900 mb-4 text-lg">📍 Shipping Address</h3>
             <div className="bg-gray-50 rounded-lg p-4">
-              <p className="text-gray-900">{order.address}</p>
+              <p className="text-gray-900">{safeDisplayAddress(order.address)}</p>
             </div>
           </div>
         </div>
@@ -244,7 +253,7 @@ export default function AdminOrderDetails() {
             {order.items.map((item, index) => (
               <div key={item.id} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                  <h3 className="font-semibold text-gray-900">{safeDisplayProductName(item.name)}</h3>
                   <p className="text-gray-600">Quantity: {item.quantity}</p>
                 </div>
                 <div className="text-right">

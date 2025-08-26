@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { IncomingWebhook } from '@slack/webhook';
+import { z } from 'zod';
+import { validateRequest, sanitizeObject } from '@/app/lib/security/validation';
+import { safeLog, safeLogError } from '@/app/lib/security/logging';
 
-// Initialize Slack webhook
-const webhook = new IncomingWebhook(process.env.SLACK_WEBHOOK_URL || '');
+// Slack webhook will be initialized in the function
 
 // Functions to mask sensitive data
 function maskEmail(email: string): string {
@@ -29,6 +31,32 @@ function maskAddress(address: string): string {
   return `*****, ${parts.slice(-2).join(',').trim()}`;
 }
 
+// Validation schemas
+const orderItemSchema = z.object({
+  name: z.string().min(1, 'Item name is required').max(200, 'Item name too long'),
+  quantity: z.number().int().positive('Quantity must be positive'),
+  price: z.number().positive('Price must be positive')
+});
+
+const customerDataSchema = z.object({
+  name: z.string().min(1, 'Customer name is required').max(100, 'Name too long'),
+  email: z.string().email('Invalid email format').max(255, 'Email too long'),
+  phone: z.string().min(10, 'Phone number too short').max(15, 'Phone number too long'),
+  address: z.string().min(1, 'Address is required').max(500, 'Address too long')
+});
+
+const orderDataSchema = z.object({
+  id: z.string().min(1, 'Order ID is required').regex(/^[a-zA-Z0-9_-]+$/, 'Invalid order ID format'),
+  items: z.array(orderItemSchema).min(1, 'Order must have at least one item'),
+  total: z.number().positive('Total must be positive'),
+  paymentId: z.string().min(1, 'Payment ID is required')
+});
+
+const slackNotificationSchema = z.object({
+  orderData: orderDataSchema,
+  customerData: customerDataSchema
+});
+
 interface OrderItem {
   name: string;
   quantity: number;
@@ -51,12 +79,39 @@ interface OrderData {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { orderData, customerData }: { orderData: OrderData; customerData: CustomerData } = body;
+    safeLog('info', 'Slack notification API called');
+    
+    // Validate request body
+    const validationResult = await validateRequest(request, slackNotificationSchema);
+    if (!validationResult.success) {
+      safeLog('error', 'Validation failed', { error: 'Invalid notification data' });
+      return NextResponse.json(
+        { success: false, error: 'Invalid notification data' },
+        { status: 400 }
+      );
+    }
+
+    safeLog('info', 'Validation passed');
+
+    // Extract validated data (already validated by Zod schema)
+    const { orderData, customerData }: { orderData: OrderData; customerData: CustomerData } = validationResult.data;
+
+    safeLog('info', 'Processing order notification', { 
+      orderId: orderData.id, 
+      total: orderData.total,
+      customerName: customerData.name,
+      customerEmail: maskEmail(customerData.email)
+    });
 
     if (!process.env.SLACK_WEBHOOK_URL) {
+      safeLog('warn', 'Slack webhook URL not configured');
       return NextResponse.json({ success: true, message: 'Slack webhook not configured' });
     }
+
+    safeLog('info', 'Slack webhook configured, creating instance');
+    
+    // Initialize Slack webhook inside the function
+    const webhook = new IncomingWebhook(process.env.SLACK_WEBHOOK_URL);
 
     // Create a beautiful Slack message
     const itemsList = orderData.items
@@ -180,8 +235,24 @@ export async function POST(request: NextRequest) {
       ]
     };
 
+    // Generate admin URL
+    const adminUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/admin/orders/${orderData.id}`;
+    safeLog('info', 'Generated admin URL for order', { orderId: orderData.id });
+    
     // Send to Slack
-    const result = await webhook.send(slackMessage);
+    safeLog('info', 'Sending message to Slack');
+    
+    let result;
+    try {
+      result = await webhook.send(slackMessage);
+      safeLog('info', 'Slack message sent successfully');
+    } catch (webhookError) {
+      safeLogError('Webhook send error', webhookError);
+      const errorMessage = webhookError && typeof webhookError === 'object' && 'message' in webhookError 
+        ? (webhookError as any).message 
+        : 'Unknown webhook error';
+      throw new Error(`Webhook send failed: ${errorMessage}`);
+    }
     
     return NextResponse.json({
       success: true,
@@ -190,11 +261,14 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
+    safeLogError('Failed to send Slack notification', error);
     return NextResponse.json(
       { 
         success: false, 
         error: 'Failed to send Slack notification',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error && typeof error === 'object' && 'message' in error 
+          ? (error as any).message 
+          : 'Unknown error'
       },
       { status: 500 }
     );

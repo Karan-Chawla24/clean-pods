@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllOrders, saveOrder } from '../../lib/database';
 import { headers } from 'next/headers';
+import { safeLogError } from '@/app/lib/security/logging';
+import { validateRequest, createOrderSchema, sanitizeObject } from '@/app/lib/security/validation';
 
 export async function GET() {
   // This endpoint is now secured - only admin should access
@@ -18,7 +20,7 @@ export async function GET() {
     const orders = await getAllOrders();
     return NextResponse.json(orders);
   } catch (error) {
-    console.error('GET /api/orders error:', error);
+    safeLogError('GET /api/orders error', error);
     return NextResponse.json(
       { error: 'Failed to fetch orders' },
       { status: 500 }
@@ -54,7 +56,7 @@ export async function POST(request: NextRequest) {
     
     // Validate required fields
     if (!orderData.paymentId || !orderData.items || !orderData.total) {
-      console.error('Missing required fields:', { 
+      safeLogError('Missing required fields', { 
         hasPaymentId: !!orderData.paymentId, 
         hasItems: !!orderData.items, 
         hasTotal: !!orderData.total 
@@ -67,7 +69,7 @@ export async function POST(request: NextRequest) {
     
     // Customer information validation
     if (!orderData.customer && !orderData.customerName) {
-      console.error('Missing customer information');
+      safeLogError('Missing customer information');
       return NextResponse.json(
         { error: 'Missing customer information' },
         { status: 400 }
@@ -79,7 +81,7 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json({ success: true, orderId });
   } catch (error) {
-    console.error('POST /api/orders error:', error);
+    safeLogError('POST /api/orders error', error);
     return NextResponse.json(
       { error: 'Failed to create order', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

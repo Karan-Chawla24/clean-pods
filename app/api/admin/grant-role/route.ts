@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, createClerkClient } from '@clerk/nextjs/server';
 import { grantAdminRole, hasAdminUsers, requireClerkAdminAuth } from '../../../lib/clerk-admin';
+import { validateRequest, grantRoleSchema, sanitizeObject } from '../../../lib/security/validation';
+import { safeLog, safeLogError } from '../../../lib/security/logging';
 
 // Create Clerk client instance
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
-// Security logging function
+// Security logging using safe logging functions
 function logSecurityEvent(event: string, userId: string | null, details: any = {}) {
-  const timestamp = new Date().toISOString();
   const logData = {
-    timestamp,
     event,
     userId,
     userAgent: details.userAgent || 'unknown',
@@ -17,10 +17,7 @@ function logSecurityEvent(event: string, userId: string | null, details: any = {
     ...details
   };
   
-  console.log(`[SECURITY] ${event}:`, JSON.stringify(logData));
-  
-  // In production, you might want to send this to a security monitoring service
-  // Example: await sendToSecurityMonitoring(logData);
+  safeLog('warn', `[SECURITY] ${event}`, logData);
 }
 
 /**
@@ -30,11 +27,13 @@ function logSecurityEvent(event: string, userId: string | null, details: any = {
 export async function POST(request: NextRequest) {
   const userAgent = request.headers.get('user-agent') || 'unknown';
   const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+  let userId: string | null = null;
   
   try {
-    console.log('Admin role grant attempt initiated');
+    safeLog('info', 'Admin role grant attempt initiated');
     
-    const { userId } = await auth();
+    const authResult = await auth();
+    userId = authResult.userId;
     
     if (!userId) {
       logSecurityEvent('ADMIN_GRANT_UNAUTHENTICATED', null, {
@@ -43,7 +42,6 @@ export async function POST(request: NextRequest) {
         reason: 'No authentication provided'
       });
       
-      console.log('Grant role failed: No authentication');
       return NextResponse.json(
         { success: false, error: 'Authentication required' },
         { status: 401 }
@@ -64,11 +62,10 @@ export async function POST(request: NextRequest) {
           reason: 'User attempted to grant admin role without admin privileges'
         });
         
-        console.log(`Grant role blocked: User ${userId} attempted to grant admin role without admin privileges`);
         return authResult;
       }
       
-      console.log(`Admin ${authResult.userId} attempting to grant role to user ${userId}`);
+      safeLog('info', 'Admin attempting to grant role', { adminId: authResult.userId, targetUserId: userId });
     } else {
       // If no admins exist, redirect to bootstrap endpoint
       logSecurityEvent('ADMIN_GRANT_BLOCKED_NO_ADMINS', userId, {
@@ -77,7 +74,6 @@ export async function POST(request: NextRequest) {
         reason: 'No admin users exist, bootstrap required'
       });
       
-      console.log(`Grant role redirected: No admins exist, user ${userId} should use bootstrap endpoint`);
       return NextResponse.json(
         { 
           success: false, 
@@ -88,24 +84,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Parse request body to get target user ID (if different from current user)
+    // Parse and validate request body
     let targetUserId = userId; // Default to current user
     
     try {
-      const body = await request.json();
-      if (body.targetUserId) {
-        targetUserId = body.targetUserId;
-        console.log(`Granting admin role to target user: ${targetUserId}`);
+      const validationResult = await validateRequest(request, grantRoleSchema);
+      if (validationResult.success) {
+        const sanitizedData = sanitizeObject(validationResult.data);
+        targetUserId = sanitizedData.userId;
+        safeLog('info', 'Granting admin role to target user', { targetUserId });
       }
     } catch {
       // If no body or invalid JSON, use current user
+      safeLog('info', 'Using current user as target for admin role grant', { userId });
     }
 
     // Get target user details for logging
     const targetUser = await clerk.users.getUser(targetUserId);
     const targetUserEmail = targetUser.emailAddresses[0]?.emailAddress || 'unknown';
     
-    console.log(`Granting admin role to user: ${targetUserId} (${targetUserEmail})`);
+    safeLog('info', 'Granting admin role to user', { targetUserId, targetUserEmail });
     
     // Grant admin role to the target user
     await grantAdminRole(targetUserId);
@@ -122,7 +120,7 @@ export async function POST(request: NextRequest) {
       message: `Admin role granted to user ${targetUserId} (${targetUserEmail})`
     });
     
-    console.log(`Admin role granted successfully to: ${targetUserId} (${targetUserEmail})`);
+    safeLog('info', 'Admin role granted successfully', { targetUserId, targetUserEmail });
     
     return NextResponse.json({
       success: true,
@@ -141,7 +139,7 @@ export async function POST(request: NextRequest) {
       stack: error instanceof Error ? error.stack : undefined
     });
     
-    console.error('Grant admin role error:', error);
+    safeLogError('Grant admin role error', error, { userAgent, ip });
     return NextResponse.json(
       { success: false, error: 'Failed to grant admin role' },
       { status: 500 }

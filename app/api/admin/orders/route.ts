@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllOrders } from '../../../lib/database';
 import { requireClerkAdminAuth } from '../../../lib/clerk-admin';
+import { safeLogError } from '../../../lib/security/logging';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,7 +16,7 @@ export async function GET(request: NextRequest) {
     const orders = await getAllOrders();
     return NextResponse.json(orders);
   } catch (error) {
-    console.error('Admin orders fetch error:', error);
+    safeLogError('Admin orders fetch error', error);
     return NextResponse.json(
       { error: 'Failed to fetch orders' },
       { status: 500 }

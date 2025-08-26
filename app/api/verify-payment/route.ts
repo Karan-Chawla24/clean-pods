@@ -3,13 +3,14 @@ import crypto from 'crypto';
 import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
 import { validateRequest, razorpayWebhookSchema } from '@/app/lib/security/validation';
 import { validateRazorpayOrder, validateRazorpayPayment } from '@/app/lib/security/razorpay';
+import { safeLog, safeLogError } from '@/app/lib/security/logging';
 
 export const POST = withRateLimit(rateLimitConfigs.strict)(async (request: NextRequest) => {
   try {
     // Check if Razorpay key secret is configured
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
     if (!keySecret) {
-      console.error('RAZORPAY_KEY_SECRET is not configured');
+      safeLogError('RAZORPAY_KEY_SECRET is not configured');
       return NextResponse.json(
         { success: false, error: 'Payment verification not configured properly' },
         { status: 500 }
@@ -63,19 +64,21 @@ export const POST = withRateLimit(rateLimitConfigs.strict)(async (request: NextR
         order_id: razorpay_order_id,
       });
     } else {
-      console.warn(`Payment signature verification failed for order ${razorpay_order_id}`);
+      safeLogError('Payment signature verification failed', {
+        orderId: razorpay_order_id,
+        paymentId: razorpay_payment_id
+      });
       return NextResponse.json(
         { success: false, error: 'Invalid payment signature' },
         { status: 400 }
       );
     }
   } catch (error) {
-    console.error('Payment verification error:', error);
+    safeLogError('Payment verification error', error);
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to verify payment',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: 'Failed to verify payment'
       },
       { status: 500 }
     );

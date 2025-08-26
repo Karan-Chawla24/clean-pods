@@ -1,6 +1,7 @@
 import { auth, createClerkClient } from '@clerk/nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { User } from '@clerk/nextjs/server';
+import { safeLogError } from './security/logging';
 
 // Admin role management using Clerk user metadata
 export const ADMIN_ROLE = 'admin';
@@ -63,7 +64,7 @@ export async function requireClerkAdminAuth(request: NextRequest): Promise<NextR
 
     return { userId, user };
   } catch (error) {
-    console.error('Admin auth error:', error);
+    safeLogError('Admin auth error', error);
     return NextResponse.json(
       { success: false, error: 'Authentication failed' },
       { status: 500 }
@@ -102,7 +103,7 @@ export async function hasAdminUsers(): Promise<boolean> {
     const adminUsers = await getAdminUsers();
     return adminUsers.length > 0;
   } catch (error) {
-    console.error('Error checking admin users:', error);
+    safeLogError('Error checking admin users', error);
     throw new Error('Failed to check admin users');
   }
 }
@@ -126,7 +127,7 @@ export async function verifyAdminAccess(): Promise<{ success: boolean; userId?: 
 
     return { success: true, userId };
   } catch (error) {
-    console.error('Admin verification error:', error);
+    safeLogError('Admin verification error', error);
     return { success: false, error: 'Verification failed' };
   }
 }
