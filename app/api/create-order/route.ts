@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
-import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
+import { withUpstashRateLimit } from '@/app/lib/security/upstashRateLimit';
 import { validateRequest, createOrderSchema } from '@/app/lib/security/validation';
 import { validateCartAndTotal } from '@/app/lib/security/cartValidation';
 
@@ -17,7 +17,7 @@ const razorpay = new Razorpay({
   key_secret: keySecret || 'placeholder_secret',
 });
 
-export const POST = withRateLimit(rateLimitConfigs.moderate)(async (request: NextRequest) => {
+export const POST = withUpstashRateLimit('moderate')(async (request: NextRequest) => {
   try {
     // Check if environment variables are set
     if (!keyId || !keySecret) {

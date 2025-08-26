@@ -66,6 +66,7 @@ DATABASE_URL=<database_connection_string>
 DIRECT_URL=<direct_database_connection_string>
 RESEND_API_KEY=<resend_api_key>
 ADMIN_EMAIL=<admin_email>
+JWT_SECRET=<jwt_secret_for_invoice_tokens>
 ```
 
 A `.env.example` file has been added to the project for reference.
@@ -129,6 +130,7 @@ node scripts/admin-orders.js
 ```env
 # Existing variables...
 ADMIN_ORDERS_KEY=your_secret_admin_key_here
+JWT_SECRET=your_jwt_secret_for_invoice_tokens
 ```
 
 ## Future Improvements

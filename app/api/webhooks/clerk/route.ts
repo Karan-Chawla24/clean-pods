@@ -43,8 +43,8 @@ export async function POST(req: Request) {
     }) as WebhookEvent;
   } catch (err) {
     safeLogError('Clerk webhook signature verification failed', err);
-    return new Response('Error occured', {
-      status: 400,
+    return new Response('Unauthorized', {
+      status: 401,
     });
   }
 

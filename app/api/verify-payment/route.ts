@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
+import { withUpstashRateLimit } from '@/app/lib/security/upstashRateLimit';
 import { validateRequest, razorpayWebhookSchema } from '@/app/lib/security/validation';
 import { validateRazorpayOrder, validateRazorpayPayment } from '@/app/lib/security/razorpay';
 import { safeLog, safeLogError } from '@/app/lib/security/logging';
 
-export const POST = withRateLimit(rateLimitConfigs.strict)(async (request: NextRequest) => {
+export const POST = withUpstashRateLimit('strict')(async (request: NextRequest) => {
   try {
     // Check if Razorpay key secret is configured
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -70,7 +70,7 @@ export const POST = withRateLimit(rateLimitConfigs.strict)(async (request: NextR
       });
       return NextResponse.json(
         { success: false, error: 'Invalid payment signature' },
-        { status: 400 }
+        { status: 401 }
       );
     }
   } catch (error) {

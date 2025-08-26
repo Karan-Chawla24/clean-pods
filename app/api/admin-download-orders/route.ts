@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../lib/prisma';
-import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
+import { withUpstashRateLimit } from '@/app/lib/security/upstashRateLimit';
 import { requireClerkAdminAuth } from '@/app/lib/clerk-admin';
 
 // Dynamic import for ExcelJS to avoid build issues
 let ExcelJS: any;
 
-export const GET = withRateLimit(rateLimitConfigs.moderate)(async (request: NextRequest) => {
+export const GET = withUpstashRateLimit('moderate')(async (request: NextRequest) => {
   try {
     // Verify Clerk authentication
     const authResult = await requireClerkAdminAuth(request);
