@@ -25,6 +25,7 @@
     "clsx": "^2.0.0",
     "exceljs": "^4.4.0",
     "framer-motion": "^11.18.2",
+    "jose": "^6.0.13",
     "jsonwebtoken": "^9.0.2",
     "nanoid": "^5.1.5",
     "next": "15.3.2",

@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getOrder } from '../../../lib/database';
-import crypto from 'crypto';
-
-// Generate a simple token for invoice access (in production, use proper JWT)
-function generateInvoiceToken(orderId: string): string {
-  const secret = process.env.INVOICE_SECRET || 'fallback-secret-key-change-in-production';
-  return crypto.createHmac('sha256', secret).update(orderId).digest('hex').substring(0, 16);
-}
+import { verifyInvoiceToken } from '../../../lib/jwt-utils';
+import { auth } from '@clerk/nextjs/server';
 
 export async function GET(
   request: NextRequest,
@@ -16,7 +11,6 @@ export async function GET(
     const { id: orderId } = await params;
     const { searchParams } = new URL(request.url);
     const token = searchParams.get('token');
-    const orderData = searchParams.get('orderData'); // Optional order data from client
     
     if (!orderId) {
       return NextResponse.json(
@@ -25,37 +19,51 @@ export async function GET(
       );
     }
 
-    // Simple token validation - in production, use proper JWT or session tokens
-    const expectedToken = generateInvoiceToken(orderId);
-    if (!token || token !== expectedToken) {
+    // Verify user authentication
+    const { userId } = await auth();
+    if (!userId) {
       return NextResponse.json(
-        { error: 'Access denied. Invalid or missing token.' },
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Validate JWT token
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Access token is required' },
+        { status: 400 }
+      );
+    }
+
+    let tokenPayload;
+    try {
+      tokenPayload = await verifyInvoiceToken(token);
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Invalid or expired access token' },
         { status: 403 }
       );
     }
 
-    // Try to get order from database first
-    let order = await getOrder(orderId);
-    
-    // If not found in database and we have order data from client, use that
-    if (!order && orderData) {
-      try {
-        order = JSON.parse(decodeURIComponent(orderData));
-        // Validate that the order data contains the expected orderId
-        if (order && (order.id !== orderId && order.razorpayOrderId !== orderId)) {
-          return NextResponse.json(
-            { error: 'Order data mismatch' },
-            { status: 400 }
-          );
-        }
-      } catch (parseError) {
-        console.error('Failed to parse order data:', parseError);
-        return NextResponse.json(
-          { error: 'Invalid order data format' },
-          { status: 400 }
-        );
-      }
+    // Verify token matches the requested order
+    if (tokenPayload.orderId !== orderId) {
+      return NextResponse.json(
+        { error: 'Token does not match the requested order' },
+        { status: 403 }
+      );
     }
+
+    // Additional security: verify user ID if present in token
+    if (tokenPayload.userId && tokenPayload.userId !== userId) {
+      return NextResponse.json(
+        { error: 'Access denied. Token belongs to different user.' },
+        { status: 403 }
+      );
+    }
+
+    // Get order from database
+    const order = await getOrder(orderId);
     
     if (!order) {
       return NextResponse.json(
