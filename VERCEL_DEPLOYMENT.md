@@ -31,6 +31,9 @@ NEXT_PUBLIC_RAZORPAY_KEY_ID="your_razorpay_key_id"
 ADMIN_PASSWORD="your_hashed_password"
 ADMIN_PASSWORD_SALT="your_salt"
 ADMIN_ORDERS_KEY="your_secret_key"
+
+# JWT Secret
+JWT_SECRET="your_jwt_secret_for_invoice_tokens"
 ```
 
 ### Optional Variables:

@@ -22,11 +22,12 @@ Authentication utilities:
 - `getAdminUsers()` - Get all users with admin role
 - Authentication is handled through Clerk with role-based access control
 
-### `rateLimit.ts`
-Rate limiting implementation:
-- `withRateLimit()` - Higher-order function to wrap API routes
-- `rateLimitConfigs` - Predefined rate limit configurations
-- Supports strict, moderate, and lenient rate limiting
+### `upstashRateLimit.ts`
+Upstash Redis-based rate limiting implementation:
+- `withUpstashRateLimit()` - Higher-order function to wrap API routes
+- `upstashRateLimitConfigs` - Predefined rate limit configurations using Upstash Redis
+- Supports strict, moderate, and lenient rate limiting with sliding window algorithm
+- Provides analytics and distributed rate limiting across multiple instances
 
 ### `validation.ts`
 Zod validation schemas and utilities:
@@ -75,9 +76,9 @@ export const GET = async (request: NextRequest) => {
 
 ### Adding Rate Limiting
 ```typescript
-import { withRateLimit, rateLimitConfigs } from '@/src/lib/security/rateLimit';
+import { withUpstashRateLimit } from '@/lib/security/upstashRateLimit';
 
-export const POST = withRateLimit(rateLimitConfigs.strict)(async (request: NextRequest) => {
+export const POST = withUpstashRateLimit('strict')(async (request: NextRequest) => {
   // Your API logic here
 });
 ```

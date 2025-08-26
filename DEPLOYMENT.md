@@ -38,6 +38,7 @@
      NEXT_PUBLIC_RAZORPAY_KEY_ID = rzp_test_8FhZsj7WtT228R
      RESEND_API_KEY = your_resend_api_key_here
      ADMIN_EMAIL = your-business-email@gmail.com
+     JWT_SECRET = your_jwt_secret_for_invoice_tokens
      ```
    
    **Important:**

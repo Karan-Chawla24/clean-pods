@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
+import { withUpstashRateLimit } from '@/app/lib/security/upstashRateLimit';
 import { 
   verifyRazorpaySignature, 
   validateRazorpayOrder, 
@@ -15,10 +15,18 @@ export const config = {
   }
 };
 
-export const POST = withRateLimit(rateLimitConfigs.strict)(async (request: NextRequest) => {
+export const POST = withUpstashRateLimit('strict')(async (request: NextRequest) => {
   try {
     const rawBody = await request.text(); // Raw request body string
-    const payload = JSON.parse(rawBody);
+    
+    let payload;
+    try {
+      payload = JSON.parse(rawBody);
+    } catch (parseError) {
+      safeLogError('Invalid JSON in Razorpay webhook', parseError);
+      return NextResponse.json({ success: false, error: 'Invalid JSON payload' }, { status: 400 });
+    }
+    
     const sanitizedPayload = sanitizeRazorpayPayload(payload);
 
     const razorpaySecret = process.env.RAZORPAY_WEBHOOK_SECRET;

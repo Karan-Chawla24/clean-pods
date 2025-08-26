@@ -1,10 +1,11 @@
 // Export all security utilities
-export * from './rateLimit';
+export * from './upstashRateLimit';
 export * from './validation';
 export * from './razorpay';
+export * from './config';
 
 // Re-export commonly used configurations
-export { rateLimitConfigs } from './rateLimit';
+export { upstashRateLimitConfigs } from './upstashRateLimit';
 export { 
   contactFormSchema, 
   createOrderSchema, 

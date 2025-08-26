@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { IncomingWebhook } from '@slack/webhook';
-import { withRateLimit, rateLimitConfigs } from '@/app/lib/security/rateLimit';
+import { withUpstashRateLimit } from '@/app/lib/security/upstashRateLimit';
 import { validateRequest, contactFormSchema, sanitizeString } from '@/app/lib/security/validation';
 import { safeLogError } from '@/app/lib/security/logging';
 
@@ -13,7 +13,7 @@ function displayEmail(email: string): string {
   return email;
 }
 
-export const POST = withRateLimit(rateLimitConfigs.moderate)(async (request: NextRequest) => {
+export const POST = withUpstashRateLimit('moderate')(async (request: NextRequest) => {
   try {
     // Validate request body with Zod schema
     const validationResult = await validateRequest(request, contactFormSchema);

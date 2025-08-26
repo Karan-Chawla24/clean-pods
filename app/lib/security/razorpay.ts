@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { safeLogError } from './logging';
 
 export interface RazorpayWebhookPayload {
   razorpay_payment_id: string;
@@ -23,7 +24,7 @@ export function verifyRazorpaySignature(
       Buffer.from(signature, 'hex')
     );
   } catch (error) {
-    console.error('Error verifying Razorpay signature:', error);
+    safeLogError('Error verifying Razorpay signature', error);
     return false;
   }
 }
