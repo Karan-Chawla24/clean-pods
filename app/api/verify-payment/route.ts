@@ -4,9 +4,23 @@ import { withUpstashRateLimit } from '@/app/lib/security/upstashRateLimit';
 import { validateRequest, razorpayWebhookSchema } from '@/app/lib/security/validation';
 import { validateRazorpayOrder, validateRazorpayPayment } from '@/app/lib/security/razorpay';
 import { safeLog, safeLogError } from '@/app/lib/security/logging';
+import { assertSameOrigin } from '@/app/lib/security/origin';
 
 export const POST = withUpstashRateLimit('strict')(async (request: NextRequest) => {
   try {
+    // CSRF Protection: Validate origin header
+    try {
+      assertSameOrigin(request);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Invalid Origin') {
+        return NextResponse.json(
+          { error: 'Invalid Origin' },
+          { status: 403 }
+        );
+      }
+      throw error;
+    }
+
     // Check if Razorpay key secret is configured
     const keySecret = process.env.RAZORPAY_KEY_SECRET;
     if (!keySecret) {

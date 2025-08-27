@@ -94,6 +94,7 @@ export default function Home() {
                 alt="Priya S."
                 width={80}
                 height={80}
+                style={{ width: "auto", height: "auto" }}
                 className="rounded-full mb-4"
               />
               <div className="flex mb-4">

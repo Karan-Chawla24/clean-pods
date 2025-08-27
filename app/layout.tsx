@@ -53,10 +53,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${pacifico.variable} antialiased bg-gradient-to-br from-orange-50 to-amber-50 min-h-screen`}
       >
         <ClerkProvider
-          signInUrl="/auth/signin"
-          signUpUrl="/auth/signup"
-          afterSignInUrl="/"
-          afterSignUpUrl="/"
+          publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+          telemetry={false}
         >
           {children}
           <ToastProvider />

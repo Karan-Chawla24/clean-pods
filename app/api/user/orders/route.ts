@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { prisma } from '../../../lib/prisma';
+import { assertSameOrigin } from '../../../lib/security/origin';
+import { safeLogError } from '../../../lib/security/logging';
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,6 +38,19 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // CSRF Protection: Validate origin header
+    try {
+      assertSameOrigin(request);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Invalid Origin') {
+        return NextResponse.json(
+          { error: 'Invalid Origin' },
+          { status: 403 }
+        );
+      }
+      throw error;
+    }
+
     const { userId } = await auth();
     
     if (!userId) {

@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { prisma } from '../../../lib/prisma';
 import { validateRequest, userProfileSchema, sanitizeObject } from '../../../lib/security/validation';
 import { safeLogError } from '../../../lib/security/logging';
+import { assertSameOrigin } from '../../../lib/security/origin';
 
 // CSRF validation is handled by Clerk's built-in security measures
 
@@ -10,6 +11,19 @@ export async function PUT(request: NextRequest) {
   let userId: string | null = null;
   
   try {
+    // CSRF Protection: Validate origin header
+    try {
+      assertSameOrigin(request);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Invalid Origin') {
+        return NextResponse.json(
+          { error: 'Invalid Origin' },
+          { status: 403 }
+        );
+      }
+      throw error;
+    }
+
     const authResult = await auth();
     userId = authResult.userId;
     

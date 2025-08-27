@@ -42,7 +42,7 @@ export default function Header() {
                 src="/beadslogo.png"
                 alt="BubbleBeads Logo"
                 width={80}
-                height={28}
+                height={32}
                 className="object-contain bg-gradient-to-r from-sky-50 via-white-to-orange-50"
                 priority
               />
