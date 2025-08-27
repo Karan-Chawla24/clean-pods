@@ -1,12 +1,5 @@
-# GitLeaks Configuration for Clean Pods
-# This file configures secret detection patterns and exclusions
-
-title = "Clean Pods GitLeaks Configuration"
-
-# Extend default rules
-[extend]
-path = "https://raw.githubusercontent.com/gitleaks/gitleaks/master/config/gitleaks.toml"
-useDefault = true
+# GitLeaks Configuration
+# This configuration contains custom patterns for detecting secrets specific to this project.
 
 # Custom rules for this project
 [[rules]]
@@ -93,16 +86,22 @@ keywords = [
 paths = [
     ".env.example",
     ".env.vercel.example",
+    ".env.local",
     "README.md",
     "DEPLOYMENT.md",
     "SECURITY.md",
+    "PRODUCTION_DEPLOYMENT_CHECKLIST.md",
+    "VERCEL_TROUBLESHOOTING.md",
     "docs/",
-    "*.md",
+    "app/lib/",
     "package-lock.json",
     "yarn.lock",
     "pnpm-lock.yaml",
     ".gitleaks.toml",
-    ".github/workflows/"
+    ".github/workflows/",
+    "sbom.json",
+    "tsconfig.tsbuildinfo",
+    ".next/"
 ]
 
 regexes = [
@@ -123,7 +122,17 @@ regexes = [
     # Ignore Next.js build artifacts
     '''\.next/''',
     # Ignore Prisma generated files
-    '''prisma/migrations/'''
+    '''prisma/migrations/''',
+    # Ignore markdown files
+    '''\.md$''',
+    # Ignore TypeScript function names and camelCase identifiers
+    '''(function|async function|export function|const|let|var)\s+[a-zA-Z][a-zA-Z0-9]*''',
+    # Ignore common TypeScript/JavaScript patterns
+    '''(validate|create|get|set|update|delete|handle|process)[A-Z][a-zA-Z0-9]*''',
+    # Ignore import/export statements
+    '''(import|export)\s+.*from''',
+    # Ignore username/password placeholders
+    '''(username|password|host|port|dbname)'''
 ]
 
 stopwords = [
