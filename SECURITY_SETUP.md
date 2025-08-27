@@ -90,14 +90,14 @@ Custom secret detection patterns in `.gitleaks.toml`:
 
 ### Supported Secret Patterns
 
-| Service | Pattern Example | Risk Level |
-|---------|----------------|------------|
-| Razorpay | `rzp_test_1234567890123456` | High |
-| Clerk | `sk_test_...` | High |
-| AWS | `AKIA1234567890123456` | Critical |
-| Google | `AIza...` | High |
-| GitHub | `ghp_...` | High |
-| Slack | `xoxb-...` | Medium |
+| Service  | Pattern Example             | Risk Level |
+| -------- | --------------------------- | ---------- |
+| Razorpay | `rzp_test_1234567890123456` | High       |
+| Clerk    | `sk_test_...`               | High       |
+| AWS      | `AKIA1234567890123456`      | Critical   |
+| Google   | `AIza...`                   | High       |
+| GitHub   | `ghp_...`                   | High       |
+| Slack    | `xoxb-...`                  | Medium     |
 
 ## 📊 Security Reports
 
@@ -119,6 +119,7 @@ Each workflow run generates downloadable artifacts:
 ### Security Dashboard
 
 View security status in GitHub Actions:
+
 - Go to **Actions** tab in GitHub
 - Select any workflow run
 - Check the **Summary** for security overview
@@ -147,12 +148,12 @@ SEMGREP_APP_TOKEN=your_semgrep_token          # Optional: Semgrep enhanced featu
 
 ### Build Failure Conditions
 
-| Condition | Action | Impact |
-|-----------|--------|--------|
-| Critical vulnerabilities | Fail immediately | ❌ Blocks deployment |
-| Secrets detected | Fail immediately | ❌ Blocks deployment |
-| High vulnerabilities | Warn (configurable) | ⚠️ Requires review |
-| Problematic licenses | Warn | ⚠️ Requires review |
+| Condition                | Action              | Impact               |
+| ------------------------ | ------------------- | -------------------- |
+| Critical vulnerabilities | Fail immediately    | ❌ Blocks deployment |
+| Secrets detected         | Fail immediately    | ❌ Blocks deployment |
+| High vulnerabilities     | Warn (configurable) | ⚠️ Requires review   |
+| Problematic licenses     | Warn                | ⚠️ Requires review   |
 
 ### Vulnerability Severity Levels
 
@@ -166,6 +167,7 @@ SEMGREP_APP_TOKEN=your_semgrep_token          # Optional: Semgrep enhanced featu
 ### Common Issues
 
 1. **False Positive Secrets**
+
    ```bash
    # Add to .gitleaks.toml allowlist
    [allowlist]
@@ -175,19 +177,21 @@ SEMGREP_APP_TOKEN=your_semgrep_token          # Optional: Semgrep enhanced featu
    ```
 
 2. **License Compliance Failures**
+
    ```bash
    # Check problematic licenses
    npm run security:licenses
-   
+
    # Find alternative packages
    npm search alternative-package-name
    ```
 
 3. **Audit Failures**
+
    ```bash
    # Fix automatically
    npm run security:audit-fix
-   
+
    # Manual review
    npm audit
    npm update package-name

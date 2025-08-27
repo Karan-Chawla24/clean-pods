@@ -3,6 +3,7 @@
 ## Option 1: Vercel (Recommended) ⭐
 
 ### Why Vercel?
+
 - ✅ **Perfect for Next.js** - Built by the Next.js team
 - ✅ **Handles API routes** - Your backend will work seamlessly
 - ✅ **Serverless functions** - Automatic scaling
@@ -12,6 +13,7 @@
 ### Deployment Steps:
 
 1. **Push to GitHub:**
+
    ```bash
    git init
    git add .
@@ -40,7 +42,7 @@
      ADMIN_EMAIL = your-business-email@gmail.com
      JWT_SECRET = your_jwt_secret_for_invoice_tokens
      ```
-   
+
    **Important:**
    - Don't use quotes around the values
    - Make sure there are no extra spaces
@@ -55,6 +57,7 @@
 ## Option 2: Netlify
 
 ### Steps:
+
 1. Build the app: `npm run build`
 2. Deploy the `out` folder to Netlify
 3. Add environment variables in Netlify dashboard
@@ -65,6 +68,7 @@
 ## Option 3: Railway
 
 ### Steps:
+
 1. Connect GitHub repository
 2. Railway auto-detects Next.js
 3. Add environment variables
@@ -75,6 +79,7 @@
 ## Option 4: DigitalOcean App Platform
 
 ### Steps:
+
 1. Connect GitHub repository
 2. Configure build settings
 3. Add environment variables
@@ -85,12 +90,14 @@
 ## Option 5: AWS (Advanced)
 
 ### Using AWS Amplify:
+
 1. Connect GitHub repository
 2. Configure build settings
 3. Add environment variables
 4. Deploy with CDN
 
 ### Using AWS Lambda + API Gateway:
+
 1. Use `serverless` framework
 2. Deploy API routes as Lambda functions
 3. Deploy frontend to S3 + CloudFront
@@ -139,6 +146,7 @@
 ## 📞 Support
 
 If you encounter any issues:
+
 1. Check Vercel deployment logs
 2. Verify environment variables
 3. Test API routes individually

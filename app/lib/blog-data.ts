@@ -14,7 +14,8 @@ export const blogPosts: BlogPost[] = [
   {
     slug: "ultimate-guide-laundry-pods",
     title: "The Ultimate Guide to Laundry Pods: Everything You Need to Know",
-    excerpt: "Discover the science behind laundry pods and why they're revolutionizing the way we do laundry. Learn about their benefits, usage tips, and environmental impact.",
+    excerpt:
+      "Discover the science behind laundry pods and why they're revolutionizing the way we do laundry. Learn about their benefits, usage tips, and environmental impact.",
     content: `# The Ultimate Guide to Laundry Pods: Everything You Need to Know
 
 Laundry pods have transformed the way we approach washing clothes, offering convenience, precision, and powerful cleaning in a single, compact package. But what exactly makes these small capsules so effective?
@@ -72,12 +73,13 @@ Laundry pods represent the future of fabric care - combining convenience, effect
     author: "BubbleBeads Team",
     publishedAt: "2024-01-15",
     readTime: "5 min read",
-    tags: ["Laundry Tips", "Product Guide", "Cleaning"]
+    tags: ["Laundry Tips", "Product Guide", "Cleaning"],
   },
   {
     slug: "eco-friendly-laundry-tips",
     title: "10 Eco-Friendly Laundry Tips That Actually Work",
-    excerpt: "Reduce your environmental footprint while keeping your clothes spotless. These practical tips will help you create a more sustainable laundry routine.",
+    excerpt:
+      "Reduce your environmental footprint while keeping your clothes spotless. These practical tips will help you create a more sustainable laundry routine.",
     content: `# 10 Eco-Friendly Laundry Tips That Actually Work
 
 Doing laundry doesn't have to harm the environment. With these practical tips, you can keep your clothes clean while reducing your ecological footprint.
@@ -129,12 +131,13 @@ Small changes in your laundry routine can make a big difference for the environm
     author: "BubbleBeads Team",
     publishedAt: "2024-01-10",
     readTime: "4 min read",
-    tags: ["Eco-Friendly", "Sustainability", "Tips"]
+    tags: ["Eco-Friendly", "Sustainability", "Tips"],
   },
   {
     slug: "stain-removal-guide",
     title: "The Complete Stain Removal Guide: From Coffee to Grass",
-    excerpt: "Master the art of stain removal with our comprehensive guide. Learn the best techniques for tackling common household stains effectively.",
+    excerpt:
+      "Master the art of stain removal with our comprehensive guide. Learn the best techniques for tackling common household stains effectively.",
     content: `# The Complete Stain Removal Guide: From Coffee to Grass
 
 Stains happen to everyone, but knowing how to tackle them can save your favorite clothes and linens. Here's your complete guide to removing the most common household stains.
@@ -211,20 +214,24 @@ Remember, the key to successful stain removal is quick action and the right tech
     author: "BubbleBeads Team",
     publishedAt: "2024-01-05",
     readTime: "6 min read",
-    tags: ["Stain Removal", "Cleaning Tips", "Laundry"]
-  }
+    tags: ["Stain Removal", "Cleaning Tips", "Laundry"],
+  },
 ];
 
 export function getBlogPost(slug: string): BlogPost | undefined {
-  return blogPosts.find(post => post.slug === slug);
+  return blogPosts.find((post) => post.slug === slug);
 }
 
 export function getAllBlogPosts(): BlogPost[] {
-  return blogPosts.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+  return blogPosts.sort(
+    (a, b) =>
+      new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime(),
+  );
 }
 
-export function getRelatedPosts(currentSlug: string, limit: number = 3): BlogPost[] {
-  return blogPosts
-    .filter(post => post.slug !== currentSlug)
-    .slice(0, limit);
+export function getRelatedPosts(
+  currentSlug: string,
+  limit: number = 3,
+): BlogPost[] {
+  return blogPosts.filter((post) => post.slug !== currentSlug).slice(0, limit);
 }

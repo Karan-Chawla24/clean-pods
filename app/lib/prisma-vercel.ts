@@ -1,7 +1,7 @@
 // app/lib/prisma-vercel.ts
 // Special configuration for Prisma with Vercel Data Proxy
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 // This file contains a special configuration for Prisma when deployed to Vercel
 // It handles the Data Proxy connection which is recommended for serverless environments

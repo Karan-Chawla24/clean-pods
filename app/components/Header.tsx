@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAppStore } from '../lib/store';
-import { cn } from '../lib/utils';
-import { useUser, useClerk, UserButton, SignInButton } from '@clerk/nextjs';
+import Link from "next/link";
+import Image from "next/image";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAppStore } from "../lib/store";
+import { cn } from "../lib/utils";
+import { useUser, useClerk, UserButton, SignInButton } from "@clerk/nextjs";
 
 export default function Header() {
   const { cart, setSearchQuery } = useAppStore();
@@ -18,7 +18,7 @@ export default function Header() {
 
   useEffect(() => {
     if (isLoaded && user) {
-      const adminRole = user.publicMetadata?.role === 'admin';
+      const adminRole = user.publicMetadata?.role === "admin";
       setIsAdmin(adminRole);
     } else {
       setIsAdmin(false);
@@ -26,7 +26,7 @@ export default function Header() {
   }, [isLoaded, user]);
 
   const handleLogout = () => {
-    signOut({ redirectUrl: '/' });
+    signOut({ redirectUrl: "/" });
   };
 
   const cartItemCount = cart.reduce((total, item) => total + item.quantity, 0);
@@ -49,14 +49,44 @@ export default function Header() {
             </Link>
 
             <nav className="hidden md:flex space-x-6">
-              <Link href="/products" className="text-gray-700 hover:text-orange-600 transition-colors">Products</Link>
-              <Link href="/blog" className="text-gray-700 hover:text-orange-600 transition-colors">Blog</Link>
-              <Link href="/about" className="text-gray-700 hover:text-orange-600 transition-colors">About</Link>
-              <Link href="/contact" className="text-gray-700 hover:text-orange-600 transition-colors">Contact</Link>
+              <Link
+                href="/products"
+                className="text-gray-700 hover:text-orange-600 transition-colors"
+              >
+                Products
+              </Link>
+              <Link
+                href="/blog"
+                className="text-gray-700 hover:text-orange-600 transition-colors"
+              >
+                Blog
+              </Link>
+              <Link
+                href="/about"
+                className="text-gray-700 hover:text-orange-600 transition-colors"
+              >
+                About
+              </Link>
+              <Link
+                href="/contact"
+                className="text-gray-700 hover:text-orange-600 transition-colors"
+              >
+                Contact
+              </Link>
               {isAdmin && (
                 <>
-                  <Link href="/admin" className="text-gray-700 hover:text-orange-600 transition-colors">Admin</Link>
-                  <button onClick={handleLogout} className="text-red-600 hover:text-red-700">Logout</button>
+                  <Link
+                    href="/admin"
+                    className="text-gray-700 hover:text-orange-600 transition-colors"
+                  >
+                    Admin
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    Logout
+                  </button>
                 </>
               )}
             </nav>
@@ -66,7 +96,7 @@ export default function Header() {
           <div className="hidden md:flex flex-1 justify-center overflow-hidden">
             <div className="relative w-full max-w-md overflow-hidden h-6">
               <p className="absolute whitespace-nowrap text-xl font-semibold bg-gradient-to-r from-sky-500 via-amber-600 to-orange-500 bg-clip-text text-transparent animate-ticker">
-                Soft on Clothes Hard on Stains 
+                Soft on Clothes Hard on Stains
               </p>
             </div>
           </div>
@@ -78,32 +108,32 @@ export default function Header() {
             ) : isSignedIn && user ? (
               <div className="flex items-center space-x-3">
                 <span className="hidden sm:block text-gray-700 font-medium">
-                  Hello, {user.firstName || 'User'}!
+                  Hello, {user.firstName || "User"}!
                 </span>
-                <UserButton 
+                <UserButton
                   appearance={{
                     elements: {
                       avatarBox: "w-8 h-8",
                       userButtonPopoverCard: "shadow-lg border",
                       userButtonPopoverActionButton: "hover:bg-orange-50",
                       userButtonPopoverActionButtonText: "text-gray-700",
-                      userButtonPopoverFooter: "hidden"
-                    }
+                      userButtonPopoverFooter: "hidden",
+                    },
                   }}
                   userProfileProps={{
                     additionalOAuthScopes: {
-                      google: ['profile', 'email']
-                    }
+                      google: ["profile", "email"],
+                    },
                   }}
                 >
                   <UserButton.MenuItems>
-                    <UserButton.Link 
-                      label="My Orders" 
+                    <UserButton.Link
+                      label="My Orders"
                       labelIcon={<i className="ri-shopping-bag-line"></i>}
                       href="/orders"
                     />
-                    <UserButton.Link 
-                      label="Profile" 
+                    <UserButton.Link
+                      label="Profile"
                       labelIcon={<i className="ri-user-line"></i>}
                       href="/profile"
                     />
@@ -135,36 +165,78 @@ export default function Header() {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="md:hidden text-gray-700 hover:text-orange-600"
             >
-              <i className={cn("ri-menu-line w-6 h-6", isMenuOpen && "ri-close-line")}></i>
+              <i
+                className={cn(
+                  "ri-menu-line w-6 h-6",
+                  isMenuOpen && "ri-close-line",
+                )}
+              ></i>
             </button>
           </div>
         </div>
 
-{/* Mobile Menu */}
-{isMenuOpen && (
-  <div className="absolute right-4 top-full mt-2 w-48 bg-white border rounded-lg shadow-lg flex flex-col space-y-2 p-3 md:hidden z-50">
-    <Link href="/products" className="block text-gray-700 hover:text-orange-600">Products</Link>
-    <Link href="/blog" className="block text-gray-700 hover:text-orange-600">Blog</Link>
-    <Link href="/about" className="block text-gray-700 hover:text-orange-600">About</Link>
-    <Link href="/contact" className="block text-gray-700 hover:text-orange-600">Contact</Link>
-    <Link href="/orders" className="block text-gray-700 hover:text-orange-600">Orders</Link>
-    {isAdmin && (
-      <>
-        <Link href="/admin" className="block text-gray-700 hover:text-orange-600">Admin</Link>
-        <button onClick={handleLogout} className="block text-left text-red-600 hover:text-red-700">Logout</button>
-      </>
-    )}
-  </div>
-)}
-
-
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="absolute right-4 top-full mt-2 w-48 bg-white border rounded-lg shadow-lg flex flex-col space-y-2 p-3 md:hidden z-50">
+            <Link
+              href="/products"
+              className="block text-gray-700 hover:text-orange-600"
+            >
+              Products
+            </Link>
+            <Link
+              href="/blog"
+              className="block text-gray-700 hover:text-orange-600"
+            >
+              Blog
+            </Link>
+            <Link
+              href="/about"
+              className="block text-gray-700 hover:text-orange-600"
+            >
+              About
+            </Link>
+            <Link
+              href="/contact"
+              className="block text-gray-700 hover:text-orange-600"
+            >
+              Contact
+            </Link>
+            <Link
+              href="/orders"
+              className="block text-gray-700 hover:text-orange-600"
+            >
+              Orders
+            </Link>
+            {isAdmin && (
+              <>
+                <Link
+                  href="/admin"
+                  className="block text-gray-700 hover:text-orange-600"
+                >
+                  Admin
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="block text-left text-red-600 hover:text-red-700"
+                >
+                  Logout
+                </button>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Keyframes */}
       <style jsx>{`
         @keyframes ticker {
-          0% { transform: translateX(100%); }
-          100% { transform: translateX(-100%); }
+          0% {
+            transform: translateX(100%);
+          }
+          100% {
+            transform: translateX(-100%);
+          }
         }
         .animate-ticker {
           animation: ticker 10s linear infinite;

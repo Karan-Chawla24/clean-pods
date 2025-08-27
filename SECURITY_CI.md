@@ -9,6 +9,7 @@ Our security pipeline consists of multiple automated workflows that run on every
 ### 1. Security Audit Workflow (`security-audit.yml`)
 
 **Triggers:**
+
 - Push to `main` or `develop` branches
 - Pull requests to `main` or `develop` branches
 - Daily scheduled runs at 2 AM UTC
@@ -16,6 +17,7 @@ Our security pipeline consists of multiple automated workflows that run on every
 **Components:**
 
 #### NPM Security Audit
+
 - Runs `npm audit` with moderate severity threshold
 - Generates detailed audit reports (JSON and text)
 - Fails build on critical vulnerabilities
@@ -23,12 +25,14 @@ Our security pipeline consists of multiple automated workflows that run on every
 - Uploads audit reports as artifacts (30-day retention)
 
 #### Dependency Review (PR only)
+
 - Reviews new dependencies in pull requests
 - Checks for known vulnerabilities
 - Validates license compatibility
 - Fails on moderate+ severity issues
 
 #### Software Composition Analysis (SCA)
+
 - License compliance checking
 - Identifies problematic licenses (GPL, AGPL, etc.)
 - Generates Software Bill of Materials (SBOM)
@@ -38,6 +42,7 @@ Our security pipeline consists of multiple automated workflows that run on every
 ### 2. Secret Scanning Workflow (`secret-scanning.yml`)
 
 **Triggers:**
+
 - Push to `main` or `develop` branches
 - Pull requests to `main` or `develop` branches
 - Daily scheduled runs at 3 AM UTC
@@ -45,24 +50,28 @@ Our security pipeline consists of multiple automated workflows that run on every
 **Components:**
 
 #### GitLeaks Secret Detection
+
 - Scans entire repository history
 - Uses custom configuration (`.gitleaks.toml`)
 - Detects API keys, tokens, passwords, and other secrets
 - Supports custom patterns for project-specific secrets
 
 #### TruffleHog Secret Scanning
+
 - Advanced entropy-based detection
 - Verified secrets only mode
 - Comprehensive pattern matching
 - Historical commit scanning
 
 #### Semgrep Security Analysis
+
 - OWASP Top 10 vulnerability detection
 - JavaScript/TypeScript/React/Next.js specific rules
 - Security audit patterns
 - Custom rule configurations
 
 #### Custom Secret Pattern Detection
+
 - Project-specific secret patterns
 - API key detection (AWS, Google, GitHub, Slack)
 - Database connection string detection
@@ -72,10 +81,12 @@ Our security pipeline consists of multiple automated workflows that run on every
 ### 3. Comprehensive CI Workflow (`ci.yml`)
 
 **Triggers:**
+
 - Push to `main` or `develop` branches
 - Pull requests to `main` or `develop` branches
 
 **Security Integration:**
+
 - Combines all security checks with standard CI
 - Ensures security gates before deployment
 - Provides comprehensive security reporting
@@ -86,6 +97,7 @@ Our security pipeline consists of multiple automated workflows that run on every
 ### GitLeaks Configuration (`.gitleaks.toml`)
 
 **Custom Rules:**
+
 - Razorpay API keys detection
 - Clerk authentication keys
 - Upstash Redis credentials
@@ -94,6 +106,7 @@ Our security pipeline consists of multiple automated workflows that run on every
 - Database connection strings
 
 **Allowlist:**
+
 - Example files (`.env.example`)
 - Documentation files
 - Build artifacts
@@ -102,16 +115,16 @@ Our security pipeline consists of multiple automated workflows that run on every
 
 ### Supported Secret Types
 
-| Secret Type | Pattern | Risk Level |
-|-------------|---------|------------|
-| Razorpay Keys | `rzp_(test\|live)_[A-Za-z0-9]{14}` | High |
-| Clerk Secrets | `sk_(test\|live)_[A-Za-z0-9]{48}` | High |
-| AWS Keys | `AKIA[0-9A-Z]{16}` | Critical |
-| Google API Keys | `AIza[0-9A-Za-z_-]{35}` | High |
-| GitHub Tokens | `gh[pousr]_[A-Za-z0-9_]{36}` | High |
-| Slack Tokens | `xox[baprs]-[0-9a-zA-Z]{10,48}` | Medium |
-| JWT Tokens | `eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+` | Medium |
-| Database URLs | `(mongodb\|mysql\|postgres)://[^\s]+` | Critical |
+| Secret Type     | Pattern                                             | Risk Level |
+| --------------- | --------------------------------------------------- | ---------- |
+| Razorpay Keys   | `rzp_(test\|live)_[A-Za-z0-9]{14}`                  | High       |
+| Clerk Secrets   | `sk_(test\|live)_[A-Za-z0-9]{48}`                   | High       |
+| AWS Keys        | `AKIA[0-9A-Z]{16}`                                  | Critical   |
+| Google API Keys | `AIza[0-9A-Za-z_-]{35}`                             | High       |
+| GitHub Tokens   | `gh[pousr]_[A-Za-z0-9_]{36}`                        | High       |
+| Slack Tokens    | `xox[baprs]-[0-9a-zA-Z]{10,48}`                     | Medium     |
+| JWT Tokens      | `eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+` | Medium     |
+| Database URLs   | `(mongodb\|mysql\|postgres)://[^\s]+`               | Critical   |
 
 ## 📊 Security Reporting
 
@@ -134,6 +147,7 @@ Our security pipeline consists of multiple automated workflows that run on every
 ### Security Summary Dashboard
 
 Each workflow run generates a security summary in the GitHub Actions summary, including:
+
 - Status of each security tool
 - Vulnerability counts
 - License compliance status
@@ -144,16 +158,17 @@ Each workflow run generates a security summary in the GitHub Actions summary, in
 
 ### Vulnerability Severity Actions
 
-| Severity | Action | Build Impact |
-|----------|--------|-------------|
-| Critical | Fail build immediately | ❌ Blocks deployment |
-| High | Warn (configurable to fail) | ⚠️ Requires review |
-| Moderate | Report only | ✅ Continues |
-| Low | Report only | ✅ Continues |
+| Severity | Action                      | Build Impact         |
+| -------- | --------------------------- | -------------------- |
+| Critical | Fail build immediately      | ❌ Blocks deployment |
+| High     | Warn (configurable to fail) | ⚠️ Requires review   |
+| Moderate | Report only                 | ✅ Continues         |
+| Low      | Report only                 | ✅ Continues         |
 
 ### License Compliance
 
 **Allowed Licenses:**
+
 - MIT
 - Apache-2.0
 - BSD-2-Clause
@@ -162,6 +177,7 @@ Each workflow run generates a security summary in the GitHub Actions summary, in
 - Unlicense
 
 **Flagged Licenses:**
+
 - GPL (all versions)
 - AGPL
 - LGPL

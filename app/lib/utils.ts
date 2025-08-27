@@ -6,17 +6,17 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatPrice(price: number): string {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
     minimumFractionDigits: 0,
   }).format(price);
 }
 
 export function generateOrderId(): string {
   // Generate a random string with only alphanumeric characters
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = 'CP';
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  let result = "CP";
   for (let i = 0; i < 9; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
@@ -32,27 +32,27 @@ export function calculateTotal(amount: number): number {
 }
 
 export function formatDate(date: string | Date): string {
-  return new Date(date).toLocaleDateString('en-IN', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+  return new Date(date).toLocaleDateString("en-IN", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 }
 
 export function getOrderStatusColor(status: string): string {
   switch (status) {
-    case 'pending':
-      return 'text-yellow-600 bg-yellow-100';
-    case 'processing':
-      return 'text-blue-600 bg-blue-100';
-    case 'shipped':
-      return 'text-purple-600 bg-purple-100';
-    case 'delivered':
-      return 'text-green-600 bg-green-100';
-    case 'cancelled':
-      return 'text-red-600 bg-red-100';
+    case "pending":
+      return "text-yellow-600 bg-yellow-100";
+    case "processing":
+      return "text-blue-600 bg-blue-100";
+    case "shipped":
+      return "text-purple-600 bg-purple-100";
+    case "delivered":
+      return "text-green-600 bg-green-100";
+    case "cancelled":
+      return "text-red-600 bg-red-100";
     default:
-      return 'text-gray-600 bg-gray-100';
+      return "text-gray-600 bg-gray-100";
   }
 }
 

@@ -1,18 +1,17 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useAppStore } from '../../lib/store';
-import { formatPrice } from '../../lib/utils';
-import { 
-  safeDisplayProductName, 
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useAppStore } from "../../lib/store";
+import { formatPrice } from "../../lib/utils";
+import {
+  safeDisplayProductName,
   safeDisplayText,
-  safeDisplayError
-} from '../../lib/security/ui-escaping';
-import Header from '../../components/Header';
-import toast from 'react-hot-toast';
-import Image from 'next/image';
+  safeDisplayError,
+} from "../../lib/security/ui-escaping";
+import Header from "../../components/Header";
+import toast from "react-hot-toast";
+import Image from "next/image";
 
 interface Product {
   id: string;
@@ -30,34 +29,35 @@ async function fetchProduct(id: string): Promise<Product | null> {
   try {
     const response = await fetch(`/api/products?id=${id}`);
     if (!response.ok) {
-      throw new Error('Failed to fetch product');
+      throw new Error("Failed to fetch product");
     }
     const data = await response.json();
     return data.product;
   } catch (error) {
-    console.error('Error fetching product:', error);
+    console.error("Error fetching product:", error);
     return null;
   }
 }
 
 export default function ProductDetail({ productId }: { productId: string }) {
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState('description');
+  const [activeTab, setActiveTab] = useState("description");
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { addToCart, addToWishlist, removeFromWishlist, wishlist } = useAppStore();
+  const { addToCart, addToWishlist, removeFromWishlist, wishlist } =
+    useAppStore();
 
   useEffect(() => {
     async function loadProduct() {
       setLoading(true);
       setError(null);
-      
+
       const productData = await fetchProduct(productId);
       if (productData) {
         setProduct(productData);
       } else {
-        setError('Product not found');
+        setError("Product not found");
       }
       setLoading(false);
     }
@@ -80,8 +80,13 @@ export default function ProductDetail({ productId }: { productId: string }) {
     return (
       <div className="min-h-screen bg-orange-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 text-lg mb-4">{error || 'Product not found'}</p>
-          <Link href="/products" className="text-orange-600 hover:text-orange-700 underline">
+          <p className="text-red-600 text-lg mb-4">
+            {error || "Product not found"}
+          </p>
+          <Link
+            href="/products"
+            className="text-orange-600 hover:text-orange-700 underline"
+          >
             Back to Products
           </Link>
         </div>
@@ -89,44 +94,44 @@ export default function ProductDetail({ productId }: { productId: string }) {
     );
   }
 
-  const isInWishlist = wishlist.find(item => item.id === product.id);
+  const isInWishlist = wishlist.find((item) => item.id === product.id);
 
   const handleAddToCart = async () => {
     try {
       // Fetch latest price from API to ensure consistency
       const response = await fetch(`/api/products?id=${product.id}`);
       const data = await response.json();
-      
+
       if (data.product) {
         addToCart({
           id: data.product.id,
           name: data.product.name,
           price: data.product.price,
           quantity: quantity,
-          image: data.product.image
+          image: data.product.image,
         });
-        toast.success('Added to cart!');
+        toast.success("Added to cart!");
       } else {
-        toast.error('Failed to add item to cart');
+        toast.error("Failed to add item to cart");
       }
     } catch (error) {
-      console.error('Error adding to cart:', error);
-      toast.error('Failed to add item to cart');
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to add item to cart");
     }
   };
 
   const handleWishlistToggle = () => {
     if (isInWishlist) {
       removeFromWishlist(product.id);
-      toast.success('Removed from wishlist');
+      toast.success("Removed from wishlist");
     } else {
       addToWishlist({
         id: product.id,
         name: product.name,
         price: product.price,
-        image: product.image
+        image: product.image,
       });
-      toast.success('Added to wishlist!');
+      toast.success("Added to wishlist!");
     }
   };
 
@@ -137,9 +142,16 @@ export default function ProductDetail({ productId }: { productId: string }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Breadcrumb */}
         <div className="flex items-center space-x-2 text-gray-600 mb-8">
-          <Link href="/" className="hover:text-orange-600 cursor-pointer">Home</Link>
+          <Link href="/" className="hover:text-orange-600 cursor-pointer">
+            Home
+          </Link>
           <i className="ri-arrow-right-s-line w-4 h-4"></i>
-          <Link href="/products" className="hover:text-orange-600 cursor-pointer">Products</Link>
+          <Link
+            href="/products"
+            className="hover:text-orange-600 cursor-pointer"
+          >
+            Products
+          </Link>
           <i className="ri-arrow-right-s-line w-4 h-4"></i>
           <span className="text-gray-900 font-medium">{product.name}</span>
         </div>
@@ -147,7 +159,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
           {/* Product Image */}
           <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8">
-            <Image 
+            <Image
               src={product.image}
               alt={product.name}
               width={600}
@@ -158,19 +170,34 @@ export default function ProductDetail({ productId }: { productId: string }) {
 
           {/* Product Info */}
           <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 break-words">{safeDisplayProductName(product.name)}</h1>
-            <div className="text-2xl sm:text-3xl font-bold text-orange-600 mb-6">{formatPrice(product.price)}</div>
-            
-            <p className="text-gray-600 text-base sm:text-lg mb-8 break-words">{safeDisplayText(product.description)}</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-4 break-words">
+              {safeDisplayProductName(product.name)}
+            </h1>
+            <div className="text-2xl sm:text-3xl font-bold text-orange-600 mb-6">
+              {formatPrice(product.price)}
+            </div>
+
+            <p className="text-gray-600 text-base sm:text-lg mb-8 break-words">
+              {safeDisplayText(product.description)}
+            </p>
 
             {/* Features */}
             <div className="mb-8">
-              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Key Features</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">
+                Key Features
+              </h3>
               <ul className="space-y-2">
                 {product.features.map((feature, index) => (
-                  <li key={index} className="flex items-start text-gray-700 text-sm sm:text-base">
-                    <span className="text-green-600 mr-3 mt-1 flex-shrink-0">✓</span>
-                    <span className="break-words">{safeDisplayText(feature, 100)}</span>
+                  <li
+                    key={index}
+                    className="flex items-start text-gray-700 text-sm sm:text-base"
+                  >
+                    <span className="text-green-600 mr-3 mt-1 flex-shrink-0">
+                      ✓
+                    </span>
+                    <span className="break-words">
+                      {safeDisplayText(feature, 100)}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -178,16 +205,20 @@ export default function ProductDetail({ productId }: { productId: string }) {
 
             {/* Quantity Selector */}
             <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 mb-8">
-              <span className="text-gray-700 font-medium text-sm sm:text-base">Quantity:</span>
+              <span className="text-gray-700 font-medium text-sm sm:text-base">
+                Quantity:
+              </span>
               <div className="flex items-center border border-gray-300 rounded-lg w-fit">
-                <button 
+                <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   className="px-3 sm:px-4 py-2 text-gray-600 hover:text-gray-900 cursor-pointer text-lg"
                 >
                   −
                 </button>
-                <span className="px-3 sm:px-4 py-2 bg-gray-50 font-medium min-w-[3rem] text-center">{quantity}</span>
-                <button 
+                <span className="px-3 sm:px-4 py-2 bg-gray-50 font-medium min-w-[3rem] text-center">
+                  {quantity}
+                </span>
+                <button
                   onClick={() => setQuantity(quantity + 1)}
                   className="px-3 sm:px-4 py-2 text-gray-600 hover:text-gray-900 cursor-pointer text-lg"
                 >
@@ -198,13 +229,12 @@ export default function ProductDetail({ productId }: { productId: string }) {
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4 mb-4">
-              <button 
+              <button
                 onClick={handleAddToCart}
                 className="flex-1 bg-gradient-to-r from-orange-400 to-amber-400 text-white py-3 sm:py-4 px-4 sm:px-8 rounded-lg text-base sm:text-lg font-semibold hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer text-center break-words"
               >
                 Add to Cart - {formatPrice(product.price * quantity)}
               </button>
-
             </div>
 
             {/* Security Features */}
@@ -225,14 +255,14 @@ export default function ProductDetail({ productId }: { productId: string }) {
         <div className="bg-white rounded-2xl mt-8 sm:mt-12">
           <div className="border-b overflow-x-auto">
             <div className="flex min-w-full">
-              {['description', 'ingredients', 'usage'].map((tab) => (
+              {["description", "ingredients", "usage"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-4 sm:px-6 lg:px-8 py-3 sm:py-4 font-medium capitalize cursor-pointer whitespace-nowrap text-sm sm:text-base flex-shrink-0 ${
-                    activeTab === tab 
-                      ? 'border-b-2 border-orange-600 text-orange-600' 
-                      : 'text-gray-600 hover:text-gray-900'
+                    activeTab === tab
+                      ? "border-b-2 border-orange-600 text-orange-600"
+                      : "text-gray-600 hover:text-gray-900"
                   }`}
                 >
                   {tab}
@@ -240,15 +270,21 @@ export default function ProductDetail({ productId }: { productId: string }) {
               ))}
             </div>
           </div>
-          
+
           <div className="p-4 sm:p-6 md:p-8">
-            {activeTab === 'description' && (
+            {activeTab === "description" && (
               <div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Product Description</h3>
-                <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-6 break-words">{safeDisplayText(product.description)}</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+                  Product Description
+                </h3>
+                <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-6 break-words">
+                  {safeDisplayText(product.description)}
+                </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
                   <div className="w-full">
-                    <h4 className="font-semibold text-gray-900 mb-3">Perfect For:</h4>
+                    <h4 className="font-semibold text-gray-900 mb-3">
+                      Perfect For:
+                    </h4>
                     <ul className="space-y-2 text-gray-700 text-sm sm:text-base">
                       <li>• Daily laundry loads</li>
                       <li>• All fabric types</li>
@@ -257,7 +293,9 @@ export default function ProductDetail({ productId }: { productId: string }) {
                     </ul>
                   </div>
                   <div className="w-full">
-                    <h4 className="font-semibold text-gray-900 mb-3">Benefits:</h4>
+                    <h4 className="font-semibold text-gray-900 mb-3">
+                      Benefits:
+                    </h4>
                     <ul className="space-y-2 text-gray-700 text-sm sm:text-base">
                       <li>• Convenient pre-measured pods</li>
                       <li>• No measuring or mess</li>
@@ -268,13 +306,19 @@ export default function ProductDetail({ productId }: { productId: string }) {
                 </div>
               </div>
             )}
-            
-            {activeTab === 'ingredients' && (
+
+            {activeTab === "ingredients" && (
               <div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Ingredients</h3>
-                <p className="text-gray-700 text-base sm:text-lg mb-6 break-words">{safeDisplayText(product.ingredients)}</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+                  Ingredients
+                </h3>
+                <p className="text-gray-700 text-base sm:text-lg mb-6 break-words">
+                  {safeDisplayText(product.ingredients)}
+                </p>
                 <div className="bg-orange-50 p-4 sm:p-6 rounded-lg">
-                  <h4 className="font-semibold text-gray-900 mb-3">Safety Information:</h4>
+                  <h4 className="font-semibold text-gray-900 mb-3">
+                    Safety Information:
+                  </h4>
                   <ul className="space-y-2 text-gray-700 text-sm sm:text-base">
                     <li>• Keep out of reach of children</li>
                     <li>• Do not bite or chew pods</li>
@@ -284,32 +328,54 @@ export default function ProductDetail({ productId }: { productId: string }) {
                 </div>
               </div>
             )}
-            
-            {activeTab === 'usage' && (
+
+            {activeTab === "usage" && (
               <div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">How to Use</h3>
-                <p className="text-gray-700 text-base sm:text-lg mb-6 break-words">{safeDisplayText(product.usage)}</p>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+                  How to Use
+                </h3>
+                <p className="text-gray-700 text-base sm:text-lg mb-6 break-words">
+                  {safeDisplayText(product.usage)}
+                </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl font-bold text-orange-600">1</span>
+                      <span className="text-2xl font-bold text-orange-600">
+                        1
+                      </span>
                     </div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Place Pod</h4>
-                    <p className="text-gray-600 text-sm break-words">Place pod in the drum before adding clothes</p>
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      Place Pod
+                    </h4>
+                    <p className="text-gray-600 text-sm break-words">
+                      Place pod in the drum before adding clothes
+                    </p>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl font-bold text-orange-600">2</span>
+                      <span className="text-2xl font-bold text-orange-600">
+                        2
+                      </span>
                     </div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Add Clothes</h4>
-                    <p className="text-gray-600 text-sm break-words">Add your laundry on top of the pod</p>
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      Add Clothes
+                    </h4>
+                    <p className="text-gray-600 text-sm break-words">
+                      Add your laundry on top of the pod
+                    </p>
                   </div>
                   <div className="text-center">
                     <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl font-bold text-orange-600">3</span>
+                      <span className="text-2xl font-bold text-orange-600">
+                        3
+                      </span>
                     </div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Start Wash</h4>
-                    <p className="text-gray-600 text-sm break-words">Run your regular wash cycle</p>
+                    <h4 className="font-semibold text-gray-900 mb-2">
+                      Start Wash
+                    </h4>
+                    <p className="text-gray-600 text-sm break-words">
+                      Run your regular wash cycle
+                    </p>
                   </div>
                 </div>
               </div>

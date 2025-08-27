@@ -5,6 +5,7 @@ A modern, full-featured e-commerce application for selling premium laundry deter
 ## 🚀 Features
 
 ### Core E-commerce Features
+
 - **Product Catalog**: Three premium detergent pod products with detailed information
 - **Shopping Cart**: Persistent cart with quantity management and real-time totals
 - **Wishlist**: Save favorite products for later
@@ -14,6 +15,7 @@ A modern, full-featured e-commerce application for selling premium laundry deter
 - **Responsive Design**: Mobile-first approach with modern UI
 
 ### Advanced Features
+
 - **State Management**: Zustand for global state management with persistence
 - **Form Validation**: React Hook Form with comprehensive validation
 - **Toast Notifications**: Real-time user feedback with react-hot-toast
@@ -36,31 +38,35 @@ A modern, full-featured e-commerce application for selling premium laundry deter
 ## 📦 Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd clean-pods
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Run the development server**
+
    ```bash
    npm run dev
    ```
 
 4. **For Vercel Deployment**
+
    ```bash
    # Prepare for Vercel deployment
    node scripts/vercel-deploy.js
-   
+
    # Deploy to Vercel
    vercel --prod
    ```
 
-4. **Open your browser**
+5. **Open your browser**
    Navigate to [http://localhost:3000](http://localhost:3000)
 
 ## 🏗️ Project Structure
@@ -98,34 +104,40 @@ clean-pods/
 ## 🎯 Key Features Explained
 
 ### 1. Authentication System
+
 - **Login**: Email/password authentication with demo credentials
 - **Registration**: Complete user registration with validation
 - **Profile Management**: Edit personal information and preferences
 - **Session Persistence**: Automatic login state management
 
 **Demo Credentials:**
+
 - Email: `demo@bubblebeads.com`
 - Password: `demo123`
 
 ### 2. Product Management
+
 - **Three Product Types**:
   - Essential Clean (₹299): Basic detergent pods
   - Soft & Fresh (₹449): Detergent + fabric softener
   - Ultimate Care (₹599): Complete solution with stain remover
 
 ### 3. Shopping Experience
+
 - **Add to Cart**: One-click product addition
 - **Wishlist**: Save products for later purchase
 - **Quantity Management**: Adjust quantities in cart
 - **Real-time Totals**: Automatic tax calculation (18% GST)
 
 ### 4. Order Processing
+
 - **Checkout Flow**: Multi-step checkout with form validation
 - **Payment Integration**: Razorpay payment gateway
 - **Order Confirmation**: Success page with order details
 - **Order History**: Complete order tracking and management
 
 ### 5. Search & Navigation
+
 - **Global Search**: Search across all products
 - **Responsive Navigation**: Mobile-friendly navigation
 - **Breadcrumb Navigation**: Easy navigation between pages
@@ -133,6 +145,7 @@ clean-pods/
 ## 🔧 Configuration
 
 ### Environment Variables
+
 Create a `.env.local` file for production:
 
 ```env
@@ -141,6 +154,7 @@ NEXT_PUBLIC_RAZORPAY_KEY_SECRET=your_razorpay_secret
 ```
 
 ### Payment Gateway
+
 The application uses Razorpay for payments. Update the payment configuration in `app/checkout/page.tsx`:
 
 ```typescript
@@ -153,6 +167,7 @@ const options = {
 ## 🚀 Deployment
 
 ### Static Export
+
 The application is configured for static export:
 
 ```bash
@@ -162,6 +177,7 @@ npm run build
 This generates a static site in the `out/` directory that can be deployed to any static hosting service.
 
 ### Vercel Deployment
+
 1. Connect your repository to Vercel
 2. Vercel will automatically detect Next.js configuration
 3. Deploy with zero configuration
@@ -169,17 +185,21 @@ This generates a static site in the `out/` directory that can be deployed to any
 ## 🎨 Customization
 
 ### Styling
+
 - **Colors**: Update Tailwind config in `tailwind.config.js`
 - **Fonts**: Modify font imports in `app/layout.tsx`
 - **Components**: Edit component styles in respective files
 
 ### Products
+
 Add new products by updating the products array in:
+
 - `app/page.tsx` (homepage products)
 - `app/search/page.tsx` (search products)
 - `app/products/[id]/ProductDetail.tsx` (product details)
 
 ### Features
+
 - **Add new pages**: Create new routes in the `app/` directory
 - **Extend store**: Add new state management in `app/lib/store.ts`
 - **Custom components**: Create reusable components in `app/components/`
@@ -187,6 +207,7 @@ Add new products by updating the products array in:
 ## 📱 Responsive Design
 
 The application is fully responsive with:
+
 - **Mobile-first approach**: Optimized for mobile devices
 - **Breakpoint system**: Tailwind CSS responsive utilities
 - **Touch-friendly**: Large touch targets and intuitive gestures
@@ -202,6 +223,7 @@ The application is fully responsive with:
 ## 🧪 Testing
 
 ### Manual Testing Checklist
+
 - [ ] User registration and login
 - [ ] Product browsing and search
 - [ ] Add to cart and wishlist functionality
@@ -215,12 +237,15 @@ The application is fully responsive with:
 ### Common Issues
 
 1. **Build Errors**
+
    ```bash
    npm run build
    ```
+
    Check for TypeScript errors and fix accordingly.
 
 2. **Dependency Issues**
+
    ```bash
    npm install --legacy-peer-deps
    ```
@@ -246,6 +271,7 @@ This project is licensed under the MIT License.
 ## 📞 Support
 
 For support and questions:
+
 - Email: support@bubblebeads.com
 - Phone: 1-800-BUBBLEBEADS
 - Hours: Mon-Fri 9AM-6PM

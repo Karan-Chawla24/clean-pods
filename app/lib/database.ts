@@ -1,5 +1,5 @@
-import { prisma } from './prisma';
-import { safeLogError } from './security/logging';
+import { prisma } from "./prisma";
+import { safeLogError } from "./security/logging";
 
 export async function saveOrder(orderData: {
   razorpayOrderId: string;
@@ -27,16 +27,24 @@ export async function saveOrder(orderData: {
   total: number;
 }) {
   // saveOrder invoked
-  
+
   try {
     // Handle both legacy format (with customer object) and new format (with direct fields)
-    const customerName = orderData.customerName || 
-      (orderData.customer ? `${orderData.customer.firstName} ${orderData.customer.lastName}` : '');
-    const customerEmail = orderData.customerEmail || (orderData.customer?.email || '');
-    const customerPhone = orderData.customerPhone || (orderData.customer?.phone || '');
-    const address = orderData.address || 
-      (orderData.customer ? `${orderData.customer.address}, ${orderData.customer.city}, ${orderData.customer.state} ${orderData.customer.pincode}` : '');
-    
+    const customerName =
+      orderData.customerName ||
+      (orderData.customer
+        ? `${orderData.customer.firstName} ${orderData.customer.lastName}`
+        : "");
+    const customerEmail =
+      orderData.customerEmail || orderData.customer?.email || "";
+    const customerPhone =
+      orderData.customerPhone || orderData.customer?.phone || "";
+    const address =
+      orderData.address ||
+      (orderData.customer
+        ? `${orderData.customer.address}, ${orderData.customer.city}, ${orderData.customer.state} ${orderData.customer.pincode}`
+        : "");
+
     const order = await prisma.order.create({
       data: {
         razorpayOrderId: orderData.razorpayOrderId,
@@ -48,7 +56,7 @@ export async function saveOrder(orderData: {
         total: orderData.total,
         userId: orderData.userId, // Associate with user if provided
         items: {
-          create: orderData.items.map(item => ({
+          create: orderData.items.map((item) => ({
             name: item.name,
             price: item.price,
             quantity: item.quantity,
@@ -57,11 +65,11 @@ export async function saveOrder(orderData: {
       },
       include: { items: true },
     });
-    
+
     // Order created
     return order.id;
   } catch (error) {
-    safeLogError('Error in saveOrder', error);
+    safeLogError("Error in saveOrder", error);
     throw error;
   }
 }
@@ -76,6 +84,6 @@ export async function getOrder(orderId: string) {
 export async function getAllOrders() {
   return prisma.order.findMany({
     include: { items: true },
-    orderBy: { orderDate: 'desc' },
+    orderBy: { orderDate: "desc" },
   });
 }

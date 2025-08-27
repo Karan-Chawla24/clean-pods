@@ -1,45 +1,45 @@
-'use client';
+"use client";
 
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { Suspense } from 'react';
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Suspense } from "react";
 
 function AuthErrorContent() {
   const searchParams = useSearchParams();
-  const error = searchParams.get('error');
+  const error = searchParams.get("error");
 
   const getErrorMessage = (error: string | null) => {
     switch (error) {
-      case 'Configuration':
-        return 'There is a problem with the server configuration.';
-      case 'AccessDenied':
-        return 'Access denied. You do not have permission to sign in.';
-      case 'Verification':
-        return 'The verification token has expired or has already been used.';
-      case 'Default':
-        return 'Unable to sign in.';
-      case 'Signin':
-        return 'Try signing in with a different account.';
-      case 'OAuthSignin':
-        return 'Try signing in with a different account.';
-      case 'OAuthCallback':
-        return 'Try signing in with a different account.';
-      case 'OAuthCreateAccount':
-        return 'Try signing in with a different account.';
-      case 'EmailCreateAccount':
-        return 'Try signing in with a different account.';
-      case 'Callback':
-        return 'Try signing in with a different account.';
-      case 'OAuthAccountNotLinked':
-        return 'To confirm your identity, sign in with the same account you used originally.';
-      case 'EmailSignin':
-        return 'The e-mail could not be sent.';
-      case 'CredentialsSignin':
-        return 'Sign in failed. Check the details you provided are correct.';
-      case 'SessionRequired':
-        return 'Please sign in to access this page.';
+      case "Configuration":
+        return "There is a problem with the server configuration.";
+      case "AccessDenied":
+        return "Access denied. You do not have permission to sign in.";
+      case "Verification":
+        return "The verification token has expired or has already been used.";
+      case "Default":
+        return "Unable to sign in.";
+      case "Signin":
+        return "Try signing in with a different account.";
+      case "OAuthSignin":
+        return "Try signing in with a different account.";
+      case "OAuthCallback":
+        return "Try signing in with a different account.";
+      case "OAuthCreateAccount":
+        return "Try signing in with a different account.";
+      case "EmailCreateAccount":
+        return "Try signing in with a different account.";
+      case "Callback":
+        return "Try signing in with a different account.";
+      case "OAuthAccountNotLinked":
+        return "To confirm your identity, sign in with the same account you used originally.";
+      case "EmailSignin":
+        return "The e-mail could not be sent.";
+      case "CredentialsSignin":
+        return "Sign in failed. Check the details you provided are correct.";
+      case "SessionRequired":
+        return "Please sign in to access this page.";
       default:
-        return 'An error occurred during authentication.';
+        return "An error occurred during authentication.";
     }
   };
 
@@ -51,7 +51,7 @@ function AuthErrorContent() {
             Authentication Error
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            {error ? `Error: ${error}` : 'An authentication error occurred'}
+            {error ? `Error: ${error}` : "An authentication error occurred"}
           </p>
         </div>
       </div>
@@ -97,7 +97,7 @@ function AuthErrorContent() {
             </Link>
           </div>
 
-          {process.env.NODE_ENV === 'development' && error && (
+          {process.env.NODE_ENV === "development" && error && (
             <div className="mt-6 p-4 bg-yellow-50 rounded-md">
               <div className="text-xs text-yellow-800">
                 <strong>Debug Info:</strong> {error}
@@ -112,14 +112,16 @@ function AuthErrorContent() {
 
 export default function AuthErrorPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <AuthErrorContent />
     </Suspense>
   );

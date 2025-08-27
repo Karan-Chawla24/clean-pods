@@ -13,6 +13,7 @@ This guide will help you deploy your Clean Pods Next.js application to Vercel wi
 Before deploying, ensure you have these environment variables ready:
 
 ### Required Variables:
+
 ```bash
 # Database (CRITICAL)
 DATABASE_URL="postgresql://username:password@db.ddhhpozckwrbwubugeef.supabase.co:5432/postgres"
@@ -37,6 +38,7 @@ JWT_SECRET="your_jwt_secret_for_invoice_tokens"
 ```
 
 ### Optional Variables:
+
 ```bash
 # Google OAuth (if using Google login)
 GOOGLE_CLIENT_ID="your_google_client_id"
@@ -50,11 +52,13 @@ SLACK_CONTACT_URL="your_contact_webhook"
 ## Step 2: Deploy to Vercel
 
 ### Option A: Deploy via Vercel CLI
+
 1. Install Vercel CLI: `npm i -g vercel`
 2. Login: `vercel login`
 3. Deploy: `vercel --prod`
 
 ### Option B: Deploy via GitHub Integration
+
 1. Push code to GitHub
 2. Import project in Vercel dashboard
 3. Configure environment variables in project settings
@@ -71,6 +75,7 @@ SLACK_CONTACT_URL="your_contact_webhook"
 After successful deployment, you need to set up your database schema:
 
 ### Method 1: Using Vercel CLI (Recommended)
+
 ```bash
 # Connect to your deployed project
 vercel env pull .env.local
@@ -80,6 +85,7 @@ npm run db:setup
 ```
 
 ### Method 2: Manual Database Setup
+
 If you can't run commands locally, you can:
 
 1. Access your Supabase dashboard
@@ -101,18 +107,22 @@ If you can't run commands locally, you can:
 ## Step 6: Common Issues and Solutions
 
 ### Build Error: "Can't reach database server"
+
 - **Cause**: Build script tries to connect to database during build
 - **Solution**: ✅ Fixed in `package.json` - build script no longer includes `db push`
 
 ### Authentication Error: "Configuration"
+
 - **Cause**: Missing or incorrect `NEXTAUTH_SECRET` or `NEXTAUTH_URL`
 - **Solution**: Ensure these environment variables are set correctly
 
 ### Orders Not Saving
+
 - **Cause**: Database schema not deployed
 - **Solution**: Run `npm run db:setup` after deployment
 
 ### 500 Internal Server Error
+
 - **Cause**: Database connection issues or missing environment variables
 - **Solution**: Check Vercel function logs and verify all environment variables
 

@@ -13,7 +13,7 @@ repos:
       - id: check-toml
       - id: check-merge-conflict
       - id: check-added-large-files
-        args: ['--maxkb=1000']
+        args: ["--maxkb=1000"]
       - id: detect-private-key
       - id: detect-aws-credentials
 
@@ -72,21 +72,21 @@ repos:
               echo "❌ Potential secrets found in code!"
               exit 1
             fi
-            
+
             # Check for hardcoded passwords
             if grep -r -i --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" \
               -E "(password|passwd|pwd)\s*[:=]\s*['\"][^'\"]{8,}['\"]" .; then
               echo "❌ Potential hardcoded passwords found!"
               exit 1
             fi
-            
+
             # Check for database URLs
             if grep -r -i --include="*.ts" --include="*.js" --include="*.tsx" --include="*.jsx" \
               -E "(mongodb|mysql|postgres|redis)://[^\s]+" .; then
               echo "❌ Potential database connection strings found!"
               exit 1
             fi
-            
+
             echo "✅ No obvious secrets detected."
         pass_filenames: false
         stages: [commit]

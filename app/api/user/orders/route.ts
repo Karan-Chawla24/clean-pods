@@ -1,37 +1,35 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth, currentUser } from '@clerk/nextjs/server';
-import { prisma } from '../../../lib/prisma';
-import { assertSameOrigin } from '../../../lib/security/origin';
-import { safeLogError } from '../../../lib/security/logging';
+import { NextRequest, NextResponse } from "next/server";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { prisma } from "../../../lib/prisma";
+import { assertSameOrigin } from "../../../lib/security/origin";
+import { safeLogError } from "../../../lib/security/logging";
 
 export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
-    
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
 
-    
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const orders = await prisma.order.findMany({
       where: {
-        userId: userId
+        userId: userId,
       },
       include: {
-        items: true
+        items: true,
       },
       orderBy: {
-        orderDate: 'desc'
-      }
+        orderDate: "desc",
+      },
     });
-    
+
     return NextResponse.json(orders);
   } catch (error) {
-    console.error('Error fetching orders:', error);
+    console.error("Error fetching orders:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch orders' },
-      { status: 500 }
+      { error: "Failed to fetch orders" },
+      { status: 500 },
     );
   }
 }
@@ -42,62 +40,59 @@ export async function POST(request: NextRequest) {
     try {
       assertSameOrigin(request);
     } catch (error) {
-      if (error instanceof Error && error.message === 'Invalid Origin') {
-        return NextResponse.json(
-          { error: 'Invalid Origin' },
-          { status: 403 }
-        );
+      if (error instanceof Error && error.message === "Invalid Origin") {
+        return NextResponse.json({ error: "Invalid Origin" }, { status: 403 });
       }
       throw error;
     }
 
     const { userId } = await auth();
-    
+
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    
+
     const data = await request.json();
     // ...existing code ...
     // Received user order request
-    
+
     // Validate required fields
     if (!data.paymentId || !data.items || !data.total) {
-      console.error('Missing required fields:', { 
-        hasPaymentId: !!data.paymentId, 
-        hasItems: !!data.items, 
-        hasTotal: !!data.total 
+      console.error("Missing required fields:", {
+        hasPaymentId: !!data.paymentId,
+        hasItems: !!data.items,
+        hasTotal: !!data.total,
       });
       return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
+        { error: "Missing required fields" },
+        { status: 400 },
       );
     }
-    
+
     // Ensure user exists in database (sync with Clerk)
     const clerkUser = await currentUser();
     if (!clerkUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 401 });
+      return NextResponse.json({ error: "User not found" }, { status: 401 });
     }
-    
+
     // Create or update user in database
     await prisma.user.upsert({
       where: { id: userId },
       update: {
-        email: clerkUser.emailAddresses[0]?.emailAddress || '',
+        email: clerkUser.emailAddresses[0]?.emailAddress || "",
         firstName: clerkUser.firstName,
         lastName: clerkUser.lastName,
-        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
+        name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim(),
       },
       create: {
         id: userId,
-        email: clerkUser.emailAddresses[0]?.emailAddress || '',
+        email: clerkUser.emailAddresses[0]?.emailAddress || "",
         firstName: clerkUser.firstName,
         lastName: clerkUser.lastName,
-        name: `${clerkUser.firstName || ''} ${clerkUser.lastName || ''}`.trim(),
+        name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim(),
       },
     });
-    
+
     // Create order with user association
     const order = await prisma.order.create({
       data: {
@@ -119,15 +114,18 @@ export async function POST(request: NextRequest) {
       },
       include: { items: true },
     });
-    
+
     // Order created successfully
-    
+
     return NextResponse.json({ success: true, orderId: order.id });
   } catch (error) {
-    console.error('POST /api/user/orders error:', error);
+    console.error("POST /api/user/orders error:", error);
     return NextResponse.json(
-      { error: 'Failed to create order', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
+      {
+        error: "Failed to create order",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
     );
   }
 }

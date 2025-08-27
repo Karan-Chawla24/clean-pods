@@ -2,153 +2,153 @@ name: Security Audit
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   schedule:
     # Run daily at 2 AM UTC
-    - cron: '0 2 * * *'
+    - cron: "0 2 * * *"
 
 jobs:
   npm-audit:
     name: NPM Security Audit
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run npm audit
-      run: |
-        echo "Running npm audit..."
-        npm audit --audit-level=moderate
-        
-    - name: Generate audit report
-      run: |
-        echo "Generating detailed audit report..."
-        npm audit --json > audit-report.json || true
-        npm audit --audit-level=low > audit-summary.txt || true
-        
-    - name: Upload audit reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: npm-audit-reports
-        path: |
-          audit-report.json
-          audit-summary.txt
-        retention-days: 30
-        
-    - name: Check for high/critical vulnerabilities
-      run: |
-        echo "Checking for high/critical vulnerabilities..."
-        HIGH_VULNS=$(npm audit --json | jq '.metadata.vulnerabilities.high // 0')
-        CRITICAL_VULNS=$(npm audit --json | jq '.metadata.vulnerabilities.critical // 0')
-        
-        echo "High vulnerabilities: $HIGH_VULNS"
-        echo "Critical vulnerabilities: $CRITICAL_VULNS"
-        
-        if [ "$CRITICAL_VULNS" -gt 0 ]; then
-          echo "❌ Critical vulnerabilities found! Failing the build."
-          exit 1
-        elif [ "$HIGH_VULNS" -gt 0 ]; then
-          echo "⚠️ High vulnerabilities found! Please review."
-          # Uncomment the next line to fail on high vulnerabilities
-          # exit 1
-        else
-          echo "✅ No critical or high vulnerabilities found."
-        fi
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: |
+          echo "Running npm audit..."
+          npm audit --audit-level=moderate
+
+      - name: Generate audit report
+        run: |
+          echo "Generating detailed audit report..."
+          npm audit --json > audit-report.json || true
+          npm audit --audit-level=low > audit-summary.txt || true
+
+      - name: Upload audit reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-audit-reports
+          path: |
+            audit-report.json
+            audit-summary.txt
+          retention-days: 30
+
+      - name: Check for high/critical vulnerabilities
+        run: |
+          echo "Checking for high/critical vulnerabilities..."
+          HIGH_VULNS=$(npm audit --json | jq '.metadata.vulnerabilities.high // 0')
+          CRITICAL_VULNS=$(npm audit --json | jq '.metadata.vulnerabilities.critical // 0')
+
+          echo "High vulnerabilities: $HIGH_VULNS"
+          echo "Critical vulnerabilities: $CRITICAL_VULNS"
+
+          if [ "$CRITICAL_VULNS" -gt 0 ]; then
+            echo "❌ Critical vulnerabilities found! Failing the build."
+            exit 1
+          elif [ "$HIGH_VULNS" -gt 0 ]; then
+            echo "⚠️ High vulnerabilities found! Please review."
+            # Uncomment the next line to fail on high vulnerabilities
+            # exit 1
+          else
+            echo "✅ No critical or high vulnerabilities found."
+          fi
 
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Dependency Review
-      uses: actions/dependency-review-action@v4
-      with:
-        fail-on-severity: moderate
-        allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC
-        
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+          allow-licenses: MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC
+
   software-composition-analysis:
     name: Software Composition Analysis
     runs-on: ubuntu-latest
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-        
-    - name: Install dependencies
-      run: npm ci
-      
-    - name: Run license check
-      run: |
-        echo "Checking licenses..."
-        npx license-checker --summary > license-summary.txt
-        npx license-checker --json > license-report.json
-        
-        echo "License Summary:"
-        cat license-summary.txt
-        
-    - name: Check for problematic licenses
-      run: |
-        echo "Checking for problematic licenses..."
-        PROBLEMATIC_LICENSES=$(npx license-checker --json | jq -r 'to_entries[] | select(.value.licenses | type == "string" and (contains("GPL") or contains("AGPL") or contains("LGPL") or contains("CDDL") or contains("EPL"))) | .key + ": " + .value.licenses')
-        
-        if [ -n "$PROBLEMATIC_LICENSES" ]; then
-          echo "⚠️ Potentially problematic licenses found:"
-          echo "$PROBLEMATIC_LICENSES"
-          # Uncomment to fail on problematic licenses
-          # exit 1
-        else
-          echo "✅ No problematic licenses detected."
-        fi
-        
-    - name: Upload license reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: license-reports
-        path: |
-          license-summary.txt
-          license-report.json
-        retention-days: 30
-        
-    - name: Check package integrity
-      run: |
-        echo "Verifying package integrity..."
-        npm ls --depth=0
-        
-        echo "Checking for outdated packages..."
-        npm outdated || true
-        
-    - name: Generate SBOM (Software Bill of Materials)
-      run: |
-        echo "Generating Software Bill of Materials..."
-        npx @cyclonedx/cyclonedx-npm --output-file sbom.json
-        
-    - name: Upload SBOM
-      uses: actions/upload-artifact@v4
-      with:
-        name: software-bill-of-materials
-        path: sbom.json
-        retention-days: 90
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run license check
+        run: |
+          echo "Checking licenses..."
+          npx license-checker --summary > license-summary.txt
+          npx license-checker --json > license-report.json
+
+          echo "License Summary:"
+          cat license-summary.txt
+
+      - name: Check for problematic licenses
+        run: |
+          echo "Checking for problematic licenses..."
+          PROBLEMATIC_LICENSES=$(npx license-checker --json | jq -r 'to_entries[] | select(.value.licenses | type == "string" and (contains("GPL") or contains("AGPL") or contains("LGPL") or contains("CDDL") or contains("EPL"))) | .key + ": " + .value.licenses')
+
+          if [ -n "$PROBLEMATIC_LICENSES" ]; then
+            echo "⚠️ Potentially problematic licenses found:"
+            echo "$PROBLEMATIC_LICENSES"
+            # Uncomment to fail on problematic licenses
+            # exit 1
+          else
+            echo "✅ No problematic licenses detected."
+          fi
+
+      - name: Upload license reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: license-reports
+          path: |
+            license-summary.txt
+            license-report.json
+          retention-days: 30
+
+      - name: Check package integrity
+        run: |
+          echo "Verifying package integrity..."
+          npm ls --depth=0
+
+          echo "Checking for outdated packages..."
+          npm outdated || true
+
+      - name: Generate SBOM (Software Bill of Materials)
+        run: |
+          echo "Generating Software Bill of Materials..."
+          npx @cyclonedx/cyclonedx-npm --output-file sbom.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: software-bill-of-materials
+          path: sbom.json
+          retention-days: 90

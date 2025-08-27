@@ -23,6 +23,7 @@
 ## 📋 **Correct Deployment Steps:**
 
 ### **Step 1: Push to GitHub**
+
 ```bash
 git add .
 git commit -m "BubbleBeads e-commerce app"
@@ -30,12 +31,14 @@ git push origin main
 ```
 
 ### **Step 2: Deploy to Vercel**
+
 1. Go to [vercel.com](https://vercel.com)
 2. Click "New Project"
 3. Import your GitHub repository
 4. Click "Deploy" (don't change any settings)
 
 ### **Step 3: Add Environment Variables**
+
 After deployment, go to:
 **Project Dashboard → Settings → Environment Variables**
 
@@ -45,7 +48,7 @@ Add these **exact** variables:
 RAZORPAY_KEY_ID
 Value: rzp_test_8FhZsj7WtT228R
 
-RAZORPAY_KEY_SECRET  
+RAZORPAY_KEY_SECRET
 Value: OclgSCmRYoNmRN4dzoQd2sKl
 
 NEXT_PUBLIC_RAZORPAY_KEY_ID
@@ -59,7 +62,9 @@ Value: your-business-email@gmail.com
 ```
 
 ### **Step 4: Redeploy**
+
 After adding environment variables:
+
 1. Go to "Deployments" tab
 2. Click "Redeploy" on the latest deployment
 3. Your app will be live!
@@ -69,25 +74,32 @@ After adding environment variables:
 ## 🚨 **Common Issues & Solutions:**
 
 ### **Issue 1: Environment Variable Errors**
+
 **Problem:** References to secrets that don't exist
 **Solution:** ✅ **FIXED** - No `vercel.json` needed for Next.js
 
 ### **Issue 2: Build Errors**
+
 **Problem:** Dependencies not installing
-**Solution:** 
+**Solution:**
+
 ```bash
 npm install
 npm run build
 ```
+
 Test locally first, then push to GitHub
 
 ### **Issue 3: API Routes Not Working**
+
 **Problem:** 404 errors on `/api/*` routes
 **Solution:** Vercel automatically handles Next.js API routes - no config needed
 
 ### **Issue 4: Environment Variables Not Loading**
+
 **Problem:** `process.env.VARIABLE_NAME` is undefined
-**Solution:** 
+**Solution:**
+
 - Make sure variable names are exact (case-sensitive)
 - Redeploy after adding variables
 - Check "Environment Variables" section in Vercel dashboard
@@ -130,9 +142,11 @@ Your app should be live at: `https://your-project-name.vercel.app`
    - Check for any error messages
 
 2. **Test locally first:**
+
    ```bash
    npm run dev
    ```
+
    Make sure everything works on `localhost:3000`
 
 3. **Verify environment variables:**
@@ -150,6 +164,7 @@ Your app should be live at: `https://your-project-name.vercel.app`
 ## 🎉 **Success!**
 
 Once deployed successfully, your BubbleBeads e-commerce store will be:
+
 - **Live on the internet** 🌐
 - **Accepting real payments** 💳
 - **Sending order notifications** 📧

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import Header from '../components/Header';
-import { validateEmail } from '../lib/utils';
-import toast from 'react-hot-toast';
-import { useUser } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import Header from "../components/Header";
+import { validateEmail } from "../lib/utils";
+import toast from "react-hot-toast";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 interface ContactForm {
   name: string;
@@ -19,7 +19,7 @@ export default function Contact() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const {
     register,
     handleSubmit,
@@ -29,7 +29,7 @@ export default function Contact() {
 
   useEffect(() => {
     if (isLoaded && !user) {
-      router.push('/auth/signin');
+      router.push("/auth/signin");
     }
   }, [isLoaded, user, router]);
 
@@ -43,13 +43,13 @@ export default function Contact() {
 
   const onSubmit = async (data: ContactForm) => {
     setIsSubmitting(true);
-    
+
     try {
       // Send contact form data to Slack
-      const response = await fetch('/api/contact-notification', {
-        method: 'POST',
+      const response = await fetch("/api/contact-notification", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: data.name,
@@ -60,21 +60,26 @@ export default function Contact() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         throw new Error(errorData.error || `Server error: ${response.status}`);
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
-        toast.success('Message sent successfully! We\'ll get back to you soon.');
+        toast.success("Message sent successfully! We'll get back to you soon.");
         reset();
       } else {
-        throw new Error(result.error || 'Failed to send message');
+        throw new Error(result.error || "Failed to send message");
       }
     } catch (error) {
-      console.error('Contact form error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to send message. Please try again.';
+      console.error("Contact form error:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to send message. Please try again.";
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -84,12 +89,13 @@ export default function Contact() {
   return (
     <div className="bg-orange-50">
       <Header />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-3">Contact Us</h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Have questions about our products or need support? We&apos;re here to help!
+            Have questions about our products or need support? We&apos;re here
+            to help!
           </p>
         </div>
 
@@ -97,9 +103,12 @@ export default function Contact() {
           {/* Contact Information */}
           <div className="space-y-6">
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Get in Touch</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                Get in Touch
+              </h2>
               <p className="text-gray-600 mb-6 text-sm">
-                Our customer support team is available to help you with any questions about our products, orders, or general inquiries.
+                Our customer support team is available to help you with any
+                questions about our products, orders, or general inquiries.
               </p>
             </div>
 
@@ -110,8 +119,12 @@ export default function Contact() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
-                  <p className="text-gray-600 text-sm">support@bubblebeads.com</p>
-                  <p className="text-gray-600 text-sm">orders@bubblebeads.com</p>
+                  <p className="text-gray-600 text-sm">
+                    support@bubblebeads.com
+                  </p>
+                  <p className="text-gray-600 text-sm">
+                    orders@bubblebeads.com
+                  </p>
                 </div>
               </div>
 
@@ -131,9 +144,15 @@ export default function Contact() {
                   <i className="ri-time-line text-purple-600 w-5 h-5"></i>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-1">Business Hours</h3>
-                  <p className="text-gray-600 text-sm">Mon-Fri: 9:00 AM - 6:00 PM</p>
-                  <p className="text-gray-600 text-sm">Sat: 10:00 AM - 4:00 PM</p>
+                  <h3 className="font-semibold text-gray-900 mb-1">
+                    Business Hours
+                  </h3>
+                  <p className="text-gray-600 text-sm">
+                    Mon-Fri: 9:00 AM - 6:00 PM
+                  </p>
+                  <p className="text-gray-600 text-sm">
+                    Sat: 10:00 AM - 4:00 PM
+                  </p>
                 </div>
               </div>
 
@@ -144,83 +163,101 @@ export default function Contact() {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Address</h3>
                   <p className="text-gray-600 text-sm">
-                    BubbleBeads Headquarters<br />
-                    123 Laundry Street, Mumbai<br />
+                    BubbleBeads Headquarters
+                    <br />
+                    123 Laundry Street, Mumbai
+                    <br />
                     Maharashtra 400001, India
                   </p>
                 </div>
               </div>
             </div>
-
           </div>
 
           {/* Contact Form */}
           <div className="bg-white rounded-2xl p-6 shadow-sm border">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Send us a Message</h2>
-            
+            <h2 className="text-xl font-bold text-gray-900 mb-6">
+              Send us a Message
+            </h2>
+
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div>
-                <label className="block text-gray-700 font-medium mb-2">Name *</label>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Name *
+                </label>
                 <input
                   type="text"
-                  {...register('name', {
-                    required: 'Name is required',
+                  {...register("name", {
+                    required: "Name is required",
                     minLength: {
                       value: 2,
-                      message: 'Name must be at least 2 characters',
+                      message: "Name must be at least 2 characters",
                     },
                   })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
                   placeholder="Enter your name"
                 />
                 {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.name.message}
+                  </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-gray-700 font-medium mb-2">Email *</label>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Email *
+                </label>
                 <input
                   type="email"
-                  {...register('email', {
-                    required: 'Email is required',
-                    validate: (value) => validateEmail(value) || 'Please enter a valid email',
+                  {...register("email", {
+                    required: "Email is required",
+                    validate: (value) =>
+                      validateEmail(value) || "Please enter a valid email",
                   })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
                   placeholder="Enter your email"
                 />
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-gray-700 font-medium mb-2">Subject *</label>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Subject *
+                </label>
                 <input
                   type="text"
-                  {...register('subject', {
-                    required: 'Subject is required',
+                  {...register("subject", {
+                    required: "Subject is required",
                     minLength: {
                       value: 5,
-                      message: 'Subject must be at least 5 characters',
+                      message: "Subject must be at least 5 characters",
                     },
                   })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-400"
                   placeholder="Enter subject"
                 />
                 {errors.subject && (
-                  <p className="mt-1 text-sm text-red-600">{errors.subject.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.subject.message}
+                  </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-gray-700 font-medium mb-2">Message *</label>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Message *
+                </label>
                 <textarea
-                  {...register('message', {
-                    required: 'Message is required',
+                  {...register("message", {
+                    required: "Message is required",
                     minLength: {
                       value: 10,
-                      message: 'Message must be at least 10 characters',
+                      message: "Message must be at least 10 characters",
                     },
                   })}
                   rows={4}
@@ -228,7 +265,9 @@ export default function Contact() {
                   placeholder="Enter your message"
                 />
                 {errors.message && (
-                  <p className="mt-1 text-sm text-red-600">{errors.message.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.message.message}
+                  </p>
                 )}
               </div>
 
@@ -243,7 +282,7 @@ export default function Contact() {
                     Sending...
                   </div>
                 ) : (
-                  'Send Message'
+                  "Send Message"
                 )}
               </button>
             </form>

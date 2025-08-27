@@ -5,6 +5,7 @@ This directory contains security utilities and configurations for the applicatio
 ## Overview
 
 The security implementation provides:
+
 - Clerk-based authentication for admin routes
 - Rate limiting for API endpoints
 - Input validation using Zod schemas
@@ -15,17 +16,22 @@ The security implementation provides:
 ## Files
 
 ### `clerk-admin.ts`
+
 Authentication utilities for the application. Admin authentication is handled through Clerk with role-based access control using user metadata.
 
 ### `upstashRateLimit.ts`
+
 Upstash Redis-based rate limiting implementation:
+
 - `withUpstashRateLimit()` - Higher-order function to wrap API routes
 - `upstashRateLimitConfigs` - Predefined rate limit configurations using Upstash Redis
 - Supports strict, moderate, and lenient rate limiting with sliding window algorithm
 - Provides analytics and distributed rate limiting across multiple instances
 
 ### `validation.ts`
+
 Zod validation schemas and utilities:
+
 - `contactFormSchema` - Contact form validation
 - `createOrderSchema` - Order creation validation
 - `razorpayWebhookSchema` - Razorpay webhook validation
@@ -34,14 +40,18 @@ Zod validation schemas and utilities:
 - `sanitizeString()` - Input sanitization
 
 ### `razorpay.ts`
+
 Razorpay security utilities:
+
 - `verifyRazorpaySignature()` - Verify webhook signatures
 - `validateRazorpayOrder()` - Validate order ID format
 - `validateRazorpayPayment()` - Validate payment ID format
 - `sanitizeRazorpayPayload()` - Sanitize webhook payloads
 
 ### `config.ts`
+
 Centralized security configuration:
+
 - Security configurations
 - Rate limiting configurations
 - Password requirements
@@ -53,62 +63,75 @@ Centralized security configuration:
 ## Usage Examples
 
 ### Protecting Admin Routes
+
 ```typescript
-import { requireClerkAdminAuth } from '@/lib/clerk-admin';
+import { requireClerkAdminAuth } from "@/lib/clerk-admin";
 
 export const GET = async (request: NextRequest) => {
   try {
     await requireClerkAdminAuth();
     // User is authenticated as admin
   } catch (error) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  
+
   // Proceed with admin logic
   // ... rest of the code
 };
 ```
 
 ### Adding Rate Limiting
-```typescript
-import { withUpstashRateLimit } from '@/src/lib/security/upstashRateLimit';
 
-export const POST = withUpstashRateLimit('strict')(async (request: NextRequest) => {
+```typescript
+import { withUpstashRateLimit } from "@/src/lib/security/upstashRateLimit";
+
+export const POST = withUpstashRateLimit("strict")(async (
+  request: NextRequest,
+) => {
   // Your API logic here
 });
 ```
 
 ### Validating Request Payloads
+
 ```typescript
-import { validateRequest, contactFormSchema } from '@/src/lib/security/validation';
+import {
+  validateRequest,
+  contactFormSchema,
+} from "@/src/lib/security/validation";
 
 export const POST = async (request: NextRequest) => {
   const validationResult = await validateRequest(request, contactFormSchema);
   if (!validationResult.success) {
     return NextResponse.json(
       { success: false, error: validationResult.error },
-      { status: 400 }
+      { status: 400 },
     );
   }
-  
+
   const { name, email, subject, message } = validationResult.data;
   // ... rest of the code
 };
 ```
 
 ### Verifying Razorpay Webhooks
-```typescript
-import { verifyRazorpaySignature } from '@/src/lib/security/razorpay';
 
-const isValid = verifyRazorpaySignature(payload, process.env.RAZORPAY_WEBHOOK_SECRET);
+```typescript
+import { verifyRazorpaySignature } from "@/src/lib/security/razorpay";
+
+const isValid = verifyRazorpaySignature(
+  payload,
+  process.env.RAZORPAY_WEBHOOK_SECRET,
+);
 if (!isValid) {
-  return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+  return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
 }
 ```
 
 ## Environment Variables
 
 Required environment variables:
+
 - `JWT_SECRET` - Secret key for JWT signing (change in production)
 - `RAZORPAY_WEBHOOK_SECRET` - Secret for verifying Razorpay webhooks
 - `ADMIN_PASSWORD` - Admin password hash
@@ -139,6 +162,7 @@ Required environment variables:
 ## Testing
 
 Test the security implementation by:
+
 1. Attempting to access admin routes without proper Clerk authentication
 2. Sending malformed payloads to validated endpoints
 3. Testing rate limiting by making multiple rapid requests

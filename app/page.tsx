@@ -63,7 +63,6 @@ export default function Home() {
             </ShimmerButton>
           </div>
         </div>
-
       </section>
 
       {/* Testimonials Section */}

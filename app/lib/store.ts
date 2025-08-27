@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface CartItem {
   id: string;
@@ -20,7 +20,7 @@ export interface Order {
   id: string;
   items: CartItem[];
   total: number;
-  status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   orderDate: string;
   trackingNumber?: string;
 }
@@ -64,39 +64,48 @@ export const useAppStore = create<AppState>()(
       wishlist: [],
       orders: [],
       isLoading: false,
-      searchQuery: '',
-      selectedCategory: '',
+      searchQuery: "",
+      selectedCategory: "",
 
       // Actions
       addToCart: (item) => {
         const { cart } = get();
-        const existingItem = cart.find(cartItem => cartItem.id === item.id);
+        const existingItem = cart.find((cartItem) => cartItem.id === item.id);
 
         if (existingItem) {
-          const updatedCart = cart.map(cartItem =>
+          const updatedCart = cart.map((cartItem) =>
             cartItem.id === item.id
               ? { ...cartItem, quantity: cartItem.quantity + item.quantity }
-              : cartItem
+              : cartItem,
           );
           set({
             cart: updatedCart,
-            cartTotal: updatedCart.reduce((total, item) => total + (item.price * item.quantity), 0)
+            cartTotal: updatedCart.reduce(
+              (total, item) => total + item.price * item.quantity,
+              0,
+            ),
           });
         } else {
           const updatedCart = [...cart, item];
           set({
             cart: updatedCart,
-            cartTotal: updatedCart.reduce((total, item) => total + (item.price * item.quantity), 0)
+            cartTotal: updatedCart.reduce(
+              (total, item) => total + item.price * item.quantity,
+              0,
+            ),
           });
         }
       },
 
       removeFromCart: (id) => {
         const { cart } = get();
-        const updatedCart = cart.filter(item => item.id !== id);
+        const updatedCart = cart.filter((item) => item.id !== id);
         set({
           cart: updatedCart,
-          cartTotal: updatedCart.reduce((total, item) => total + (item.price * item.quantity), 0)
+          cartTotal: updatedCart.reduce(
+            (total, item) => total + item.price * item.quantity,
+            0,
+          ),
         });
       },
 
@@ -107,12 +116,15 @@ export const useAppStore = create<AppState>()(
           return;
         }
 
-        const updatedCart = cart.map(item =>
-          item.id === id ? { ...item, quantity } : item
+        const updatedCart = cart.map((item) =>
+          item.id === id ? { ...item, quantity } : item,
         );
         set({
           cart: updatedCart,
-          cartTotal: updatedCart.reduce((total, item) => total + (item.price * item.quantity), 0)
+          cartTotal: updatedCart.reduce(
+            (total, item) => total + item.price * item.quantity,
+            0,
+          ),
         });
       },
 
@@ -120,7 +132,9 @@ export const useAppStore = create<AppState>()(
 
       addToWishlist: (item) => {
         const { wishlist } = get();
-        const exists = wishlist.find(wishlistItem => wishlistItem.id === item.id);
+        const exists = wishlist.find(
+          (wishlistItem) => wishlistItem.id === item.id,
+        );
         if (!exists) {
           set({ wishlist: [...wishlist, item] });
         }
@@ -128,7 +142,7 @@ export const useAppStore = create<AppState>()(
 
       removeFromWishlist: (id) => {
         const { wishlist } = get();
-        set({ wishlist: wishlist.filter(item => item.id !== id) });
+        set({ wishlist: wishlist.filter((item) => item.id !== id) });
       },
 
       addOrder: (order) => {
@@ -144,23 +158,26 @@ export const useAppStore = create<AppState>()(
 
       updateCartItemPrice: (id, newPrice) => {
         const { cart } = get();
-        const updatedCart = cart.map(item =>
-          item.id === id ? { ...item, price: newPrice } : item
+        const updatedCart = cart.map((item) =>
+          item.id === id ? { ...item, price: newPrice } : item,
         );
         set({
           cart: updatedCart,
-          cartTotal: updatedCart.reduce((total, item) => total + (item.price * item.quantity), 0)
+          cartTotal: updatedCart.reduce(
+            (total, item) => total + item.price * item.quantity,
+            0,
+          ),
         });
       },
     }),
     {
-      name: 'bubblebeads-store',
+      name: "bubblebeads-store",
       partialize: (state) => ({
         cart: state.cart,
         cartTotal: state.cartTotal,
         wishlist: state.wishlist,
         orders: state.orders,
       }),
-    }
-  )
+    },
+  ),
 );

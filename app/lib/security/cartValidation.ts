@@ -1,4 +1,4 @@
-import { getProductPrice } from '@/app/lib/products';
+import { getProductPrice } from "@/app/lib/products";
 
 export interface CartItem {
   id: string;
@@ -19,7 +19,9 @@ export interface CartValidationResult {
  * @param cartItems - Array of cart items to validate
  * @returns CartValidationResult with validation status and calculated total
  */
-export async function validateCart(cartItems: CartItem[]): Promise<CartValidationResult> {
+export async function validateCart(
+  cartItems: CartItem[],
+): Promise<CartValidationResult> {
   const errors: string[] = [];
   const validatedItems: CartItem[] = [];
   let calculatedTotal = 0;
@@ -28,16 +30,21 @@ export async function validateCart(cartItems: CartItem[]): Promise<CartValidatio
     return {
       isValid: false,
       calculatedTotal: 0,
-      errors: ['Cart is empty'],
-      validatedItems: []
+      errors: ["Cart is empty"],
+      validatedItems: [],
     };
   }
 
   for (const item of cartItems) {
     try {
       // Validate item structure
-      if (!item.id || !item.name || typeof item.price !== 'number' || typeof item.quantity !== 'number') {
-        errors.push(`Invalid item structure for item: ${item.id || 'unknown'}`);
+      if (
+        !item.id ||
+        !item.name ||
+        typeof item.price !== "number" ||
+        typeof item.quantity !== "number"
+      ) {
+        errors.push(`Invalid item structure for item: ${item.id || "unknown"}`);
         continue;
       }
 
@@ -55,8 +62,11 @@ export async function validateCart(cartItems: CartItem[]): Promise<CartValidatio
       }
 
       // Validate price against server-side price
-      if (Math.abs(item.price - serverPrice) > 0.01) { // Allow for small floating point differences
-        errors.push(`Price mismatch for ${item.name}. Expected: ${serverPrice}, Received: ${item.price}`);
+      if (Math.abs(item.price - serverPrice) > 0.01) {
+        // Allow for small floating point differences
+        errors.push(
+          `Price mismatch for ${item.name}. Expected: ${serverPrice}, Received: ${item.price}`,
+        );
         continue;
       }
 
@@ -67,11 +77,12 @@ export async function validateCart(cartItems: CartItem[]): Promise<CartValidatio
       // Add validated item
       validatedItems.push({
         ...item,
-        price: serverPrice // Use server-side price
+        price: serverPrice, // Use server-side price
       });
-
     } catch (error) {
-      errors.push(`Error validating item ${item.id}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      errors.push(
+        `Error validating item ${item.id}: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   }
 
@@ -79,7 +90,7 @@ export async function validateCart(cartItems: CartItem[]): Promise<CartValidatio
     isValid: errors.length === 0 && validatedItems.length > 0,
     calculatedTotal: Math.round(calculatedTotal * 100) / 100, // Round to 2 decimal places
     errors,
-    validatedItems
+    validatedItems,
   };
 }
 
@@ -108,7 +119,11 @@ export function calculateTotal(amount: number): number {
  * @param tolerance - Allowed difference (default: 0.01)
  * @returns boolean indicating if totals match
  */
-export function validateTotal(submittedTotal: number, calculatedSubtotal: number, tolerance: number = 0.01): boolean {
+export function validateTotal(
+  submittedTotal: number,
+  calculatedSubtotal: number,
+  tolerance: number = 0.01,
+): boolean {
   const expectedTotal = calculateTotal(calculatedSubtotal);
   return Math.abs(submittedTotal - expectedTotal) <= tolerance;
 }
@@ -119,12 +134,14 @@ export function validateTotal(submittedTotal: number, calculatedSubtotal: number
  * @returns Sanitized cart items
  */
 export function sanitizeCartItems(cartItems: any[]): CartItem[] {
-  return cartItems.map(item => ({
-    id: String(item.id || '').trim(),
-    name: String(item.name || '').trim(),
-    price: Number(item.price) || 0,
-    quantity: Math.max(1, Math.floor(Number(item.quantity) || 1))
-  })).filter(item => item.id && item.name);
+  return cartItems
+    .map((item) => ({
+      id: String(item.id || "").trim(),
+      name: String(item.name || "").trim(),
+      price: Number(item.price) || 0,
+      quantity: Math.max(1, Math.floor(Number(item.quantity) || 1)),
+    }))
+    .filter((item) => item.id && item.name);
 }
 
 /**
@@ -133,25 +150,30 @@ export function sanitizeCartItems(cartItems: any[]): CartItem[] {
  * @param submittedTotal - Total submitted by client (including GST)
  * @returns Promise<CartValidationResult & { totalMatches: boolean, calculatedTotalWithTax: number }>
  */
-export async function validateCartAndTotal(cartItems: CartItem[], submittedTotal: number) {
+export async function validateCartAndTotal(
+  cartItems: CartItem[],
+  submittedTotal: number,
+) {
   // Sanitize cart items first
   const sanitizedItems = sanitizeCartItems(cartItems);
-  
+
   // Validate cart
   const cartValidation = await validateCart(sanitizedItems);
-  
+
   // Calculate total with GST
-  const calculatedTotalWithTax = cartValidation.isValid ? 
-    calculateTotal(cartValidation.calculatedTotal) : 0;
-  
+  const calculatedTotalWithTax = cartValidation.isValid
+    ? calculateTotal(cartValidation.calculatedTotal)
+    : 0;
+
   // Validate total (comparing submitted total with calculated total including GST)
-  const totalMatches = cartValidation.isValid ? 
-    validateTotal(submittedTotal, cartValidation.calculatedTotal) : false;
-  
+  const totalMatches = cartValidation.isValid
+    ? validateTotal(submittedTotal, cartValidation.calculatedTotal)
+    : false;
+
   return {
     ...cartValidation,
     totalMatches,
     calculatedTotalWithTax,
-    sanitizedItems
+    sanitizedItems,
   };
 }
