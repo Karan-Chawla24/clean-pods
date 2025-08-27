@@ -3,6 +3,7 @@ import { auth, createClerkClient } from '@clerk/nextjs/server';
 import { grantAdminRole, hasAdminUsers, requireClerkAdminAuth } from '../../../lib/clerk-admin';
 import { validateRequest, grantRoleSchema, sanitizeObject } from '../../../lib/security/validation';
 import { safeLog, safeLogError } from '../../../lib/security/logging';
+import { assertSameOrigin } from '../../../lib/security/origin';
 
 // Create Clerk client instance
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
@@ -30,6 +31,19 @@ export async function POST(request: NextRequest) {
   let userId: string | null = null;
   
   try {
+    // CSRF Protection: Validate origin header
+    try {
+      assertSameOrigin(request);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'Invalid Origin') {
+        return NextResponse.json(
+          { error: 'Invalid Origin' },
+          { status: 403 }
+        );
+      }
+      throw error;
+    }
+
     safeLog('info', 'Admin role grant attempt initiated');
     
     const authResult = await auth();

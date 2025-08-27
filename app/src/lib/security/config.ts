@@ -59,10 +59,28 @@ export const getSecurityHeaders = () => ({
   'Strict-Transport-Security': process.env.NODE_ENV === 'production' ? 'max-age=31536000; includeSubDomains' : undefined
 });
 
+// Map config keys to valid CSP directives
+const CSP_DIRECTIVE_MAP: Record<string, string> = {
+  DEFAULT_SRC: "default-src",
+  SCRIPT_SRC: "script-src",
+  STYLE_SRC: "style-src",
+  FONT_SRC: "font-src",
+  IMG_SRC: "img-src",
+  CONNECT_SRC: "connect-src",
+  FRAME_SRC: "frame-src",
+  OBJECT_SRC: "object-src",
+  BASE_URI: "base-uri",
+  FORM_ACTION: "form-action",
+  FRAME_ANCESTORS: "frame-ancestors"
+};
+
 // Helper function to build CSP string
 export const buildCSPString = (): string => {
   const csp = Object.entries(SECURITY_CONFIG.CSP)
-    .map(([key, values]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()} ${values.join(' ')}`)
+    .map(([key, values]) => {
+      const directive = CSP_DIRECTIVE_MAP[key] || key.toLowerCase();
+      return `${directive} ${values.join(' ')}`;
+    })
     .join('; ');
   
   return csp;

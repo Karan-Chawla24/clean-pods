@@ -178,7 +178,7 @@ function SearchContent() {
                 : 'No products available.'
               }
             </p>
-            <Link href="/#products" className="bg-gradient-to-r from-orange-400 to-amber-400 text-white px-8 py-3 rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer whitespace-nowrap inline-block">
+            <Link href="/products" className="bg-gradient-to-r from-orange-400 to-amber-400 text-white px-8 py-3 rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer whitespace-nowrap inline-block">
               Browse All Products
             </Link>
           </div>

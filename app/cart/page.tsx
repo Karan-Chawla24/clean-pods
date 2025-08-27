@@ -58,7 +58,7 @@ export default function Cart() {
             </div>
             <h2 className="text-2xl font-semibold text-gray-600 mb-4">Your cart is empty</h2>
             <p className="text-gray-500 mb-8">Add some products to get started!</p>
-            <Link href="/#products" className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap inline-block">
+            <Link href="/products" className="bg-gradient-to-r from-orange-400 to-amber-400 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap inline-block">
               Shop Products
             </Link>
           </div>
@@ -173,7 +173,7 @@ export default function Cart() {
                 >
                   Clear Cart
                 </button>
-                <Link href="/#products" className="text-orange-600 hover:text-blue-700 font-medium cursor-pointer">
+                <Link href="/products" className="text-orange-600 hover:text-blue-700 font-medium cursor-pointer">
                   Continue Shopping
                 </Link>
               </div>

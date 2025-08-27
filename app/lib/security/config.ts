@@ -34,12 +34,13 @@ export const SECURITY_CONFIG = {
   // Content Security Policy
   CSP: {
     DEFAULT_SRC: ["'self'"],
-    SCRIPT_SRC: ["'self'", "'unsafe-eval'", "'unsafe-inline'", "https://js.stripe.com", "https://checkout.razorpay.com"],
-    STYLE_SRC: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-    FONT_SRC: ["'self'", "https://fonts.gstatic.com"],
+    SCRIPT_SRC: ["'self'", "'unsafe-eval'", "'unsafe-inline'", "https://js.stripe.com", "https://checkout.razorpay.com", "https://challenges.cloudflare.com", "https://*.clerk.accounts.dev", "https://*.clerk.com"],
+    WORKER_SRC: ["'self'", "blob:"],
+    STYLE_SRC: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
+    FONT_SRC: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
     IMG_SRC: ["'self'", "data:", "https:", "blob:"],
-    CONNECT_SRC: ["'self'", "https://api.razorpay.com", "https://hooks.slack.com"],
-    FRAME_SRC: ["'self'", "https://checkout.razorpay.com"],
+    CONNECT_SRC: ["'self'", "https://api.razorpay.com", "https://hooks.slack.com", "https://*.clerk.accounts.dev", "https://*.clerk.com", "https://api.clerk.com","ws://localhost:*","ws://127.0.0.1:*","wss://*"],          
+    FRAME_SRC: ["'self'", "https://checkout.razorpay.com", "https://api.razorpay.com", "https://*.clerk.accounts.dev", "https://*.clerk.com"],
     OBJECT_SRC: ["'none'"],
     BASE_URI: ["'self'"],
     FORM_ACTION: ["'self'"],
@@ -63,7 +64,13 @@ export const getSecurityHeaders = () => ({
 // Helper function to build CSP string
 export const buildCSPString = (): string => {
   const csp = Object.entries(SECURITY_CONFIG.CSP)
-    .map(([key, values]) => `${key.replace(/([A-Z])/g, '-$1').toLowerCase()} ${values.join(' ')}`)
+    .map(([key, values]) => {
+      // Convert UPPER_CASE to kebab-case properly
+      const directive = key
+        .toLowerCase()       // Convert to lowercase first
+        .replace(/_/g, '-'); // Replace underscores with hyphens
+      return `${directive} ${values.join(' ')}`;
+    })
     .join('; ');
   
   return csp;
