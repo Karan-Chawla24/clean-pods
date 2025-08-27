@@ -33,6 +33,7 @@ DIRECT_URL=postgresql://postgres:password@db.ddhhpozckwrbwubugeef.supabase.co:54
 ```
 
 **Important:** If your password contains special characters, URL-encode them:
+
 - `@` becomes `%40`
 - `#` becomes `%23`
 - `$` becomes `%24`
@@ -61,6 +62,7 @@ vercel --prod
 ### 4. Set Environment Variables in Vercel
 
 In your Vercel project dashboard:
+
 1. Go to **Settings** → **Environment Variables**
 2. Add all variables from `.env.vercel.example`
 3. Make sure to set them for all environments (Production, Preview, Development)

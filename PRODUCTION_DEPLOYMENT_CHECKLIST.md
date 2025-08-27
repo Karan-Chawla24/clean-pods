@@ -3,11 +3,13 @@
 ## ⚠️ MUST FIX BEFORE DEPLOYMENT
 
 ### 1. **Database Setup (CRITICAL)**
+
 - [ ] Set up PostgreSQL database on Neon, Supabase, or PlanetScale
 - [ ] Get `DATABASE_URL` from your provider
 - [ ] Test database connection locally
 
 ### 2. **Environment Variables (CRITICAL)**
+
 **Required in Vercel Dashboard → Settings → Environment Variables:**
 
 ```bash
@@ -31,25 +33,30 @@ ADMIN_ORDERS_KEY="secret_admin_api_key"
 ```
 
 ### 3. **Build Script Fix (CRITICAL)**
+
 ✅ **FIXED** - Updated build script to include Prisma generation
 
 ### 4. **Prisma Client Fix (CRITICAL)**
+
 ✅ **FIXED** - Simplified Prisma client for production deployment
 
 ## ⚠️ HIGH PRIORITY FIXES
 
 ### 5. **Security Issues**
+
 - [ ] Remove console.log statements from production code
 - [ ] Implement proper admin session validation
 - [ ] Add rate limiting to API endpoints
 - [ ] Enable CSRF protection on all mutation endpoints
 
 ### 6. **Error Handling**
+
 - [ ] Add error boundaries to prevent white screen crashes
 - [ ] Implement proper API error responses
 - [ ] Add monitoring/logging service (Sentry recommended)
 
 ### 7. **Performance Issues**
+
 - [ ] Enable image optimization in `next.config.ts`
 - [ ] Add database connection pooling
 - [ ] Implement proper caching strategies
@@ -57,6 +64,7 @@ ADMIN_ORDERS_KEY="secret_admin_api_key"
 ## 🔧 DEPLOYMENT STEPS
 
 ### Step 1: Database Setup
+
 1. **Create PostgreSQL Database:**
    - Recommended: [Neon](https://neon.tech) (free tier)
    - Alternative: [Supabase](https://supabase.com) or [PlanetScale](https://planetscale.com)
@@ -67,12 +75,15 @@ ADMIN_ORDERS_KEY="secret_admin_api_key"
    ```
 
 ### Step 2: Environment Variables
+
 1. Go to Vercel Dashboard → Your Project → Settings → Environment Variables
 2. Add ALL required variables (see list above)
 3. **IMPORTANT:** Use actual production values, not test/example values
 
 ### Step 3: Deploy
+
 1. **Push to GitHub:**
+
    ```bash
    git add .
    git commit -m "Production fixes and deployment prep"
@@ -84,6 +95,7 @@ ADMIN_ORDERS_KEY="secret_admin_api_key"
    - Or manually trigger from Vercel dashboard
 
 ### Step 4: Verify Deployment
+
 - [ ] Homepage loads without errors
 - [ ] User registration works
 - [ ] User login works
@@ -97,17 +109,22 @@ ADMIN_ORDERS_KEY="secret_admin_api_key"
 ## 🚨 CRITICAL WARNINGS
 
 ### Database Required
+
 **YOUR APP WILL NOT WORK** without a proper PostgreSQL database. The app will crash on startup.
 
 ### Environment Variables Required
+
 Missing environment variables will cause:
+
 - Authentication failures
 - Payment processing failures
 - Admin panel failures
 - Order saving failures
 
 ### NextAuth Secret
+
 Generate a secure secret:
+
 ```bash
 openssl rand -base64 32
 ```
@@ -115,6 +132,7 @@ openssl rand -base64 32
 ## 🔍 Testing Production Build Locally
 
 Before deploying, test locally:
+
 ```bash
 # Install dependencies
 npm install
@@ -133,17 +151,20 @@ npm start
 ## 📞 Troubleshooting
 
 ### If deployment fails:
+
 1. Check Vercel function logs
 2. Verify all environment variables are set
 3. Ensure database is accessible
 4. Check for console errors in browser
 
 ### If orders aren't saving:
+
 1. Verify `DATABASE_URL` is correct
 2. Check Vercel function logs for Prisma errors
 3. Ensure database tables exist
 
 ### If authentication fails:
+
 1. Verify `NEXTAUTH_SECRET` is set
 2. Check `NEXTAUTH_URL` matches your domain
 3. Ensure database connection works
@@ -151,6 +172,7 @@ npm start
 ## ✅ SUCCESS CRITERIA
 
 Your deployment is successful when:
+
 - [ ] Users can register and login
 - [ ] Products load and display correctly
 - [ ] Shopping cart works

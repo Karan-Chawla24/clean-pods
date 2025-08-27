@@ -9,6 +9,7 @@ This directory contains administrative scripts for managing the Clean Pods e-com
 **Purpose**: Securely fetch and display all orders from the database.
 
 **Usage**:
+
 ```bash
 # Set your admin key (add this to your .env.local file)
 export ADMIN_ORDERS_KEY="your_secret_admin_key_here"
@@ -18,6 +19,7 @@ node scripts/admin-orders.js
 ```
 
 **Features**:
+
 - ✅ Secure API access using admin key
 - 📊 Display order summary and details
 - 💰 Show total revenue calculation
@@ -25,6 +27,7 @@ node scripts/admin-orders.js
 - 📱 Works with local development and production
 
 **Sample Output**:
+
 ```
 🔐 Admin Orders Dashboard
 ========================
@@ -51,6 +54,7 @@ Order #1:
 ### 1. Environment Configuration
 
 Add the admin key to your `.env.local` file:
+
 ```env
 ADMIN_ORDERS_KEY=your_secret_admin_key_here
 ```
@@ -64,6 +68,7 @@ Make sure your server is running with the same `ADMIN_ORDERS_KEY` environment va
 ### 3. For Production
 
 If using a remote server, set the `SITE_URL` environment variable:
+
 ```bash
 export SITE_URL="https://yoursite.com"
 export ADMIN_ORDERS_KEY="your_secret_admin_key_here"
@@ -82,14 +87,17 @@ node scripts/admin-orders.js
 Common issues and solutions:
 
 ### "ADMIN_ORDERS_KEY environment variable is required"
+
 - **Solution**: Set the `ADMIN_ORDERS_KEY` environment variable
 - **Example**: `export ADMIN_ORDERS_KEY="your_key_here"`
 
 ### "HTTP 403: Access denied"
+
 - **Solution**: Verify your admin key matches the server configuration
 - **Check**: Ensure the server has the same `ADMIN_ORDERS_KEY` value
 
 ### "Connection refused" or network errors
+
 - **Solution**: Verify the server is running and accessible
 - **Check**: Confirm the `SITE_URL` is correct (defaults to `http://localhost:3000`)
 
@@ -106,6 +114,7 @@ To add new admin scripts:
 ## Support
 
 For issues with admin scripts:
+
 1. Check environment variable configuration
 2. Verify server connectivity
 3. Confirm admin key permissions

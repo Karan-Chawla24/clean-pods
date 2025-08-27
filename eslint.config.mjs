@@ -17,8 +17,8 @@ const eslintConfig = [
       "@typescript-eslint/no-unused-expressions": "off",
       "@typescript-eslint/no-unused-vars": "off",
       "@typescript-eslint/no-this-alias": "off",
-      "@typescript-eslint/no-require-imports": "off"
-    }
+      "@typescript-eslint/no-require-imports": "off",
+    },
   },
   {
     ignores: [
@@ -27,9 +27,9 @@ const eslintConfig = [
       "**/dist/**",
       "**/build/**",
       "**/app/generated/**",
-      "**/prisma/generated/**"
-    ]
-  }
+      "**/prisma/generated/**",
+    ],
+  },
 ];
 
 export default eslintConfig;

@@ -1,16 +1,16 @@
-import { SignJWT, jwtVerify, JWTPayload } from 'jose';
-import { safeLogError } from './security/logging';
+import { SignJWT, jwtVerify, JWTPayload } from "jose";
+import { safeLogError } from "./security/logging";
 
 // Validate JWT secret is provided
 if (!process.env.JWT_SECRET) {
-  throw new Error('JWT_SECRET environment variable is required');
+  throw new Error("JWT_SECRET environment variable is required");
 }
 
 // JWT secret - must be provided via environment variable
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 // Token expiry time (5 minutes)
-const TOKEN_EXPIRY = '5m';
+const TOKEN_EXPIRY = "5m";
 
 export interface InvoiceTokenPayload extends JWTPayload {
   orderId: string;
@@ -25,7 +25,7 @@ export interface InvoiceTokenPayload extends JWTPayload {
  */
 export async function generateInvoiceToken(
   orderId: string,
-  userId?: string
+  userId?: string,
 ): Promise<string> {
   try {
     const payload: InvoiceTokenPayload = {
@@ -34,17 +34,17 @@ export async function generateInvoiceToken(
     };
 
     const token = await new SignJWT(payload)
-      .setProtectedHeader({ alg: 'HS256' })
+      .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
       .setExpirationTime(TOKEN_EXPIRY)
-      .setIssuer('clean-pods-app')
-      .setAudience('invoice-access')
+      .setIssuer("clean-pods-app")
+      .setAudience("invoice-access")
       .sign(JWT_SECRET);
 
     return token;
   } catch (error) {
-    safeLogError('Error generating JWT token', error);
-    throw new Error('Failed to generate access token');
+    safeLogError("Error generating JWT token", error);
+    throw new Error("Failed to generate access token");
   }
 }
 
@@ -55,18 +55,18 @@ export async function generateInvoiceToken(
  * @throws Error if token is invalid or expired
  */
 export async function verifyInvoiceToken(
-  token: string
+  token: string,
 ): Promise<InvoiceTokenPayload> {
   try {
     const { payload } = await jwtVerify(token, JWT_SECRET, {
-      issuer: 'clean-pods-app',
-      audience: 'invoice-access',
+      issuer: "clean-pods-app",
+      audience: "invoice-access",
     });
 
     return payload as InvoiceTokenPayload;
   } catch (error) {
-    safeLogError('Error verifying JWT token', error);
-    throw new Error('Invalid or expired access token');
+    safeLogError("Error verifying JWT token", error);
+    throw new Error("Invalid or expired access token");
   }
 }
 
@@ -77,7 +77,7 @@ export async function verifyInvoiceToken(
  */
 export function isTokenExpired(token: string): boolean {
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const payload = JSON.parse(atob(token.split(".")[1]));
     const currentTime = Math.floor(Date.now() / 1000);
     return payload.exp < currentTime;
   } catch {

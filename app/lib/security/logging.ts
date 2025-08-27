@@ -3,7 +3,7 @@
  * Prevents sensitive data from being logged
  */
 
-type LogLevel = 'info' | 'warn' | 'error' | 'debug';
+type LogLevel = "info" | "warn" | "error" | "debug";
 
 /**
  * Safe logging function that sanitizes sensitive data
@@ -14,23 +14,23 @@ type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 export function safeLog(level: LogLevel, message: string, data?: any): void {
   const timestamp = new Date().toISOString();
   const sanitizedData = data ? sanitizeLogData(data) : undefined;
-  
+
   const logEntry = {
     timestamp,
     level,
     message,
-    ...(sanitizedData && { data: sanitizedData })
+    ...(sanitizedData && { data: sanitizedData }),
   };
-  
+
   switch (level) {
-    case 'error':
+    case "error":
       console.error(JSON.stringify(logEntry));
       break;
-    case 'warn':
+    case "warn":
       console.warn(JSON.stringify(logEntry));
       break;
-    case 'debug':
-      if (process.env.NODE_ENV === 'development') {
+    case "debug":
+      if (process.env.NODE_ENV === "development") {
         console.debug(JSON.stringify(logEntry));
       }
       break;
@@ -45,14 +45,19 @@ export function safeLog(level: LogLevel, message: string, data?: any): void {
  * @param error - Error object or data
  * @param context - Optional context data
  */
-export function safeLogError(message: string, error?: any, context?: any): void {
-  const errorData = error instanceof Error 
-    ? { name: error.name, message: error.message, stack: error.stack }
-    : error;
-  
+export function safeLogError(
+  message: string,
+  error?: any,
+  context?: any,
+): void {
+  const errorData =
+    error instanceof Error
+      ? { name: error.name, message: error.message, stack: error.stack }
+      : error;
+
   const logData = context ? { error: errorData, context } : errorData;
-     
-   safeLog('error', message, logData);
+
+  safeLog("error", message, logData);
 }
 
 /**
@@ -61,26 +66,36 @@ export function safeLogError(message: string, error?: any, context?: any): void 
  * @returns Sanitized data
  */
 function sanitizeLogData(data: any): any {
-  if (typeof data !== 'object' || data === null) {
+  if (typeof data !== "object" || data === null) {
     return data;
   }
-  
+
   const sensitiveKeys = [
-    'password', 'token', 'secret', 'key', 'authorization',
-    'cookie', 'session', 'auth', 'credential', 'private'
+    "password",
+    "token",
+    "secret",
+    "key",
+    "authorization",
+    "cookie",
+    "session",
+    "auth",
+    "credential",
+    "private",
   ];
-  
+
   const sanitized = { ...data };
-  
+
   for (const key in sanitized) {
-    if (sensitiveKeys.some(sensitive => 
-      key.toLowerCase().includes(sensitive.toLowerCase())
-    )) {
-      sanitized[key] = '[REDACTED]';
-    } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
+    if (
+      sensitiveKeys.some((sensitive) =>
+        key.toLowerCase().includes(sensitive.toLowerCase()),
+      )
+    ) {
+      sanitized[key] = "[REDACTED]";
+    } else if (typeof sanitized[key] === "object" && sanitized[key] !== null) {
       sanitized[key] = sanitizeLogData(sanitized[key]);
     }
   }
-  
+
   return sanitized;
 }

@@ -1,18 +1,17 @@
 "use client";
 
 import { useAppStore } from "../lib/store";
-import { formatPrice } from '../lib/utils';
-import { 
-  safeDisplayProductName, 
-  safeDisplayText
-} from '../lib/security/ui-escaping';
+import { formatPrice } from "../lib/utils";
+import {
+  safeDisplayProductName,
+  safeDisplayText,
+} from "../lib/security/ui-escaping";
 import Header from "../components/Header";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
 
 interface Product {
   id: string;
@@ -28,14 +27,14 @@ interface Product {
 // Fetch products from server-side API
 async function fetchProducts(): Promise<Product[]> {
   try {
-    const response = await fetch('/api/products');
+    const response = await fetch("/api/products");
     if (!response.ok) {
-      throw new Error('Failed to fetch products');
+      throw new Error("Failed to fetch products");
     }
     const data = await response.json();
     return data.products;
   } catch (error) {
-    console.error('Error fetching products:', error);
+    console.error("Error fetching products:", error);
     return [];
   }
 }
@@ -58,12 +57,12 @@ export default function Products() {
     async function loadProducts() {
       setLoading(true);
       setError(null);
-      
+
       const productData = await fetchProducts();
       if (productData.length > 0) {
         setProducts(productData);
       } else {
-        setError('No products available');
+        setError("No products available");
       }
       setLoading(false);
     }
@@ -96,7 +95,9 @@ export default function Products() {
     return (
       <div className="min-h-screen bg-orange-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600 text-lg mb-4">{error || 'No products available'}</p>
+          <p className="text-red-600 text-lg mb-4">
+            {error || "No products available"}
+          </p>
         </div>
       </div>
     );
@@ -110,7 +111,7 @@ export default function Products() {
       // Fetch latest price from API to ensure consistency
       const response = await fetch(`/api/products?id=${product.id}`);
       const data = await response.json();
-      
+
       if (data.product) {
         addToCart({
           id: data.product.id,
@@ -124,7 +125,7 @@ export default function Products() {
         toast.error("Failed to add item to cart");
       }
     } catch (error) {
-      console.error('Error adding to cart:', error);
+      console.error("Error adding to cart:", error);
       toast.error("Failed to add item to cart");
     }
   };
@@ -169,7 +170,8 @@ export default function Products() {
                   key={idx}
                   className="flex items-center gap-3 text-sm sm:text-base break-words"
                 >
-                  <span className="text-sky-500">✔</span> {safeDisplayText(feature, 100)}
+                  <span className="text-sky-500">✔</span>{" "}
+                  {safeDisplayText(feature, 100)}
                 </li>
               ))}
             </ul>

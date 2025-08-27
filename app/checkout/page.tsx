@@ -1,15 +1,22 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { useAppStore } from '../lib/store';
-import { formatPrice, calculateTax, calculateTotal, generateOrderId, validateEmail, validatePhone } from '../lib/utils';
-import Header from '../components/Header';
-import toast from 'react-hot-toast';
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { useUser, useAuth } from '@clerk/nextjs';
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { useAppStore } from "../lib/store";
+import {
+  formatPrice,
+  calculateTax,
+  calculateTotal,
+  generateOrderId,
+  validateEmail,
+  validatePhone,
+} from "../lib/utils";
+import Header from "../components/Header";
+import toast from "react-hot-toast";
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { useUser, useAuth } from "@clerk/nextjs";
 
 interface CheckoutForm {
   firstName: string;
@@ -32,7 +39,14 @@ export default function Checkout() {
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
   const router = useRouter();
-  const { cart, cartTotal, clearCart, addOrder, addToCart, updateCartItemPrice } = useAppStore();
+  const {
+    cart,
+    cartTotal,
+    clearCart,
+    addOrder,
+    addToCart,
+    updateCartItemPrice,
+  } = useAppStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
@@ -46,9 +60,10 @@ export default function Checkout() {
   // Pre-fill form with user data if signed in
   useEffect(() => {
     if (user) {
-      if (user.firstName) setValue('firstName', user.firstName);
-      if (user.lastName) setValue('lastName', user.lastName);
-      if (user.emailAddresses?.[0]?.emailAddress) setValue('email', user.emailAddresses[0].emailAddress);
+      if (user.firstName) setValue("firstName", user.firstName);
+      if (user.lastName) setValue("lastName", user.lastName);
+      if (user.emailAddresses?.[0]?.emailAddress)
+        setValue("email", user.emailAddresses[0].emailAddress);
     }
   }, [user, setValue]);
 
@@ -60,31 +75,32 @@ export default function Checkout() {
   useEffect(() => {
     const validateCartPrices = async () => {
       if (cart.length === 0) return;
-      
+
       try {
-        const response = await fetch('/api/products');
+        const response = await fetch("/api/products");
         const data = await response.json();
         const products = data.products;
-        
+
         // Check each cart item against current API prices
-        cart.forEach(cartItem => {
-          const currentProduct = products.find((p: any) => p.id === cartItem.id);
+        cart.forEach((cartItem) => {
+          const currentProduct = products.find(
+            (p: any) => p.id === cartItem.id,
+          );
           if (currentProduct && currentProduct.price !== cartItem.price) {
             updateCartItemPrice(cartItem.id, currentProduct.price);
           }
         });
       } catch (error) {
-        console.error('Failed to validate cart prices:', error);
+        console.error("Failed to validate cart prices:", error);
       }
     };
-    
+
     validateCartPrices();
   }, [cart.length]); // Only run when cart length changes to avoid infinite loops
 
-
   const processPayment = handleSubmit(async (data: CheckoutForm) => {
     if (cart.length === 0) {
-      toast.error('Your cart is empty');
+      toast.error("Your cart is empty");
       return;
     }
 
@@ -94,22 +110,22 @@ export default function Checkout() {
       // Create Razorpay order with cart validation
       const requestBody = {
         amount: total,
-        currency: 'INR',
+        currency: "INR",
         receipt: generateOrderId(),
-        cart: cart.map(item => ({
+        cart: cart.map((item) => ({
           id: item.id,
           name: item.name,
           price: item.price,
-          quantity: item.quantity
-        }))
+          quantity: item.quantity,
+        })),
       };
-      
+
       // Request sent to /api/create-order
-      
-      const orderResponse = await fetch('/api/create-order', {
-        method: 'POST',
+
+      const orderResponse = await fetch("/api/create-order", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(requestBody),
       });
@@ -122,37 +138,37 @@ export default function Checkout() {
       const orderData = await orderResponse.json();
 
       if (!orderData.success) {
-        throw new Error(orderData.error || 'Failed to create order');
+        throw new Error(orderData.error || "Failed to create order");
       }
 
       // Check if Razorpay is loaded
-      if (typeof window.Razorpay === 'undefined') {
-        throw new Error('Razorpay script not loaded');
+      if (typeof window.Razorpay === "undefined") {
+        throw new Error("Razorpay script not loaded");
       }
 
       // Initialize Razorpay
       const razorpayKey = orderData.key;
       if (!razorpayKey) {
-        throw new Error('Razorpay key missing from server response');
+        throw new Error("Razorpay key missing from server response");
       }
-      
+
       const options = {
         key: razorpayKey,
         amount: orderData.order.amount,
         currency: orderData.order.currency,
-        name: 'BubbleBeads',
-        description: 'Laundry Detergent Pods',
+        name: "BubbleBeads",
+        description: "Laundry Detergent Pods",
         order_id: orderData.order.id,
         handler: async function (response: any) {
           // Show loader immediately when payment is completed
           setIsRedirecting(true);
-          
+
           try {
             // Verify payment
-            const verifyResponse = await fetch('/api/verify-payment', {
-              method: 'POST',
+            const verifyResponse = await fetch("/api/verify-payment", {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({
                 razorpay_order_id: response.razorpay_order_id,
@@ -166,65 +182,67 @@ export default function Checkout() {
             if (verifyData.success) {
               // Use Razorpay order ID instead of generating custom one
               const orderId = response.razorpay_order_id;
-              
+
               // Save order to database (authenticated users get it saved to their account)
-                try {
-                  const orderApiUrl = user ? '/api/user/orders' : '/api/orders';
-                  
-                  const orderPayload: any = {
-                    razorpayOrderId: response.razorpay_order_id,
-                    paymentId: response.razorpay_payment_id,
-                    total: total,
-                    customerName: `${data.firstName} ${data.lastName}`,
-                    customerEmail: data.email,
-                    customerPhone: data.phone,
-                    address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
-                    items: cart.map(item => ({
-                      name: item.name,
-                      quantity: item.quantity,
-                      price: item.price
-                    }))
+              try {
+                const orderApiUrl = user ? "/api/user/orders" : "/api/orders";
+
+                const orderPayload: any = {
+                  razorpayOrderId: response.razorpay_order_id,
+                  paymentId: response.razorpay_payment_id,
+                  total: total,
+                  customerName: `${data.firstName} ${data.lastName}`,
+                  customerEmail: data.email,
+                  customerPhone: data.phone,
+                  address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
+                  items: cart.map((item) => ({
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                  })),
+                };
+
+                // For non-authenticated users, use the legacy format expected by /api/orders
+                if (!user) {
+                  orderPayload.customer = {
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    email: data.email,
+                    phone: data.phone,
+                    address: data.address,
+                    city: data.city,
+                    state: data.state,
+                    pincode: data.pincode,
                   };
-                  
-                  // For non-authenticated users, use the legacy format expected by /api/orders
-                  if (!user) {
-                    orderPayload.customer = {
-                      firstName: data.firstName,
-                      lastName: data.lastName,
-                      email: data.email,
-                      phone: data.phone,
-                      address: data.address,
-                      city: data.city,
-                      state: data.state,
-                      pincode: data.pincode
-                    };
+                }
+                // Note: For authenticated users, userId is handled by the server via Clerk's auth()
+
+                // Sending order payload to server
+                // Get auth token for authenticated users
+                const headers: Record<string, string> = {
+                  "Content-Type": "application/json",
+                };
+                if (user) {
+                  const token = await getToken();
+                  if (token) {
+                    headers.Authorization = `Bearer ${token}`;
                   }
-                  // Note: For authenticated users, userId is handled by the server via Clerk's auth()
-                  
-                  // Sending order payload to server
-                  // Get auth token for authenticated users
-                  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-                  if (user) {
-                    const token = await getToken();
-                    if (token) {
-                      headers.Authorization = `Bearer ${token}`;
-                    }
-                  }
-                  
-                  const orderResponse = await fetch(orderApiUrl, {
-                    method: 'POST',
-                    headers,
-                    body: JSON.stringify(orderPayload),
-                  });
-                
+                }
+
+                const orderResponse = await fetch(orderApiUrl, {
+                  method: "POST",
+                  headers,
+                  body: JSON.stringify(orderPayload),
+                });
+
                 if (!orderResponse.ok) {
                   const errorText = await orderResponse.text();
-                  console.error('Order creation failed:', errorText);
+                  console.error("Order creation failed:", errorText);
                 } else {
                   await orderResponse.json();
                 }
               } catch (dbError) {
-                console.error('Order creation error:', dbError);
+                console.error("Order creation error:", dbError);
                 // Continue with Slack notification even if DB fails
               }
 
@@ -233,7 +251,7 @@ export default function Checkout() {
                 id: orderId,
                 items: cart,
                 total: total,
-                status: 'processing' as const,
+                status: "processing" as const,
                 orderDate: new Date().toISOString(),
                 trackingNumber: `TRK${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
                 paymentId: response.razorpay_payment_id,
@@ -241,18 +259,18 @@ export default function Checkout() {
 
               // Send Slack notification
               try {
-                await fetch('/api/slack-notification', {
-                  method: 'POST',
+                await fetch("/api/slack-notification", {
+                  method: "POST",
                   headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                   },
                   body: JSON.stringify({
                     orderData: {
                       id: orderId,
-                      items: cart.map(item => ({
+                      items: cart.map((item) => ({
                         name: item.name,
                         quantity: item.quantity,
-                        price: item.price
+                        price: item.price,
                       })),
                       total: total,
                       paymentId: response.razorpay_payment_id,
@@ -272,7 +290,9 @@ export default function Checkout() {
               // Store order in user's localStorage for privacy (only for unauthenticated users)
               if (!user) {
                 try {
-                  const userOrders = JSON.parse(localStorage.getItem('userOrders') || '[]');
+                  const userOrders = JSON.parse(
+                    localStorage.getItem("userOrders") || "[]",
+                  );
                   const orderForStorage = {
                     id: orderId,
                     razorpayOrderId: response.razorpay_order_id,
@@ -281,31 +301,34 @@ export default function Checkout() {
                     customerEmail: data.email,
                     customerPhone: data.phone,
                     address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
-                    items: cart.map(item => ({
+                    items: cart.map((item) => ({
                       id: item.id,
                       name: item.name,
                       quantity: item.quantity,
-                      price: item.price
+                      price: item.price,
                     })),
                     total: total,
                     orderDate: new Date().toISOString(),
                   };
                   userOrders.push(orderForStorage);
-                  localStorage.setItem('userOrders', JSON.stringify(userOrders));
+                  localStorage.setItem(
+                    "userOrders",
+                    JSON.stringify(userOrders),
+                  );
                 } catch (localError) {
-                  console.error('Failed to store order locally:', localError);
+                  console.error("Failed to store order locally:", localError);
                 }
               }
-              
+
               addOrder(order);
               clearCart();
-              toast.success('Payment successful! Your order has been placed.');
+              toast.success("Payment successful! Your order has been placed.");
               router.push(`/order-success?order_id=${orderId}`);
             } else {
-              toast.error('Payment verification failed');
+              toast.error("Payment verification failed");
             }
           } catch (error) {
-            toast.error('Payment verification failed');
+            toast.error("Payment verification failed");
           }
         },
         prefill: {
@@ -317,169 +340,222 @@ export default function Checkout() {
           address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
         },
         theme: {
-          color: '#2563eb',
+          color: "#2563eb",
         },
       };
 
       const razorpay = new window.Razorpay(options);
       razorpay.open();
-
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to process payment. Please try again.');
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "Failed to process payment. Please try again.",
+      );
     } finally {
       setIsProcessing(false);
     }
   });
 
-
   return (
     <div className="min-h-screen bg-orange-50">
       <Header />
-      
+
       {/* Full-page loader overlay when redirecting to success page */}
       {isRedirecting && (
         <div className="fixed inset-0 bg-white bg-opacity-95 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">Payment Successful!</h2>
-            <p className="text-gray-600">Redirecting to your order confirmation...</p>
+            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+              Payment Successful!
+            </h2>
+            <p className="text-gray-600">
+              Redirecting to your order confirmation...
+            </p>
           </div>
         </div>
       )}
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Checkout Form */}
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
-            
+
             <form onSubmit={processPayment} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-gray-700 font-medium mb-2">First Name *</label>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    First Name *
+                  </label>
                   <input
                     type="text"
-                    {...register('firstName', {
-                      required: 'First name is required',
-                      minLength: { value: 2, message: 'First name must be at least 2 characters' },
+                    {...register("firstName", {
+                      required: "First name is required",
+                      minLength: {
+                        value: 2,
+                        message: "First name must be at least 2 characters",
+                      },
                     })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter your first name"
                   />
                   {errors.firstName && (
-                    <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.firstName.message}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 font-medium mb-2">Last Name *</label>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Last Name *
+                  </label>
                   <input
                     type="text"
-                    {...register('lastName', {
-                      required: 'Last name is required',
-                      minLength: { value: 2, message: 'Last name must be at least 2 characters' },
+                    {...register("lastName", {
+                      required: "Last name is required",
+                      minLength: {
+                        value: 2,
+                        message: "Last name must be at least 2 characters",
+                      },
                     })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter your last name"
                   />
                   {errors.lastName && (
-                    <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.lastName.message}
+                    </p>
                   )}
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-700 font-medium mb-2">Email *</label>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Email *
+                </label>
                 <input
                   type="email"
-                  {...register('email', {
-                    required: 'Email is required',
-                    validate: (value) => validateEmail(value) || 'Please enter a valid email',
+                  {...register("email", {
+                    required: "Email is required",
+                    validate: (value) =>
+                      validateEmail(value) || "Please enter a valid email",
                   })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your email"
                 />
                 {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.email.message}
+                  </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-gray-700 font-medium mb-2">Phone *</label>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Phone *
+                </label>
                 <input
                   type="tel"
-                  {...register('phone', {
-                    required: 'Phone number is required',
-                    validate: (value) => validatePhone(value) || 'Please enter a valid phone number',
+                  {...register("phone", {
+                    required: "Phone number is required",
+                    validate: (value) =>
+                      validatePhone(value) ||
+                      "Please enter a valid phone number",
                   })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your phone number"
                 />
                 {errors.phone && (
-                  <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.phone.message}
+                  </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-gray-700 font-medium mb-2">Address *</label>
+                <label className="block text-gray-700 font-medium mb-2">
+                  Address *
+                </label>
                 <textarea
-                  {...register('address', {
-                    required: 'Address is required',
-                    minLength: { value: 10, message: 'Address must be at least 10 characters' },
+                  {...register("address", {
+                    required: "Address is required",
+                    minLength: {
+                      value: 10,
+                      message: "Address must be at least 10 characters",
+                    },
                   })}
                   rows={3}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Enter your full address"
                 />
                 {errors.address && (
-                  <p className="mt-1 text-sm text-red-600">{errors.address.message}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.address.message}
+                  </p>
                 )}
               </div>
 
               <div className="grid md:grid-cols-3 gap-6">
                 <div>
-                  <label className="block text-gray-700 font-medium mb-2">City *</label>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    City *
+                  </label>
                   <input
                     type="text"
-                    {...register('city', {
-                      required: 'City is required',
+                    {...register("city", {
+                      required: "City is required",
                     })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter city"
                   />
                   {errors.city && (
-                    <p className="mt-1 text-sm text-red-600">{errors.city.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.city.message}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 font-medium mb-2">State *</label>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    State *
+                  </label>
                   <input
                     type="text"
-                    {...register('state', {
-                      required: 'State is required',
+                    {...register("state", {
+                      required: "State is required",
                     })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter state"
                   />
                   {errors.state && (
-                    <p className="mt-1 text-sm text-red-600">{errors.state.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.state.message}
+                    </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 font-medium mb-2">Pincode *</label>
+                  <label className="block text-gray-700 font-medium mb-2">
+                    Pincode *
+                  </label>
                   <input
                     type="text"
-                    {...register('pincode', {
-                      required: 'Pincode is required',
-                      pattern: { value: /^[1-9][0-9]{5}$/, message: 'Please enter a valid pincode' },
+                    {...register("pincode", {
+                      required: "Pincode is required",
+                      pattern: {
+                        value: /^[1-9][0-9]{5}$/,
+                        message: "Please enter a valid pincode",
+                      },
                     })}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter pincode"
                   />
                   {errors.pincode && (
-                    <p className="mt-1 text-sm text-red-600">{errors.pincode.message}</p>
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.pincode.message}
+                    </p>
                   )}
                 </div>
               </div>
@@ -497,15 +573,16 @@ export default function Checkout() {
                   `Pay ${formatPrice(total)}`
                 )}
               </button>
-
             </form>
           </div>
 
           {/* Order Summary */}
           <div>
             <div className="bg-white rounded-2xl p-6 shadow-sm border">
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h2>
-              
+              <h2 className="text-xl font-bold text-gray-900 mb-6">
+                Order Summary
+              </h2>
+
               <div className="space-y-4 mb-6">
                 {cart.map((item) => (
                   <div key={item.id} className="flex items-center space-x-4">
@@ -518,10 +595,14 @@ export default function Checkout() {
                     />
                     <div className="flex-1">
                       <h3 className="font-medium text-gray-900">{item.name}</h3>
-                      <p className="text-gray-600 text-sm">Quantity: {item.quantity}</p>
+                      <p className="text-gray-600 text-sm">
+                        Quantity: {item.quantity}
+                      </p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-gray-900">{formatPrice(item.price * item.quantity)}</p>
+                      <p className="font-semibold text-gray-900">
+                        {formatPrice(item.price * item.quantity)}
+                      </p>
                     </div>
                   </div>
                 ))}

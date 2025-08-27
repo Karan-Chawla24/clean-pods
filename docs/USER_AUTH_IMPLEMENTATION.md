@@ -34,6 +34,7 @@ The application includes comprehensive user authentication using Clerk with the 
 ### Authentication Flow
 
 #### Sign Up/Sign In Flow
+
 1. User accesses protected route or clicks sign in
 2. Clerk handles authentication UI and flow
 3. User credentials are validated by Clerk
@@ -41,6 +42,7 @@ The application includes comprehensive user authentication using Clerk with the 
 5. User is redirected to intended destination
 
 #### Admin Authentication
+
 1. Admin users are identified by user metadata in Clerk
 2. Admin role is set via Clerk dashboard or API
 3. Admin routes check for proper role authorization
@@ -61,7 +63,7 @@ model User {
   address       String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  
+
   orders        Order[]
 }
 
@@ -76,7 +78,7 @@ model Order {
   total             Float
   orderDate         DateTime    @default(now())
   userId            String?     // Clerk user ID
-  
+
   user              User?       @relation(fields: [userId], references: [id])
   items             OrderItem[]
 }
@@ -113,16 +115,19 @@ DIRECT_URL=your_direct_database_url
 ## API Routes
 
 ### Authentication Routes
+
 - Clerk handles all authentication routes automatically
 - Custom sign-in/sign-up pages at `/auth/signin` and `/auth/signup`
 
 ### Protected API Routes
+
 - `/api/user/profile` - GET/PUT user profile
 - `/api/user/orders` - GET user orders
 - `/api/admin/orders` - GET all orders (admin only)
 - `/api/admin/orders/[id]` - GET specific order (admin only)
 
 ### Middleware Protection
+
 - Automatic authentication protection for user-specific routes
 - Role-based authorization for admin routes
 - Automatic redirect to sign-in for protected routes
@@ -130,24 +135,26 @@ DIRECT_URL=your_direct_database_url
 ## Admin Role Management
 
 ### Setting Admin Role
+
 1. Access Clerk Dashboard
 2. Navigate to Users section
 3. Select user to make admin
 4. Add metadata: `{ "role": "admin" }`
 
 ### Admin Authorization
+
 Admin routes use the `requireClerkAdminAuth` helper function:
 
 ```typescript
-import { requireClerkAdminAuth } from '@/app/lib/clerk-admin';
+import { requireClerkAdminAuth } from "@/app/lib/clerk-admin";
 
 export async function GET(request: NextRequest) {
   const authResult = await requireClerkAdminAuth(request);
-  
+
   if (authResult instanceof NextResponse) {
     return authResult; // Authentication failed
   }
-  
+
   // Admin-only logic here
 }
 ```
@@ -164,6 +171,7 @@ The implementation supports seamless migration:
 ## Testing
 
 ### Manual Testing Checklist
+
 - [ ] User registration with email/password
 - [ ] User sign-in with email/password
 - [ ] Social OAuth sign-in (Google, etc.)

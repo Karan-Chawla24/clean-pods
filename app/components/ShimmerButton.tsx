@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
+import React from "react";
+import Link from "next/link";
 
 interface ShimmerButtonProps {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
   href?: string;
-  as?: 'button' | 'link';
+  as?: "button" | "link";
   ariaLabel?: string;
 }
 
-const ShimmerButton: React.FC<ShimmerButtonProps> = ({ 
-  children, 
-  className = '', 
+const ShimmerButton: React.FC<ShimmerButtonProps> = ({
+  children,
+  className = "",
   onClick,
   href,
-  as = 'button',
-  ariaLabel
+  as = "button",
+  ariaLabel,
 }) => {
   const baseClasses = `
     relative overflow-hidden group
@@ -38,8 +38,12 @@ const ShimmerButton: React.FC<ShimmerButtonProps> = ({
     before:pointer-events-none
   `;
 
-  return as === 'link' && href ? (
-    <Link href={href} className={`${baseClasses} ${shimmer} ${className}`} aria-label={ariaLabel}>
+  return as === "link" && href ? (
+    <Link
+      href={href}
+      className={`${baseClasses} ${shimmer} ${className}`}
+      aria-label={ariaLabel}
+    >
       <span className="relative z-10">{children}</span>
     </Link>
   ) : (

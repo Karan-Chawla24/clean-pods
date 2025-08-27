@@ -1,9 +1,9 @@
-import Image from 'next/image';
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { getBlogPost, getRelatedPosts } from '../../lib/blog-data';
-import ReactMarkdown from 'react-markdown';
-import Header from '../../components/Header';
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { getBlogPost, getRelatedPosts } from "../../lib/blog-data";
+import ReactMarkdown from "react-markdown";
+import Header from "../../components/Header";
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -12,7 +12,7 @@ interface BlogPostPageProps {
 }
 
 export async function generateStaticParams() {
-  const { getAllBlogPosts } = await import('../../lib/blog-data');
+  const { getAllBlogPosts } = await import("../../lib/blog-data");
   const posts = getAllBlogPosts();
   return posts.map((post) => ({
     slug: post.slug,
@@ -40,8 +40,18 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             href="/blog"
             className="inline-flex items-center text-blue-600 hover:text-blue-800 transition-colors"
           >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg
+              className="w-4 h-4 mr-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
             Back to Blog
           </Link>
@@ -72,11 +82,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <div className="flex items-center text-gray-600 mb-8">
             <span className="font-medium">{post.author}</span>
             <span className="mx-3">•</span>
-            <span>{new Date(post.publishedAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}</span>
+            <span>
+              {new Date(post.publishedAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
             <span className="mx-3">•</span>
             <span>{post.readTime}</span>
           </div>
@@ -98,28 +110,40 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           <ReactMarkdown
             components={{
               h1: ({ children }) => (
-                <h1 className="text-3xl font-bold text-gray-900 mt-8 mb-4">{children}</h1>
+                <h1 className="text-3xl font-bold text-gray-900 mt-8 mb-4">
+                  {children}
+                </h1>
               ),
               h2: ({ children }) => (
-                <h2 className="text-2xl font-bold text-gray-900 mt-6 mb-3">{children}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mt-6 mb-3">
+                  {children}
+                </h2>
               ),
               h3: ({ children }) => (
-                <h3 className="text-xl font-bold text-gray-900 mt-4 mb-2">{children}</h3>
+                <h3 className="text-xl font-bold text-gray-900 mt-4 mb-2">
+                  {children}
+                </h3>
               ),
               p: ({ children }) => (
                 <p className="text-gray-700 leading-relaxed mb-4">{children}</p>
               ),
               ul: ({ children }) => (
-                <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">{children}</ul>
+                <ul className="list-disc list-inside text-gray-700 mb-4 space-y-2">
+                  {children}
+                </ul>
               ),
               ol: ({ children }) => (
-                <ol className="list-decimal list-inside text-gray-700 mb-4 space-y-2">{children}</ol>
+                <ol className="list-decimal list-inside text-gray-700 mb-4 space-y-2">
+                  {children}
+                </ol>
               ),
               li: ({ children }) => (
                 <li className="text-gray-700">{children}</li>
               ),
               strong: ({ children }) => (
-                <strong className="font-semibold text-gray-900">{children}</strong>
+                <strong className="font-semibold text-gray-900">
+                  {children}
+                </strong>
               ),
               blockquote: ({ children }) => (
                 <blockquote className="border-l-4 border-blue-500 pl-4 italic text-gray-600 my-4">

@@ -1,6 +1,6 @@
 /**
  * UI Output Escaping Utilities
- * 
+ *
  * This module provides functions to safely escape user-controlled content
  * before displaying it in React components to prevent XSS attacks.
  */
@@ -13,19 +13,19 @@
  * @returns The escaped text safe for HTML display
  */
 export function escapeHtml(text: string): string {
-  if (typeof text !== 'string') {
-    return String(text || '');
+  if (typeof text !== "string") {
+    return String(text || "");
   }
-  
+
   const htmlEscapes: { [key: string]: string } = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#x27;',
-    '/': '&#x2F;'
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#x27;",
+    "/": "&#x2F;",
   };
-  
+
   return text.replace(/[&<>"'\/]/g, (match) => htmlEscapes[match]);
 }
 
@@ -35,15 +35,18 @@ export function escapeHtml(text: string): string {
  * @param maxLength - Maximum length to display (default: 50)
  * @returns Escaped and truncated name
  */
-export function safeDisplayName(name: string | null | undefined, maxLength: number = 50): string {
-  if (!name) return 'Unknown User';
-  
+export function safeDisplayName(
+  name: string | null | undefined,
+  maxLength: number = 50,
+): string {
+  if (!name) return "Unknown User";
+
   const escaped = escapeHtml(String(name));
   if (escaped.length <= maxLength) {
     return escaped;
   }
-  
-  return escaped.substring(0, maxLength - 3) + '...';
+
+  return escaped.substring(0, maxLength - 3) + "...";
 }
 
 /**
@@ -52,7 +55,7 @@ export function safeDisplayName(name: string | null | undefined, maxLength: numb
  * @returns Escaped email or placeholder
  */
 export function safeDisplayEmail(email: string | null | undefined): string {
-  if (!email) return 'No email provided';
+  if (!email) return "No email provided";
   return escapeHtml(String(email));
 }
 
@@ -62,15 +65,18 @@ export function safeDisplayEmail(email: string | null | undefined): string {
  * @param maxLength - Maximum length to display (default: 100)
  * @returns Escaped and truncated address
  */
-export function safeDisplayAddress(address: string | null | undefined, maxLength: number = 100): string {
-  if (!address) return 'No address provided';
-  
+export function safeDisplayAddress(
+  address: string | null | undefined,
+  maxLength: number = 100,
+): string {
+  if (!address) return "No address provided";
+
   const escaped = escapeHtml(String(address));
   if (escaped.length <= maxLength) {
     return escaped;
   }
-  
-  return escaped.substring(0, maxLength - 3) + '...';
+
+  return escaped.substring(0, maxLength - 3) + "...";
 }
 
 /**
@@ -79,7 +85,7 @@ export function safeDisplayAddress(address: string | null | undefined, maxLength
  * @returns Escaped phone number or placeholder
  */
 export function safeDisplayPhone(phone: string | null | undefined): string {
-  if (!phone) return 'No phone provided';
+  if (!phone) return "No phone provided";
   return escapeHtml(String(phone));
 }
 
@@ -89,15 +95,18 @@ export function safeDisplayPhone(phone: string | null | undefined): string {
  * @param maxLength - Maximum length to display (default: 200)
  * @returns Escaped and truncated text
  */
-export function safeDisplayText(text: string | null | undefined, maxLength: number = 200): string {
-  if (!text) return '';
-  
+export function safeDisplayText(
+  text: string | null | undefined,
+  maxLength: number = 200,
+): string {
+  if (!text) return "";
+
   const escaped = escapeHtml(String(text));
   if (escaped.length <= maxLength) {
     return escaped;
   }
-  
-  return escaped.substring(0, maxLength - 3) + '...';
+
+  return escaped.substring(0, maxLength - 3) + "...";
 }
 
 /**
@@ -106,14 +115,14 @@ export function safeDisplayText(text: string | null | undefined, maxLength: numb
  * @returns Escaped order ID or placeholder
  */
 export function safeDisplayOrderId(orderId: string | null | undefined): string {
-  if (!orderId) return 'Unknown Order';
-  
+  if (!orderId) return "Unknown Order";
+
   const escaped = escapeHtml(String(orderId));
   // Additional validation for order ID format
   if (!/^[a-zA-Z0-9_-]+$/.test(escaped)) {
-    return 'Invalid Order ID';
+    return "Invalid Order ID";
   }
-  
+
   return escaped;
 }
 
@@ -123,15 +132,18 @@ export function safeDisplayOrderId(orderId: string | null | undefined): string {
  * @param maxLength - Maximum length to display (default: 80)
  * @returns Escaped and truncated product name
  */
-export function safeDisplayProductName(productName: string | null | undefined, maxLength: number = 80): string {
-  if (!productName) return 'Unknown Product';
-  
+export function safeDisplayProductName(
+  productName: string | null | undefined,
+  maxLength: number = 80,
+): string {
+  if (!productName) return "Unknown Product";
+
   const escaped = escapeHtml(String(productName));
   if (escaped.length <= maxLength) {
     return escaped;
   }
-  
-  return escaped.substring(0, maxLength - 3) + '...';
+
+  return escaped.substring(0, maxLength - 3) + "...";
 }
 
 /**
@@ -140,7 +152,7 @@ export function safeDisplayProductName(productName: string | null | undefined, m
  * @returns Escaped error message
  */
 export function safeDisplayError(error: string | null | undefined): string {
-  if (!error) return 'An unknown error occurred';
+  if (!error) return "An unknown error occurred";
   return escapeHtml(String(error));
 }
 

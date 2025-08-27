@@ -3,20 +3,23 @@
 // Server-side product data with secure pricing
 const PRODUCTS = {
   essential: {
-    id: 'essential',
-    name: 'Essential Clean Pod',
+    id: "essential",
+    name: "Essential Clean Pod",
     price: 450,
-    description: 'Our signature cleaning pod with essential oils for a fresh, natural clean.',
+    description:
+      "Our signature cleaning pod with essential oils for a fresh, natural clean.",
     features: [
-      'Natural essential oils',
-      'Biodegradable formula',
-      'Concentrated cleaning power',
-      'Fresh citrus scent'
+      "Natural essential oils",
+      "Biodegradable formula",
+      "Concentrated cleaning power",
+      "Fresh citrus scent",
     ],
-    image: '/pod_image.jpg',
-    ingredients: 'Sodium carbonate, essential oils (lemon, eucalyptus), natural surfactants',
-    usage: 'Drop one pod into your washing machine drum before adding clothes. Suitable for all fabric types.'
-  }
+    image: "/pod_image.jpg",
+    ingredients:
+      "Sodium carbonate, essential oils (lemon, eucalyptus), natural surfactants",
+    usage:
+      "Drop one pod into your washing machine drum before adding clothes. Suitable for all fabric types.",
+  },
 };
 
 // Helper function to get product by ID

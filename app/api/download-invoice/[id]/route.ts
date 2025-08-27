@@ -1,22 +1,22 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getOrder } from '../../../lib/database';
-import { verifyInvoiceToken } from '../../../lib/jwt-utils';
-import { auth } from '@clerk/nextjs/server';
-import { safeLogError } from '../../../lib/security/logging';
+import { NextRequest, NextResponse } from "next/server";
+import { getOrder } from "../../../lib/database";
+import { verifyInvoiceToken } from "../../../lib/jwt-utils";
+import { auth } from "@clerk/nextjs/server";
+import { safeLogError } from "../../../lib/security/logging";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id: orderId } = await params;
     const { searchParams } = new URL(request.url);
-    const token = searchParams.get('token');
-    
+    const token = searchParams.get("token");
+
     if (!orderId) {
       return NextResponse.json(
-        { error: 'Order ID is required' },
-        { status: 400 }
+        { error: "Order ID is required" },
+        { status: 400 },
       );
     }
 
@@ -24,16 +24,16 @@ export async function GET(
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json(
-        { error: 'Authentication required' },
-        { status: 401 }
+        { error: "Authentication required" },
+        { status: 401 },
       );
     }
 
     // Validate JWT token
     if (!token) {
       return NextResponse.json(
-        { error: 'Access token is required' },
-        { status: 400 }
+        { error: "Access token is required" },
+        { status: 400 },
       );
     }
 
@@ -42,35 +42,32 @@ export async function GET(
       tokenPayload = await verifyInvoiceToken(token);
     } catch (error) {
       return NextResponse.json(
-        { error: 'Invalid or expired access token' },
-        { status: 403 }
+        { error: "Invalid or expired access token" },
+        { status: 403 },
       );
     }
 
     // Verify token matches the requested order
     if (tokenPayload.orderId !== orderId) {
       return NextResponse.json(
-        { error: 'Token does not match the requested order' },
-        { status: 403 }
+        { error: "Token does not match the requested order" },
+        { status: 403 },
       );
     }
 
     // Additional security: verify user ID if present in token
     if (tokenPayload.userId && tokenPayload.userId !== userId) {
       return NextResponse.json(
-        { error: 'Access denied. Token belongs to different user.' },
-        { status: 403 }
+        { error: "Access denied. Token belongs to different user." },
+        { status: 403 },
       );
     }
 
     // Get order from database
     const order = await getOrder(orderId);
-    
+
     if (!order) {
-      return NextResponse.json(
-        { error: 'Order not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
     // Generate invoice HTML
@@ -79,32 +76,32 @@ export async function GET(
     // Return HTML that opens in browser for printing/saving as PDF
     return new NextResponse(invoiceHtml, {
       headers: {
-        'Content-Type': 'text/html; charset=utf-8',
-        'Cache-Control': 'no-cache',
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-cache",
       },
     });
   } catch (error) {
-    safeLogError('Error generating invoice', error);
+    safeLogError("Error generating invoice", error);
     return NextResponse.json(
-      { error: 'Failed to generate invoice' },
-      { status: 500 }
+      { error: "Failed to generate invoice" },
+      { status: 500 },
     );
   }
 }
 
 function generateInvoiceHtml(order: any): string {
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
     }).format(price);
   };
 
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-IN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(date).toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -307,14 +304,18 @@ function generateInvoiceHtml(order: any): string {
                     </tr>
                 </thead>
                 <tbody>
-                    ${order.items.map((item: any) => `
+                    ${order.items
+                      .map(
+                        (item: any) => `
                         <tr>
                             <td>${item.name}</td>
                             <td class="text-right">${item.quantity}</td>
                             <td class="text-right">${formatPrice(item.price)}</td>
                             <td class="text-right">${formatPrice(item.price * item.quantity)}</td>
                         </tr>
-                    `).join('')}
+                    `,
+                      )
+                      .join("")}
                 </tbody>
             </table>
 

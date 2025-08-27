@@ -1,27 +1,27 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/nextjs';
-import { useRouter } from 'next/navigation';
-import Header from '../components/Header';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
+import Header from "../components/Header";
+import toast from "react-hot-toast";
 
 export default function Profile() {
   const { user, isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    address: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
   });
 
   // Redirect if not authenticated
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
-      router.push('/auth/signin');
+      router.push("/auth/signin");
     }
   }, [isLoaded, isSignedIn, router]);
 
@@ -31,27 +31,27 @@ export default function Profile() {
       if (user) {
         // Always use Clerk user data as the primary source
         setFormData({
-          firstName: user.firstName || '',
-          lastName: user.lastName || '',
-          email: user.primaryEmailAddress?.emailAddress || '',
-          phone: user.phoneNumbers?.[0]?.phoneNumber || '',
-          address: '',
+          firstName: user.firstName || "",
+          lastName: user.lastName || "",
+          email: user.primaryEmailAddress?.emailAddress || "",
+          phone: user.phoneNumbers?.[0]?.phoneNumber || "",
+          address: "",
         });
-        
+
         // Try to load additional data from database (like address)
         try {
-          const response = await fetch('/api/user/profile');
+          const response = await fetch("/api/user/profile");
           if (response.ok) {
             const data = await response.json();
             // Only update fields that Clerk doesn't provide
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
               phone: data.user.phone || prev.phone,
               address: data.user.address || prev.address,
             }));
           }
         } catch (error) {
-          console.log('Could not load additional profile data:', error);
+          console.log("Could not load additional profile data:", error);
         }
       }
     };
@@ -59,9 +59,11 @@ export default function Profile() {
     loadUserData();
   }, [user]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
@@ -72,23 +74,23 @@ export default function Profile() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/user/profile', {
-        method: 'PUT',
+      const response = await fetch("/api/user/profile", {
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
 
       if (response.ok) {
-        toast.success('Profile updated successfully!');
+        toast.success("Profile updated successfully!");
       } else {
         const error = await response.json();
-        toast.error(error.message || 'Failed to update profile');
+        toast.error(error.message || "Failed to update profile");
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('An error occurred while updating your profile');
+      console.error("Error updating profile:", error);
+      toast.error("An error occurred while updating your profile");
     } finally {
       setLoading(false);
     }
@@ -117,21 +119,27 @@ export default function Profile() {
   return (
     <div className="min-h-screen bg-orange-50">
       <Header />
-      
+
       <div className="max-w-2xl mx-auto px-4 py-12">
         <div className="bg-white rounded-2xl shadow-sm border p-8">
           <div className="text-center mb-8">
             <div className="w-20 h-20 bg-gradient-to-br from-orange-400 to-amber-400 rounded-full flex items-center justify-center text-white text-2xl font-bold mx-auto mb-4">
-              {user?.firstName?.[0] || user?.primaryEmailAddress?.emailAddress?.[0]?.toUpperCase()}
+              {user?.firstName?.[0] ||
+                user?.primaryEmailAddress?.emailAddress?.[0]?.toUpperCase()}
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              My Profile
+            </h1>
             <p className="text-gray-600">Manage your account information</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="firstName"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   First Name
                 </label>
                 <input
@@ -147,7 +155,10 @@ export default function Profile() {
               </div>
 
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="lastName"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Last Name
                 </label>
                 <input
@@ -164,7 +175,10 @@ export default function Profile() {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Email Address
               </label>
               <input
@@ -177,11 +191,16 @@ export default function Profile() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                 placeholder="Email address"
               />
-              <p className="text-sm text-gray-500 mt-1">Email address cannot be changed</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Email address cannot be changed
+              </p>
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Phone Number
               </label>
               <input
@@ -196,7 +215,10 @@ export default function Profile() {
             </div>
 
             <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="address"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Address
               </label>
               <textarea
@@ -216,12 +238,12 @@ export default function Profile() {
                 disabled={loading}
                 className="flex-1 bg-gradient-to-r from-orange-400 to-amber-400 text-white py-3 px-4 rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
               >
-                {loading ? 'Updating...' : 'Update Profile'}
+                {loading ? "Updating..." : "Update Profile"}
               </button>
-              
+
               <button
                 type="button"
-                onClick={() => router.push('/orders')}
+                onClick={() => router.push("/orders")}
                 className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               >
                 View Orders
@@ -230,12 +252,16 @@ export default function Profile() {
           </form>
 
           <div className="mt-8 pt-8 border-t">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">Account Information</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-4">
+              Account Information
+            </h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-600">Account created:</span>
                 <span className="text-gray-900">
-                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Recently'}
+                  {user?.createdAt
+                    ? new Date(user.createdAt).toLocaleDateString()
+                    : "Recently"}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -245,7 +271,9 @@ export default function Profile() {
               <div className="flex justify-between">
                 <span className="text-gray-600">Sign-in method:</span>
                 <span className="text-gray-900">
-                  {user?.externalAccounts?.length ? 'OAuth Provider' : 'Email/Password'}
+                  {user?.externalAccounts?.length
+                    ? "OAuth Provider"
+                    : "Email/Password"}
                 </span>
               </div>
             </div>

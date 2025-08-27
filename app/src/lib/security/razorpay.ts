@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from "crypto";
 
 export interface RazorpayWebhookPayload {
   razorpay_payment_id: string;
@@ -9,24 +9,24 @@ export interface RazorpayWebhookPayload {
 
 export function verifyRazorpaySignature(
   payload: RazorpayWebhookPayload,
-  secret: string
+  secret: string,
 ): boolean {
   try {
     const { razorpay_signature, ...data } = payload;
-    
+
     // Create the expected signature
     const expectedSignature = crypto
-      .createHmac('sha256', secret)
+      .createHmac("sha256", secret)
       .update(JSON.stringify(data))
-      .digest('hex');
-    
+      .digest("hex");
+
     // Compare signatures using timing-safe comparison
     return crypto.timingSafeEqual(
-      Buffer.from(expectedSignature, 'hex'),
-      Buffer.from(razorpay_signature, 'hex')
+      Buffer.from(expectedSignature, "hex"),
+      Buffer.from(razorpay_signature, "hex"),
     );
   } catch (error) {
-    console.error('Error verifying Razorpay signature:', error);
+    console.error("Error verifying Razorpay signature:", error);
     return false;
   }
 }
@@ -53,11 +53,11 @@ export function sanitizeRazorpayPayload(payload: any): RazorpayWebhookPayload {
     razorpay_signature,
     ...otherFields
   } = payload;
-  
+
   return {
-    razorpay_payment_id: String(razorpay_payment_id || ''),
-    razorpay_order_id: String(razorpay_order_id || ''),
-    razorpay_signature: String(razorpay_signature || ''),
-    ...otherFields
+    razorpay_payment_id: String(razorpay_payment_id || ""),
+    razorpay_order_id: String(razorpay_order_id || ""),
+    razorpay_signature: String(razorpay_signature || ""),
+    ...otherFields,
   };
-} 
+}

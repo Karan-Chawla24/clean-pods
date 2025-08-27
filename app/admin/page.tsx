@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useUser, useAuth, useClerk } from '@clerk/nextjs';
-import Image from 'next/image';
-import Link from 'next/link';
-import { formatPrice, formatDate, getOrderStatusColor } from '@/app/lib/utils';
-import Header from '@/app/components/Header';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useUser, useAuth, useClerk } from "@clerk/nextjs";
+import Image from "next/image";
+import Link from "next/link";
+import { formatPrice, formatDate, getOrderStatusColor } from "@/app/lib/utils";
+import Header from "@/app/components/Header";
 
 interface OrderItem {
   id: string;
@@ -34,7 +34,7 @@ export default function AdminDashboard() {
   const { isSignedIn, getToken } = useAuth();
   const clerk = useClerk();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
 
@@ -46,9 +46,9 @@ export default function AdminDashboard() {
       return;
     }
 
-    if (!isSignedIn || user?.publicMetadata?.role !== 'admin') {
+    if (!isSignedIn || user?.publicMetadata?.role !== "admin") {
       // Not authenticated or not admin, redirect
-      router.replace('/');
+      router.replace("/");
       return;
     }
 
@@ -61,52 +61,52 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       const token = await getToken();
-      const response = await fetch('/api/admin/orders', {
+      const response = await fetch("/api/admin/orders", {
         headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
-      
+
       if (response.ok) {
         const ordersData = await response.json();
         setOrders(ordersData);
       } else {
-        console.error('Failed to fetch orders:', response.statusText);
+        console.error("Failed to fetch orders:", response.statusText);
       }
     } catch (error) {
-      console.error('Failed to fetch orders:', error);
+      console.error("Failed to fetch orders:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleLogout = () => {
-    clerk.signOut({ redirectUrl: '/' });
+    clerk.signOut({ redirectUrl: "/" });
   };
 
   const downloadOrdersExcel = async () => {
     try {
       const token = await getToken();
-      const response = await fetch('/api/admin-download-orders', {
+      const response = await fetch("/api/admin-download-orders", {
         headers: {
-          'Authorization': `Bearer ${token}`,
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
+        const a = document.createElement("a");
         a.href = url;
-        a.download = 'orders.xlsx';
+        a.download = "orders.xlsx";
         document.body.appendChild(a);
         a.click();
         a.remove();
         window.URL.revokeObjectURL(url);
       }
     } catch (error) {
-      console.error('Failed to download orders:', error);
+      console.error("Failed to download orders:", error);
     }
   };
 
@@ -126,7 +126,7 @@ export default function AdminDashboard() {
   }
 
   // Don't render if not authorized (redirect will happen in useEffect)
-  if (!isSignedIn || user?.publicMetadata?.role !== 'admin') {
+  if (!isSignedIn || user?.publicMetadata?.role !== "admin") {
     return (
       <div className="min-h-screen bg-gray-50">
         <Header />
@@ -139,10 +139,10 @@ export default function AdminDashboard() {
     );
   }
 
-  const filteredOrders = orders.filter(order => {
-    if (filter === 'all') return true;
+  const filteredOrders = orders.filter((order) => {
+    if (filter === "all") return true;
     // For now, all orders are considered 'processing' since we don't have status field
-    return filter === 'processing';
+    return filter === "processing";
   });
 
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
@@ -202,15 +202,21 @@ export default function AdminDashboard() {
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="text-2xl font-bold text-gray-900">{totalOrders}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {totalOrders}
+            </div>
             <div className="text-sm text-gray-500">Total Orders</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="text-2xl font-bold text-green-600">{formatPrice(totalRevenue)}</div>
+            <div className="text-2xl font-bold text-green-600">
+              {formatPrice(totalRevenue)}
+            </div>
             <div className="text-sm text-gray-500">Total Revenue</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border p-6">
-            <div className="text-2xl font-bold text-blue-600">{processingOrders}</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {processingOrders}
+            </div>
             <div className="text-sm text-gray-500">Processing Orders</div>
           </div>
           <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -222,17 +228,21 @@ export default function AdminDashboard() {
         {/* Filter Buttons */}
         <div className="flex space-x-2 mb-6">
           <button
-            onClick={() => setFilter('all')}
+            onClick={() => setFilter("all")}
             className={`px-4 py-2 rounded-lg cursor-pointer ${
-              filter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
+              filter === "all"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-700"
             }`}
           >
             All Orders
           </button>
           <button
-            onClick={() => setFilter('processing')}
+            onClick={() => setFilter("processing")}
             className={`px-4 py-2 rounded-lg cursor-pointer ${
-              filter === 'processing' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
+              filter === "processing"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-100 text-gray-700"
             }`}
           >
             Processing
@@ -251,7 +261,9 @@ export default function AdminDashboard() {
             <div className="text-center py-12">
               <div className="text-gray-500 mb-4">No orders found</div>
               <div className="text-sm text-gray-400">
-                {filter === 'all' ? 'No orders have been placed yet.' : `No ${filter} orders found.`}
+                {filter === "all"
+                  ? "No orders have been placed yet."
+                  : `No ${filter} orders found.`}
               </div>
             </div>
           ) : (
@@ -293,9 +305,15 @@ export default function AdminDashboard() {
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         <div>
-                          <div className="font-medium">{order.customerName}</div>
-                          <div className="text-xs text-gray-400">{order.customerEmail}</div>
-                          <div className="text-xs text-gray-400">{order.customerPhone}</div>
+                          <div className="font-medium">
+                            {order.customerName}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            {order.customerEmail}
+                          </div>
+                          <div className="text-xs text-gray-400">
+                            {order.customerPhone}
+                          </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
@@ -311,10 +329,12 @@ export default function AdminDashboard() {
                         {formatPrice(order.total)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <div className="text-xs font-mono">{order.paymentId}</div>
+                        <div className="text-xs font-mono">
+                          {order.paymentId}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <Link 
+                        <Link
                           href={`/admin/orders/${order.id}`}
                           className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors"
                         >
