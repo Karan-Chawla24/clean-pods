@@ -3,9 +3,9 @@
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
   "version": 1,
-  "serialNumber": "urn:uuid:d54971e2-31d9-4c9e-995b-3fccfc541445",
+  "serialNumber": "urn:uuid:d4ecf586-3e35-43fc-987a-939ef2d425f4",
   "metadata": {
-    "timestamp": "2025-08-27T15:26:44.824Z",
+    "timestamp": "2025-08-27T17:16:19.763Z",
     "tools": {
       "components": [
         {
@@ -1077,8 +1077,8 @@
       "type": "library",
       "name": "react",
       "group": "@types",
-      "version": "19.1.11",
-      "bom-ref": "next-app@0.1.0|@types/react@19.1.11",
+      "version": "19.1.12",
+      "bom-ref": "next-app@0.1.0|@types/react@19.1.12",
       "description": "TypeScript definitions for react",
       "licenses": [
         {
@@ -1088,7 +1088,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/%40types/react@19.1.11#types/react",
+      "purl": "pkg:npm/%40types/react@19.1.12#types/react",
       "externalReferences": [
         {
           "url": "git+https://github.com/DefinitelyTyped/DefinitelyTyped.git#types/react",
@@ -1106,12 +1106,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/@types/react/-/react-19.1.11.tgz",
+          "url": "https://registry.npmjs.org/@types/react/-/react-19.1.12.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "96bde3741c3f0468f8f44a6cec4bea9546a8780d31a63de97344682641e961a0879152bb8b6f1d2b22262d06f725596ab376984977fba98b96396fdf8199d35d"
+              "content": "70ca11f85a007ff272abaf837f6fd9e358c84af199676793967b1a251a6d999efa09a95dc32d68743e314ebfe0355f552e3d005a083f9e691ebc8c947c822ae7"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -2317,8 +2317,8 @@
     {
       "type": "library",
       "name": "react-dom",
-      "version": "19.1.1",
-      "bom-ref": "next-app@0.1.0|react-dom@19.1.1",
+      "version": "19.0.0",
+      "bom-ref": "next-app@0.1.0|react-dom@19.0.0",
       "description": "React package for working with the DOM.",
       "licenses": [
         {
@@ -2328,7 +2328,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/react-dom@19.1.1#packages/react-dom",
+      "purl": "pkg:npm/react-dom@19.0.0#packages/react-dom",
       "externalReferences": [
         {
           "url": "git+https://github.com/facebook/react.git#packages/react-dom",
@@ -2346,12 +2346,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/react-dom/-/react-dom-19.1.1.tgz",
+          "url": "https://registry.npmjs.org/react-dom/-/react-dom-19.0.0.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "0e5abfe4b019805d066b3eb28aa6427fa542719b35821009cabb2ef3843f193d2057e982c5b7e628da0644a058309f0811d18faaee3d6165c3d3618292710393"
+              "content": "e06579b07146d1eff4003e17fb24b2e9425dde3565d6236c34776969dd2a840049d75b704b74d3067b1eaac2aeaca72c36a08415e18bdee2e954286920edd07d"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -2673,8 +2673,8 @@
     {
       "type": "library",
       "name": "react",
-      "version": "19.1.1",
-      "bom-ref": "next-app@0.1.0|react@19.1.1",
+      "version": "19.0.0",
+      "bom-ref": "next-app@0.1.0|react@19.0.0",
       "description": "React is a JavaScript library for building user interfaces.",
       "licenses": [
         {
@@ -2684,7 +2684,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/react@19.1.1#packages/react",
+      "purl": "pkg:npm/react@19.0.0#packages/react",
       "externalReferences": [
         {
           "url": "git+https://github.com/facebook/react.git#packages/react",
@@ -2702,12 +2702,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/react/-/react-19.1.1.tgz",
+          "url": "https://registry.npmjs.org/react/-/react-19.0.0.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "c3c9ea1889a8e397663087e58e3330386b5b982fe693808c62158889c7527e51fdd49f53c82c9ccdc3c55c9ceb67f65772019115e3fa054d011094f0ead65d7d"
+              "content": "57c0159e63c8202896a467e6e862f3091fd6e455cb7211e8a78d16e275c199d94471e875eab08df0ef0b3569b96e1e57517f757e1ecaa40f96d1380c2a6813a5"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -10359,8 +10359,8 @@
     {
       "type": "library",
       "name": "scheduler",
-      "version": "0.26.0",
-      "bom-ref": "next-app@0.1.0|scheduler@0.26.0",
+      "version": "0.25.0",
+      "bom-ref": "next-app@0.1.0|scheduler@0.25.0",
       "description": "Cooperative scheduler for the browser environment.",
       "licenses": [
         {
@@ -10370,7 +10370,7 @@
           }
         }
       ],
-      "purl": "pkg:npm/scheduler@0.26.0#packages/scheduler",
+      "purl": "pkg:npm/scheduler@0.25.0#packages/scheduler",
       "externalReferences": [
         {
           "url": "git+https://github.com/facebook/react.git#packages/scheduler",
@@ -10388,12 +10388,12 @@
           "comment": "as detected from PackageJson property \"bugs.url\""
         },
         {
-          "url": "https://registry.npmjs.org/scheduler/-/scheduler-0.26.0.tgz",
+          "url": "https://registry.npmjs.org/scheduler/-/scheduler-0.25.0.tgz",
           "type": "distribution",
           "hashes": [
             {
               "alg": "SHA-512",
-              "content": "3651f0b6d088fe5e6008f4770f59cd5ed580054981c2f669110883e085d26c80eaf01ccb20affb22be604c548664352edfb2b970c369d2116dccedfcb02ee058"
+              "content": "c4556ebb5d6387ec5c3bb24e00624d39795df3f4dc1072bfe028adb8151e51be61ab124b8fd62e7a6004baf9bd810ffea605d87db42ea8092262efaeed812c34"
             }
           ],
           "comment": "as detected from npm-ls property \"resolved\" and property \"integrity\""
@@ -42041,7 +42041,7 @@
         "next-app@0.1.0|@types/node@20.19.11",
         "next-app@0.1.0|@types/react-dom@19.1.8",
         "next-app@0.1.0|@types/react-slick@0.23.13",
-        "next-app@0.1.0|@types/react@19.1.11",
+        "next-app@0.1.0|@types/react@19.1.12",
         "next-app@0.1.0|@upstash/ratelimit@v2.0.6",
         "next-app@0.1.0|@upstash/redis@v1.35.3",
         "next-app@0.1.0|autoprefixer@10.4.21",
@@ -42062,14 +42062,14 @@
         "next-app@0.1.0|postcss@8.5.6",
         "next-app@0.1.0|prisma@6.15.0",
         "next-app@0.1.0|razorpay@2.9.6",
-        "next-app@0.1.0|react-dom@19.1.1",
+        "next-app@0.1.0|react-dom@19.0.0",
         "next-app@0.1.0|react-hook-form@7.62.0",
         "next-app@0.1.0|react-hot-toast@2.6.0",
         "next-app@0.1.0|react-intersection-observer@9.16.0",
         "next-app@0.1.0|react-markdown@10.1.0",
         "next-app@0.1.0|react-query@3.39.3",
         "next-app@0.1.0|react-slick@0.29.0",
-        "next-app@0.1.0|react@19.1.1",
+        "next-app@0.1.0|react@19.0.0",
         "next-app@0.1.0|recharts@3.1.2",
         "next-app@0.1.0|slick-carousel@1.8.1",
         "next-app@0.1.0|svix@1.75.0",
@@ -42088,8 +42088,8 @@
         "next-app@0.1.0|@clerk/shared@3.22.1",
         "next-app@0.1.0|@clerk/types@4.82.0",
         "next-app@0.1.0|next@15.3.2",
-        "next-app@0.1.0|react-dom@19.1.1",
-        "next-app@0.1.0|react@19.1.1",
+        "next-app@0.1.0|react-dom@19.0.0",
+        "next-app@0.1.0|react@19.0.0",
         "next-app@0.1.0|server-only@0.0.1",
         "next-app@0.1.0|tslib@2.8.1"
       ]
@@ -42144,8 +42144,8 @@
         "next-app@0.1.0|@react-google-maps/marker-clusterer@2.20.0",
         "next-app@0.1.0|@types/google.maps@3.58.1",
         "next-app@0.1.0|invariant@2.2.4",
-        "next-app@0.1.0|react-dom@19.1.1",
-        "next-app@0.1.0|react@19.1.1"
+        "next-app@0.1.0|react-dom@19.0.0",
+        "next-app@0.1.0|react@19.0.0"
       ]
     },
     {
@@ -42203,17 +42203,17 @@
     {
       "ref": "next-app@0.1.0|@types/react-dom@19.1.8",
       "dependsOn": [
-        "next-app@0.1.0|@types/react@19.1.11"
+        "next-app@0.1.0|@types/react@19.1.12"
       ]
     },
     {
       "ref": "next-app@0.1.0|@types/react-slick@0.23.13",
       "dependsOn": [
-        "next-app@0.1.0|@types/react@19.1.11"
+        "next-app@0.1.0|@types/react@19.1.12"
       ]
     },
     {
-      "ref": "next-app@0.1.0|@types/react@19.1.11",
+      "ref": "next-app@0.1.0|@types/react@19.1.12",
       "dependsOn": [
         "next-app@0.1.0|csstype@3.1.3"
       ]
@@ -42340,8 +42340,8 @@
       "dependsOn": [
         "next-app@0.1.0|motion-dom@11.18.1",
         "next-app@0.1.0|motion-utils@11.18.1",
-        "next-app@0.1.0|react-dom@19.1.1",
-        "next-app@0.1.0|react@19.1.1",
+        "next-app@0.1.0|react-dom@19.0.0",
+        "next-app@0.1.0|react@19.0.0",
         "next-app@0.1.0|tslib@2.8.1"
       ]
     },
@@ -42386,8 +42386,8 @@
         "next-app@0.1.0|busboy@1.6.0",
         "next-app@0.1.0|caniuse-lite@1.0.30001737",
         "next-app@0.1.0|next@15.3.2|postcss@8.4.31",
-        "next-app@0.1.0|react-dom@19.1.1",
-        "next-app@0.1.0|react@19.1.1",
+        "next-app@0.1.0|react-dom@19.0.0",
+        "next-app@0.1.0|react@19.0.0",
         "next-app@0.1.0|sharp@0.34.3",
         "next-app@0.1.0|styled-jsx@5.1.6"
       ]
@@ -42429,16 +42429,16 @@
       ]
     },
     {
-      "ref": "next-app@0.1.0|react-dom@19.1.1",
+      "ref": "next-app@0.1.0|react-dom@19.0.0",
       "dependsOn": [
-        "next-app@0.1.0|react@19.1.1",
-        "next-app@0.1.0|scheduler@0.26.0"
+        "next-app@0.1.0|react@19.0.0",
+        "next-app@0.1.0|scheduler@0.25.0"
       ]
     },
     {
       "ref": "next-app@0.1.0|react-hook-form@7.62.0",
       "dependsOn": [
-        "next-app@0.1.0|react@19.1.1"
+        "next-app@0.1.0|react@19.0.0"
       ]
     },
     {
@@ -42446,15 +42446,15 @@
       "dependsOn": [
         "next-app@0.1.0|csstype@3.1.3",
         "next-app@0.1.0|goober@2.1.16",
-        "next-app@0.1.0|react-dom@19.1.1",
-        "next-app@0.1.0|react@19.1.1"
+        "next-app@0.1.0|react-dom@19.0.0",
+        "next-app@0.1.0|react@19.0.0"
       ]
     },
     {
       "ref": "next-app@0.1.0|react-intersection-observer@9.16.0",
       "dependsOn": [
-        "next-app@0.1.0|react-dom@19.1.1",
-        "next-app@0.1.0|react@19.1.1"
+        "next-app@0.1.0|react-dom@19.0.0",
+        "next-app@0.1.0|react@19.0.0"
       ]
     },
     {
@@ -42462,12 +42462,12 @@
       "dependsOn": [
         "next-app@0.1.0|@types/hast@3.0.4",
         "next-app@0.1.0|@types/mdast@4.0.4",
-        "next-app@0.1.0|@types/react@19.1.11",
+        "next-app@0.1.0|@types/react@19.1.12",
         "next-app@0.1.0|devlop@1.1.0",
         "next-app@0.1.0|hast-util-to-jsx-runtime@2.3.6",
         "next-app@0.1.0|html-url-attributes@3.0.1",
         "next-app@0.1.0|mdast-util-to-hast@13.2.0",
-        "next-app@0.1.0|react@19.1.1",
+        "next-app@0.1.0|react@19.0.0",
         "next-app@0.1.0|remark-parse@11.0.0",
         "next-app@0.1.0|remark-rehype@11.1.2",
         "next-app@0.1.0|unified@11.0.5",
@@ -42481,7 +42481,7 @@
         "next-app@0.1.0|@babel/runtime@7.28.3",
         "next-app@0.1.0|broadcast-channel@3.7.0",
         "next-app@0.1.0|match-sorter@6.3.4",
-        "next-app@0.1.0|react@19.1.1"
+        "next-app@0.1.0|react@19.0.0"
       ]
     },
     {
@@ -42491,13 +42491,13 @@
         "next-app@0.1.0|enquire.js@2.1.6",
         "next-app@0.1.0|json2mq@0.2.0",
         "next-app@0.1.0|lodash.debounce@4.0.8",
-        "next-app@0.1.0|react-dom@19.1.1",
-        "next-app@0.1.0|react@19.1.1",
+        "next-app@0.1.0|react-dom@19.0.0",
+        "next-app@0.1.0|react@19.0.0",
         "next-app@0.1.0|resize-observer-polyfill@1.5.1"
       ]
     },
     {
-      "ref": "next-app@0.1.0|react@19.1.1"
+      "ref": "next-app@0.1.0|react@19.0.0"
     },
     {
       "ref": "next-app@0.1.0|recharts@3.1.2",
@@ -42508,10 +42508,10 @@
         "next-app@0.1.0|es-toolkit@1.39.10",
         "next-app@0.1.0|eventemitter3@5.0.1",
         "next-app@0.1.0|immer@10.1.1",
-        "next-app@0.1.0|react-dom@19.1.1",
+        "next-app@0.1.0|react-dom@19.0.0",
         "next-app@0.1.0|react-is@16.13.1",
         "next-app@0.1.0|react-redux@9.2.0",
-        "next-app@0.1.0|react@19.1.1",
+        "next-app@0.1.0|react@19.0.0",
         "next-app@0.1.0|reselect@5.1.1",
         "next-app@0.1.0|tiny-invariant@1.3.3",
         "next-app@0.1.0|use-sync-external-store@1.5.0",
@@ -42626,9 +42626,9 @@
     {
       "ref": "next-app@0.1.0|zustand@4.5.7",
       "dependsOn": [
-        "next-app@0.1.0|@types/react@19.1.11",
+        "next-app@0.1.0|@types/react@19.1.12",
         "next-app@0.1.0|immer@10.1.1",
-        "next-app@0.1.0|react@19.1.1",
+        "next-app@0.1.0|react@19.0.0",
         "next-app@0.1.0|use-sync-external-store@1.5.0"
       ]
     },
@@ -42647,8 +42647,8 @@
       "dependsOn": [
         "next-app@0.1.0|@clerk/shared@3.22.1",
         "next-app@0.1.0|@clerk/types@4.82.0",
-        "next-app@0.1.0|react-dom@19.1.1",
-        "next-app@0.1.0|react@19.1.1",
+        "next-app@0.1.0|react-dom@19.0.0",
+        "next-app@0.1.0|react@19.0.0",
         "next-app@0.1.0|tslib@2.8.1"
       ]
     },
@@ -42659,8 +42659,8 @@
         "next-app@0.1.0|dequal@2.0.3",
         "next-app@0.1.0|glob-to-regexp@0.4.1",
         "next-app@0.1.0|js-cookie@3.0.5",
-        "next-app@0.1.0|react-dom@19.1.1",
-        "next-app@0.1.0|react@19.1.1",
+        "next-app@0.1.0|react-dom@19.0.0",
+        "next-app@0.1.0|react@19.0.0",
         "next-app@0.1.0|std-env@3.9.0",
         "next-app@0.1.0|swr@2.3.4"
       ]
@@ -43384,7 +43384,7 @@
       "ref": "next-app@0.1.0|styled-jsx@5.1.6",
       "dependsOn": [
         "next-app@0.1.0|client-only@0.0.1",
-        "next-app@0.1.0|react@19.1.1"
+        "next-app@0.1.0|react@19.0.0"
       ]
     },
     {
@@ -43409,7 +43409,7 @@
       ]
     },
     {
-      "ref": "next-app@0.1.0|scheduler@0.26.0"
+      "ref": "next-app@0.1.0|scheduler@0.25.0"
     },
     {
       "ref": "next-app@0.1.0|goober@2.1.16",
@@ -43566,7 +43566,7 @@
         "next-app@0.1.0|@standard-schema/utils@0.3.0",
         "next-app@0.1.0|immer@10.1.1",
         "next-app@0.1.0|react-redux@9.2.0",
-        "next-app@0.1.0|react@19.1.1",
+        "next-app@0.1.0|react@19.0.0",
         "next-app@0.1.0|redux-thunk@3.1.0",
         "next-app@0.1.0|redux@5.0.1",
         "next-app@0.1.0|reselect@5.1.1"
@@ -43590,9 +43590,9 @@
     {
       "ref": "next-app@0.1.0|react-redux@9.2.0",
       "dependsOn": [
-        "next-app@0.1.0|@types/react@19.1.11",
+        "next-app@0.1.0|@types/react@19.1.12",
         "next-app@0.1.0|@types/use-sync-external-store@0.0.6",
-        "next-app@0.1.0|react@19.1.1",
+        "next-app@0.1.0|react@19.0.0",
         "next-app@0.1.0|redux@5.0.1",
         "next-app@0.1.0|use-sync-external-store@1.5.0"
       ]
@@ -43606,7 +43606,7 @@
     {
       "ref": "next-app@0.1.0|use-sync-external-store@1.5.0",
       "dependsOn": [
-        "next-app@0.1.0|react@19.1.1"
+        "next-app@0.1.0|react@19.0.0"
       ]
     },
     {
@@ -43776,7 +43776,7 @@
       "ref": "next-app@0.1.0|swr@2.3.4",
       "dependsOn": [
         "next-app@0.1.0|dequal@2.0.3",
-        "next-app@0.1.0|react@19.1.1",
+        "next-app@0.1.0|react@19.0.0",
         "next-app@0.1.0|use-sync-external-store@1.5.0"
       ]
     },
