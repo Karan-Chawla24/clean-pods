@@ -11,7 +11,7 @@ const nextConfig = {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "img-src 'self' data: https: blob:; " +
       "font-src 'self' https://fonts.gstatic.com; " +
-      "connect-src 'self' https://api.razorpay.com https://hooks.slack.com; " +
+      "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://hooks.slack.com; " +
       "frame-src 'self' https://checkout.razorpay.com; " +
       "object-src 'none'; " +
       "base-uri 'self'; " +

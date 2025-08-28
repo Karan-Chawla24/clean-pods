@@ -64,6 +64,7 @@ export const SECURITY_CONFIG = {
     CONNECT_SRC: [
       "'self'",
       "https://api.razorpay.com",
+      "https://lumberjack.razorpay.com",
       "https://hooks.slack.com",
       "https://*.clerk.accounts.dev",
       "https://*.clerk.com",

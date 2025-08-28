@@ -105,6 +105,17 @@ function generateInvoiceHtml(order: any): string {
     });
   };
 
+  // Calculate tax and subtotal from total (18% GST)
+  const calculateTax = (total: number) => {
+    // If total includes tax, extract it: total = subtotal + (subtotal * 0.18)
+    // So: total = subtotal * 1.18, therefore subtotal = total / 1.18
+    const subtotal = total / 1.18;
+    const tax = total - subtotal;
+    return { subtotal: Math.round(subtotal), tax: Math.round(tax) };
+  };
+
+  const { subtotal, tax } = calculateTax(order.total);
+
   return `
     <!DOCTYPE html>
     <html lang="en">
@@ -139,7 +150,11 @@ function generateInvoiceHtml(order: any): string {
             .logo {
                 font-size: 32px;
                 font-weight: bold;
-                color: #2563eb;
+                color: #f97316;
+                background: linear-gradient(to right, #f97316, #f59e0b);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
             }
             .invoice-info {
                 text-align: right;
@@ -206,7 +221,7 @@ function generateInvoiceHtml(order: any): string {
             .grand-total {
                 font-size: 20px;
                 font-weight: bold;
-                color: #2563eb;
+                color: #f97316;
                 padding-top: 12px;
                 border-top: 1px solid #e5e7eb;
             }
@@ -227,7 +242,7 @@ function generateInvoiceHtml(order: any): string {
                 z-index: 1000;
             }
             .action-btn {
-                background: #2563eb;
+                background: linear-gradient(to right, #f97316, #f59e0b);
                 color: white;
                 border: none;
                 padding: 12px 20px;
@@ -239,10 +254,12 @@ function generateInvoiceHtml(order: any): string {
                 align-items: center;
                 gap: 8px;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                transition: background-color 0.2s;
+                transition: all 0.2s;
             }
             .action-btn:hover {
-                background: #1d4ed8;
+                background: linear-gradient(to right, #ea580c, #d97706);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
             }
             .action-btn.secondary {
                 background: #6b7280;
@@ -322,11 +339,11 @@ function generateInvoiceHtml(order: any): string {
             <div class="total-section">
                 <div class="total-row">
                     <div class="total-label">Subtotal:</div>
-                    <div class="total-amount">${formatPrice(order.total)}</div>
+                    <div class="total-amount">${formatPrice(subtotal)}</div>
                 </div>
                 <div class="total-row">
-                    <div class="total-label">Tax:</div>
-                    <div class="total-amount">₹0.00</div>
+                    <div class="total-label">Tax (18% GST):</div>
+                    <div class="total-amount">${formatPrice(tax)}</div>
                 </div>
                 <div class="total-row">
                     <div class="total-label">Shipping:</div>

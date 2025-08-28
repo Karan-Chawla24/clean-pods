@@ -132,7 +132,10 @@ export async function POST(request: NextRequest) {
       customerEmail: maskEmail(customerData.email),
     });
 
-    if (!process.env.SLACK_WEBHOOK_URL) {
+    // Use SLACK_CONTACT_URL as the primary webhook since SLACK_WEBHOOK_URL is invalid
+    const webhookUrl =process.env.SLACK_WEBHOOK_URL;
+    
+    if (!webhookUrl) {
       safeLog("warn", "Slack webhook URL not configured");
       return NextResponse.json({
         success: true,
@@ -143,7 +146,7 @@ export async function POST(request: NextRequest) {
     safeLog("info", "Slack webhook configured, creating instance");
 
     // Initialize Slack webhook inside the function
-    const webhook = new IncomingWebhook(process.env.SLACK_WEBHOOK_URL);
+    const webhook = new IncomingWebhook(webhookUrl);
 
     // Create a beautiful Slack message
     const itemsList = orderData.items
@@ -248,7 +251,7 @@ export async function POST(request: NextRequest) {
               text: "View in Admin Panel",
               emoji: true,
             },
-            url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/admin/orders/${orderData.id}`,
+            url: `${process.env.APP_URL || "http://localhost:3000"}/admin/orders/${orderData.id}`,
             action_id: "view_order_details",
           },
         },
@@ -268,7 +271,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Generate admin URL
-    const adminUrl = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/admin/orders/${orderData.id}`;
+    const adminUrl = `${process.env.APP_URL || "http://localhost:3000"}/admin/orders/${orderData.id}`;
     safeLog("info", "Generated admin URL for order", { orderId: orderData.id });
 
     // Send to Slack
