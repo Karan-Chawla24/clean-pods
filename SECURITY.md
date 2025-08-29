@@ -83,11 +83,11 @@ A `.env.example` file has been added to the project for reference.
 
 ### Current Order Storage Model
 
-The application uses a **dual-storage approach** for orders:
+The application uses a **secure authentication-based approach** for orders:
 
-1. **Browser localStorage (`userOrders`)**: Stores detailed customer information for each order on the user's device
-2. **Zustand Store (`bubblebeads-store`)**: Application state management with localStorage persistence
-3. **Database**: Secure server-side storage with full order details
+1. **Authentication Required**: All users must sign in before placing orders
+2. **Zustand Store (`bubblebeads-store`)**: Application state management with localStorage persistence for cart and wishlist
+3. **Database**: Secure server-side storage with full order details linked to authenticated users
 
 ### Security Assessment
 
@@ -98,12 +98,12 @@ The application uses a **dual-storage approach** for orders:
 - **Admin API Security**: Orders API now requires `ADMIN_ORDERS_KEY` for access
 - **Payment Security**: All payments processed through PCI-compliant Razorpay
 
-#### ⚠️ Current Limitations
+#### ✅ Security Improvements
 
-- **No User Authentication**: No login system - orders tied to browser/device
-- **Shared Device Risk**: Multiple users on same device can see each other's orders
-- **Data Loss Risk**: Orders lost if browser data is cleared
-- **Device Dependency**: Orders not accessible across different devices
+- **User Authentication**: Clerk-based authentication system ensures secure user sessions
+- **Cross-Device Access**: Orders accessible from any device after authentication
+- **Data Persistence**: Orders stored securely in database, not lost with browser data
+- **User Isolation**: Each authenticated user can only access their own orders
 
 ### Admin Order Access
 
@@ -119,13 +119,13 @@ node scripts/admin-orders.js
 
 ### Risk Assessment
 
-| Security Concern            | Risk Level | Current Mitigation     |
-| --------------------------- | ---------- | ---------------------- |
-| Cross-user data access      | **Low**    | localStorage isolation |
-| Unauthorized invoice access | **Low**    | Token-based security   |
-| Admin data breach           | **Medium** | API key requirement    |
-| Order data loss             | **High**   | No current mitigation  |
-| Shared device privacy       | **Medium** | User education needed  |
+| Security Concern            | Risk Level | Current Mitigation        |
+| --------------------------- | ---------- | ------------------------- |
+| Cross-user data access      | **Low**    | Authentication required   |
+| Unauthorized invoice access | **Low**    | Token-based security      |
+| Admin data breach           | **Medium** | API key requirement       |
+| Order data loss             | **Low**    | Database persistence      |
+| Shared device privacy       | **Low**    | User-specific sessions    |
 
 ## Environment Variables (Updated)
 

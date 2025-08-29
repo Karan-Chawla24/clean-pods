@@ -75,51 +75,65 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 401 });
     }
 
-    // Create or update user in database
-    await prisma.user.upsert({
-      where: { id: userId },
-      update: {
-        email: clerkUser.emailAddresses[0]?.emailAddress || "",
-        firstName: clerkUser.firstName,
-        lastName: clerkUser.lastName,
-        name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim(),
-      },
-      create: {
-        id: userId,
-        email: clerkUser.emailAddresses[0]?.emailAddress || "",
-        firstName: clerkUser.firstName,
-        lastName: clerkUser.lastName,
-        name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim(),
-      },
-    });
+    // Use transaction to ensure atomicity and avoid prepared statement conflicts
+    const order = await prisma.$transaction(async (tx) => {
+      // First, try to find existing user
+      let user = await tx.user.findUnique({
+        where: { id: userId }
+      });
 
-    // Create order with user association
-    const order = await prisma.order.create({
-      data: {
-        razorpayOrderId: data.razorpayOrderId,
-        paymentId: data.paymentId,
-        total: data.total,
-        customerName: data.customerName,
-        customerEmail: data.customerEmail,
-        customerPhone: data.customerPhone,
-        address: data.address,
-        userId: userId, // Associate with authenticated user
-        items: {
-          create: data.items.map((item: any) => ({
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity,
-          })),
+      if (!user) {
+        // Create new user if doesn't exist
+        user = await tx.user.create({
+          data: {
+            id: userId,
+            email: clerkUser.emailAddresses[0]?.emailAddress || "",
+            firstName: clerkUser.firstName,
+            lastName: clerkUser.lastName,
+            name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim(),
+          },
+        });
+      } else {
+        // Update existing user
+        user = await tx.user.update({
+          where: { id: userId },
+          data: {
+            email: clerkUser.emailAddresses[0]?.emailAddress || "",
+            firstName: clerkUser.firstName,
+            lastName: clerkUser.lastName,
+            name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim(),
+          },
+        });
+      }
+
+      // Create order with user association
+      return await tx.order.create({
+        data: {
+          razorpayOrderId: data.razorpayOrderId,
+          paymentId: data.paymentId,
+          total: data.total,
+          customerName: data.customerName,
+          customerEmail: data.customerEmail,
+          customerPhone: data.customerPhone,
+          address: data.address,
+          userId: userId, // Associate with authenticated user
+          items: {
+            create: data.items.map((item: any) => ({
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+            })),
+          },
         },
-      },
-      include: { items: true },
+        include: { items: true },
+      });
     });
 
     // Order created successfully
 
     return NextResponse.json({ success: true, orderId: order.id });
   } catch (error) {
-    console.error("POST /api/user/orders error:", error);
+    safeLogError("POST /api/user/orders error:", error);
     return NextResponse.json(
       {
         error: "Failed to create order",

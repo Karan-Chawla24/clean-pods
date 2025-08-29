@@ -49,6 +49,35 @@ export default function Checkout() {
   } = useAppStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
+
+  // Redirect to sign-in if not authenticated
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push('/auth/signin?redirect_url=/checkout');
+    }
+  }, [isLoaded, user, router]);
+
+  // Check if Razorpay script is loaded
+  useEffect(() => {
+    const checkRazorpay = () => {
+      if (typeof window !== 'undefined' && window.Razorpay) {
+        setIsRazorpayLoaded(true);
+      }
+    };
+
+    // Check immediately
+    checkRazorpay();
+
+    // Also check when window loads
+    if (typeof window !== 'undefined') {
+      window.addEventListener('load', checkRazorpay);
+      
+      return () => {
+        window.removeEventListener('load', checkRazorpay);
+      };
+    }
+  }, []);
 
   const {
     register,
@@ -143,7 +172,7 @@ export default function Checkout() {
 
       // Check if Razorpay is loaded
       if (typeof window.Razorpay === "undefined") {
-        throw new Error("Razorpay script not loaded");
+        throw new Error("Payment system is still loading. Please wait a moment and try again.");
       }
 
       // Initialize Razorpay
@@ -287,38 +316,7 @@ export default function Checkout() {
                 // Don't fail the order if Slack notification fails
               }
 
-              // Store order in user's localStorage for privacy (only for unauthenticated users)
-              if (!user) {
-                try {
-                  const userOrders = JSON.parse(
-                    localStorage.getItem("userOrders") || "[]",
-                  );
-                  const orderForStorage = {
-                    id: orderId,
-                    razorpayOrderId: response.razorpay_order_id,
-                    paymentId: response.razorpay_payment_id,
-                    customerName: `${data.firstName} ${data.lastName}`,
-                    customerEmail: data.email,
-                    customerPhone: data.phone,
-                    address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
-                    items: cart.map((item) => ({
-                      id: item.id,
-                      name: item.name,
-                      quantity: item.quantity,
-                      price: item.price,
-                    })),
-                    total: total,
-                    orderDate: new Date().toISOString(),
-                  };
-                  userOrders.push(orderForStorage);
-                  localStorage.setItem(
-                    "userOrders",
-                    JSON.stringify(userOrders),
-                  );
-                } catch (localError) {
-                  console.error("Failed to store order locally:", localError);
-                }
-              }
+              // Orders are now stored server-side for authenticated users only
 
               addOrder(order);
               clearCart();
@@ -356,6 +354,18 @@ export default function Checkout() {
       setIsProcessing(false);
     }
   });
+
+  // Show loading while checking authentication
+  if (!isLoaded || !user) {
+    return (
+      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-orange-50">

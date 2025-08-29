@@ -129,6 +129,7 @@ import { createOrderSchema } from "@/app/lib/security/validation";
 import { validateCartAndTotal } from "@/app/lib/security/cartValidation";
 import { assertSameOrigin } from "@/app/lib/security/origin";
 import { safeLogError } from "@/app/lib/security/logging";
+import { auth } from "@clerk/nextjs/server";
 
 // --- Razorpay Config ---
 const keyId = process.env.RAZORPAY_KEY_ID;
@@ -150,6 +151,15 @@ export const POST = withUpstashRateLimit("moderate")(async (
   request: NextRequest,
 ) => {
   try {
+    // 🔐 Authentication Check
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
     // 🔒 CSRF Protection
     try {
       assertSameOrigin(request);
