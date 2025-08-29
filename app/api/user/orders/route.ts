@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { prisma } from "../../../lib/prisma";
+import prismaVercel from "../../../lib/prisma-vercel";
+
+// Use Vercel-optimized Prisma client in production
+const db = process.env.VERCEL ? prismaVercel : prisma;
 import { assertSameOrigin } from "../../../lib/security/origin";
 import { safeLogError } from "../../../lib/security/logging";
 
@@ -12,7 +16,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const orders = await prisma.order.findMany({
+    const orders = await db.order.findMany({
       where: {
         userId: userId,
       },
@@ -76,7 +80,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use transaction to ensure atomicity and avoid prepared statement conflicts
-    const order = await prisma.$transaction(async (tx) => {
+    const result = await db.$transaction(async (tx) => {
       // First, try to find existing user
       let user = await tx.user.findUnique({
         where: { id: userId }
@@ -107,7 +111,7 @@ export async function POST(request: NextRequest) {
       }
 
       // Create order with user association
-      return await tx.order.create({
+      const order = await tx.order.create({
         data: {
           razorpayOrderId: data.razorpayOrderId,
           paymentId: data.paymentId,
@@ -127,11 +131,13 @@ export async function POST(request: NextRequest) {
         },
         include: { items: true },
       });
+
+      return { user, order };
     });
 
     // Order created successfully
 
-    return NextResponse.json({ success: true, orderId: order.id });
+    return NextResponse.json({ success: true, orderId: result.order.id });
   } catch (error) {
     safeLogError("POST /api/user/orders error:", error);
     return NextResponse.json(

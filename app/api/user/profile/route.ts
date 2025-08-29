@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "../../../lib/prisma";
+import prismaVercel from "../../../lib/prisma-vercel";
+
+// Use Vercel-optimized Prisma client in production
+const db = process.env.VERCEL ? prismaVercel : prisma;
 import {
   validateRequest,
   userProfileSchema,
@@ -58,7 +62,7 @@ export async function PUT(request: NextRequest) {
     const lastName = nameParts.slice(1).join(" ") || "";
 
     // Update or create user profile
-    const updatedUser = await prisma.user.upsert({
+    const updatedUser = await db.user.upsert({
       where: { id: userId },
       update: {
         firstName,
@@ -117,7 +121,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user profile, create if doesn't exist
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: { id: userId },
       select: {
         id: true,

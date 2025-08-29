@@ -2,6 +2,10 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { prisma } from "@/app/lib/prisma";
+import prismaVercel from "@/app/lib/prisma-vercel";
+
+// Use Vercel-optimized Prisma client in production
+const db = process.env.VERCEL ? prismaVercel : prisma;
 import { safeLog, safeLogError } from "@/app/lib/security/logging";
 
 export async function POST(req: Request) {
@@ -91,7 +95,7 @@ async function handleUserCreated(userData: any) {
   }
 
   try {
-    await prisma.user.create({
+    await db.user.create({
       data: {
         id: id,
         email: primaryEmail.email_address,
@@ -122,7 +126,7 @@ async function handleUserUpdated(userData: any) {
   }
 
   try {
-    await prisma.user.update({
+    await db.user.update({
       where: { id: id },
       data: {
         email: primaryEmail.email_address,
@@ -144,7 +148,7 @@ async function handleUserDeleted(userData: any) {
   const { id } = userData;
 
   try {
-    await prisma.user.delete({
+    await db.user.delete({
       where: { id: id },
     });
     safeLog("info", "User deleted from database", { userId: id });

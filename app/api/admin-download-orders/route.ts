@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../lib/prisma";
+import prismaVercel from "../../lib/prisma-vercel";
+
+// Use Vercel-optimized Prisma client in production
+const db = process.env.VERCEL ? prismaVercel : prisma;
 import { withUpstashRateLimit } from "@/app/lib/security/upstashRateLimit";
 import { requireClerkAdminAuth } from "@/app/lib/clerk-admin";
 
@@ -21,7 +25,7 @@ export const GET = withUpstashRateLimit("moderate")(async (
       ExcelJS = (await import("exceljs")).default;
     }
 
-    const orders = await prisma.order.findMany({
+    const orders = await db.order.findMany({
       include: { items: true },
       orderBy: { orderDate: "desc" },
     });
