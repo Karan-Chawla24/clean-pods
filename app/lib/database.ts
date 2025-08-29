@@ -1,5 +1,9 @@
 import { prisma } from "./prisma";
+import prismaVercel from "./prisma-vercel";
 import { safeLogError } from "./security/logging";
+
+// Use Vercel-optimized Prisma client in production, standard client in development
+const db = process.env.VERCEL ? prismaVercel : prisma;
 
 export async function saveOrder(orderData: {
   razorpayOrderId: string;
@@ -45,7 +49,7 @@ export async function saveOrder(orderData: {
         ? `${orderData.customer.address}, ${orderData.customer.city}, ${orderData.customer.state} ${orderData.customer.pincode}`
         : "");
 
-    const order = await prisma.order.create({
+    const order = await db.order.create({
       data: {
         razorpayOrderId: orderData.razorpayOrderId,
         paymentId: orderData.paymentId,
@@ -75,14 +79,14 @@ export async function saveOrder(orderData: {
 }
 
 export async function getOrder(orderId: string) {
-  return prisma.order.findUnique({
+  return db.order.findUnique({
     where: { id: orderId },
     include: { items: true },
   });
 }
 
 export async function getAllOrders() {
-  return prisma.order.findMany({
+  return db.order.findMany({
     include: { items: true },
     orderBy: { orderDate: "desc" },
   });
