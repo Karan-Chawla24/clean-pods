@@ -12,7 +12,22 @@ let prisma: PrismaClient;
 if (process.env.VERCEL) {
   // In Vercel production environment, create a new instance each time
   // The Data Proxy will handle connection pooling efficiently
-  prisma = new PrismaClient();
+  // Configure for Vercel serverless environment with pgbouncer
+  // Add pgbouncer=true to disable prepared statements which cause conflicts
+  const databaseUrl = process.env.DATABASE_URL;
+  const vercelDatabaseUrl = databaseUrl?.includes('pgbouncer=true') 
+    ? databaseUrl 
+    : `${databaseUrl}${databaseUrl?.includes('?') ? '&' : '?'}pgbouncer=true`;
+  
+  prisma = new PrismaClient({
+    datasources: {
+      db: {
+        url: vercelDatabaseUrl,
+      },
+    },
+    log: ['error'],
+    errorFormat: 'minimal',
+  });
 } else {
   // In development, we want to reuse the same instance to avoid connection limits
   // @ts-expect-error - Global is not typed correctly for this use case
