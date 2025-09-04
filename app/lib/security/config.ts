@@ -44,6 +44,7 @@ export const SECURITY_CONFIG = {
       "https://checkout.razorpay.com",
       "https://challenges.cloudflare.com",
       "https://*.cloudflare.com",
+      "https://cloudflare.com",
       "https://*.clerk.accounts.dev",
       "https://*.clerk.com",
       "https://clerk.bubblebeads.in",
@@ -70,6 +71,7 @@ export const SECURITY_CONFIG = {
       "https://hooks.slack.com",
       "https://challenges.cloudflare.com",
       "https://*.cloudflare.com",
+      "https://cloudflare.com",
       "https://*.clerk.accounts.dev",
       "https://*.clerk.com",
       "https://api.clerk.com",
@@ -84,6 +86,7 @@ export const SECURITY_CONFIG = {
       "https://api.razorpay.com",
       "https://challenges.cloudflare.com",
       "https://*.cloudflare.com",
+      "https://cloudflare.com",
       "https://*.clerk.accounts.dev",
       "https://*.clerk.com",
       "https://clerk.bubblebeads.in",
@@ -100,7 +103,7 @@ export const getSecurityHeaders = () => ({
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
   "X-XSS-Protection": "1; mode=block",
-  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Referrer-Policy": "same-origin",
   "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
   "Strict-Transport-Security":
     process.env.NODE_ENV === "production"
