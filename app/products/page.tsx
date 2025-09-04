@@ -277,4 +277,54 @@ const faqs = [
     answer:
       "Yes, our pods and packaging are designed to minimize environmental impact. The outer container is made from 100% recycled materials and is fully recyclable. The water-soluble pod film is biodegradable.",
   },
+  {
+  question: "How many pods should I use per load?",
+  answer:
+    "For a regular load, one pod is enough. For larger or heavily soiled loads, use two pods. The pre-measured formula ensures the right amount of detergent every time.",
+},
+{
+  question: "Can I use these pods in front-load and top-load washing machines?",
+  answer:
+    "Yes, our pods are compatible with both front-load and top-load washing machines. Just remember to place the pod directly in the drum, not in the detergent drawer.",
+},
+{
+  question: "Are the pods safe for sensitive skin?",
+  answer:
+    "Absolutely. Our 5-in-1 pods are dermatologically tested and free from harsh chemicals, making them safe for babies and individuals with sensitive skin.",
+},
+{
+  question: "Do the pods leave any residue on clothes?",
+  answer:
+    "No, the pods are designed to dissolve completely in water without leaving any sticky residue or streaks, even in cold washes.",
+},
+{
+  question: "Can I use pods for hand-washing clothes?",
+  answer:
+    "Yes, you can dissolve a pod in a bucket of water for hand-washing delicate garments. Just make sure the pod is fully dissolved before soaking clothes.",
+},
+{
+  question: "Do these pods help with odor removal?",
+  answer:
+    "Yes! Our advanced formula includes odor eliminators that neutralize tough smells like sweat, smoke, and food, leaving clothes fresh and clean.",
+},
+{
+  question: "How should I store laundry pods safely?",
+  answer:
+    "Keep the pods in their original container, tightly sealed, and stored in a cool, dry place. Always keep out of reach of children and pets, as pods are highly concentrated.",
+},
+{
+  question: "What makes pods better than liquid detergent?",
+  answer:
+    "Pods offer precise dosing, zero mess, and powerful cleaning in a small package. Unlike liquid detergent, there’s no risk of overpouring or wastage.",
+},
+{
+  question: "Are your pods septic and plumbing safe?",
+  answer:
+    "Yes, our pods are fully water-soluble and biodegradable, making them safe for both septic systems and standard plumbing.",
+},
+{
+  question: "Do the pods help maintain fabric softness?",
+  answer:
+    "Yes, one of the 5-in-1 benefits is built-in fabric softener, which keeps clothes feeling soft, smooth, and comfortable after every wash.",
+},
 ];
