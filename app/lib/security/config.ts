@@ -45,6 +45,7 @@ export const SECURITY_CONFIG = {
       "https://challenges.cloudflare.com",
       "https://*.clerk.accounts.dev",
       "https://*.clerk.com",
+      "https://clerk.bubblebeads.in",
     ],
     WORKER_SRC: ["'self'", "blob:"],
     STYLE_SRC: [
@@ -69,6 +70,7 @@ export const SECURITY_CONFIG = {
       "https://*.clerk.accounts.dev",
       "https://*.clerk.com",
       "https://api.clerk.com",
+      "https://clerk.bubblebeads.in",
       "ws://localhost:*",
       "ws://127.0.0.1:*",
       "wss://*",
@@ -79,6 +81,7 @@ export const SECURITY_CONFIG = {
       "https://api.razorpay.com",
       "https://*.clerk.accounts.dev",
       "https://*.clerk.com",
+      "https://clerk.bubblebeads.in",
     ],
     OBJECT_SRC: ["'none'"],
     BASE_URI: ["'self'"],
