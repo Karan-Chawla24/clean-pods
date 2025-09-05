@@ -91,6 +91,13 @@ export const SECURITY_CONFIG = {
       "https://*.clerk.com",
       "https://clerk.bubblebeads.in",
     ],
+    CHILD_SRC: [
+      "'self'",
+      "blob:",
+      "https://challenges.cloudflare.com",
+      "https://*.cloudflare.com",
+      "https://cloudflare.com",
+    ],
     OBJECT_SRC: ["'none'"],
     BASE_URI: ["'self'"],
     FORM_ACTION: ["'self'"],
