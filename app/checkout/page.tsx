@@ -213,6 +213,7 @@ export default function Checkout() {
               const orderId = response.razorpay_order_id;
 
               // Save order to database (authenticated users get it saved to their account)
+              let databaseOrderId = null;
               try {
                 const orderApiUrl = user ? "/api/user/orders" : "/api/orders";
 
@@ -268,7 +269,8 @@ export default function Checkout() {
                   const errorText = await orderResponse.text();
                   console.error("Order creation failed:", errorText);
                 } else {
-                  await orderResponse.json();
+                  const orderResult = await orderResponse.json();
+                  databaseOrderId = orderResult.orderId; // Capture the database order ID
                 }
               } catch (dbError) {
                 console.error("Order creation error:", dbError);
@@ -295,7 +297,7 @@ export default function Checkout() {
                   },
                   body: JSON.stringify({
                     orderData: {
-                      id: orderId,
+                      id: databaseOrderId || orderId, // Use database order ID if available, fallback to Razorpay order ID
                       items: cart.map((item) => ({
                         name: item.name,
                         quantity: item.quantity,
