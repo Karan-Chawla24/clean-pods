@@ -95,19 +95,42 @@ async function handleUserCreated(userData: any) {
   }
 
   try {
-    await db.user.create({
-      data: {
-        id: id,
-        email: primaryEmail.email_address,
-        firstName: first_name || "",
-        lastName: last_name || "",
-        name: `${first_name || ""} ${last_name || ""}`.trim() || null,
-        image: image_url || null,
-        emailVerified:
-          primaryEmail.verification?.status === "verified" ? new Date() : null,
-      },
+    // Check if user already exists with this email
+    const existingUser = await db.user.findUnique({
+      where: { email: primaryEmail.email_address }
     });
-    console.log("User created in database:", id);
+
+    if (existingUser) {
+      // Update existing user with new Clerk ID
+      await db.user.update({
+        where: { email: primaryEmail.email_address },
+        data: {
+          id: id,
+          firstName: first_name || "",
+          lastName: last_name || "",
+          name: `${first_name || ""} ${last_name || ""}`.trim() || null,
+          image: image_url || null,
+          emailVerified:
+            primaryEmail.verification?.status === "verified" ? new Date() : null,
+        },
+      });
+      console.log("User updated in database:", id);
+    } else {
+      // Create new user
+      await db.user.create({
+        data: {
+          id: id,
+          email: primaryEmail.email_address,
+          firstName: first_name || "",
+          lastName: last_name || "",
+          name: `${first_name || ""} ${last_name || ""}`.trim() || null,
+          image: image_url || null,
+          emailVerified:
+            primaryEmail.verification?.status === "verified" ? new Date() : null,
+        },
+      });
+      console.log("User created in database:", id);
+    }
   } catch (error) {
     console.error("Error creating user in database:", error);
   }

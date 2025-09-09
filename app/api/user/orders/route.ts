@@ -87,16 +87,34 @@ export async function POST(request: NextRequest) {
       });
 
       if (!user) {
-        // Create new user if doesn't exist
-        user = await tx.user.create({
-          data: {
-            id: userId,
-            email: clerkUser.emailAddresses[0]?.emailAddress || "",
-            firstName: clerkUser.firstName,
-            lastName: clerkUser.lastName,
-            name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim(),
-          },
+        // Check if user exists with same email but different ID
+        const existingUserByEmail = await tx.user.findUnique({
+          where: { email: clerkUser.emailAddresses[0]?.emailAddress || "" }
         });
+
+        if (existingUserByEmail) {
+          // Update existing user with new Clerk ID
+          user = await tx.user.update({
+            where: { email: clerkUser.emailAddresses[0]?.emailAddress || "" },
+            data: {
+              id: userId,
+              firstName: clerkUser.firstName,
+              lastName: clerkUser.lastName,
+              name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim(),
+            },
+          });
+        } else {
+          // Create new user if doesn't exist
+          user = await tx.user.create({
+            data: {
+              id: userId,
+              email: clerkUser.emailAddresses[0]?.emailAddress || "",
+              firstName: clerkUser.firstName,
+              lastName: clerkUser.lastName,
+              name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim(),
+            },
+          });
+        }
       } else {
         // Update existing user
         user = await tx.user.update({

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAllOrders, saveOrder } from "../../lib/database";
 import { headers } from "next/headers";
+import { auth } from "@clerk/nextjs/server";
 import { safeLogError } from "@/app/lib/security/logging";
 import {
   validateRequest,
@@ -34,6 +35,12 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    // Check authentication
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const data = await request.json();
     // ...existing code ...
     // Received order request
@@ -44,6 +51,7 @@ export async function POST(request: NextRequest) {
       paymentId: data.paymentId,
       items: data.items,
       total: data.total,
+      userId: userId, // Associate with authenticated user
     };
 
     // Handle both legacy format (with customer object) and new format (with direct fields)

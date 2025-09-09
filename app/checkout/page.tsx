@@ -215,9 +215,9 @@ export default function Checkout() {
               // Save order to database (authenticated users get it saved to their account)
               let databaseOrderId = null;
               try {
-                const orderApiUrl = user ? "/api/user/orders" : "/api/orders";
+                const orderApiUrl = "/api/user/orders";
 
-                const orderPayload: any = {
+                const orderPayload = {
                   razorpayOrderId: response.razorpay_order_id,
                   paymentId: response.razorpay_payment_id,
                   total: total,
@@ -231,32 +231,16 @@ export default function Checkout() {
                     price: item.price,
                   })),
                 };
-
-                // For non-authenticated users, use the legacy format expected by /api/orders
-                if (!user) {
-                  orderPayload.customer = {
-                    firstName: data.firstName,
-                    lastName: data.lastName,
-                    email: data.email,
-                    phone: data.phone,
-                    address: data.address,
-                    city: data.city,
-                    state: data.state,
-                    pincode: data.pincode,
-                  };
-                }
-                // Note: For authenticated users, userId is handled by the server via Clerk's auth()
+                // Note: userId is handled by the server via Clerk's auth()
 
                 // Sending order payload to server
-                // Get auth token for authenticated users
+                // Get auth token for authenticated user
                 const headers: Record<string, string> = {
                   "Content-Type": "application/json",
                 };
-                if (user) {
-                  const token = await getToken();
-                  if (token) {
-                    headers.Authorization = `Bearer ${token}`;
-                  }
+                const token = await getToken();
+                if (token) {
+                  headers.Authorization = `Bearer ${token}`;
                 }
 
                 const orderResponse = await fetch(orderApiUrl, {
@@ -288,34 +272,36 @@ export default function Checkout() {
                 paymentId: response.razorpay_payment_id,
               };
 
-              // Send Slack notification
-              try {
-                await fetch("/api/slack-notification", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    orderData: {
-                      id: databaseOrderId || orderId, // Use database order ID if available, fallback to Razorpay order ID
-                      items: cart.map((item) => ({
-                        name: item.name,
-                        quantity: item.quantity,
-                        price: item.price,
-                      })),
-                      total: total,
-                      paymentId: response.razorpay_payment_id,
+              // Send Slack notification only if we have a database order ID
+              if (databaseOrderId) {
+                try {
+                  await fetch("/api/slack-notification", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
                     },
-                    customerData: {
-                      name: `${data.firstName} ${data.lastName}`,
-                      email: data.email,
-                      phone: data.phone,
-                      address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
-                    },
-                  }),
-                });
-              } catch (slackError) {
-                // Don't fail the order if Slack notification fails
+                    body: JSON.stringify({
+                      orderData: {
+                        id: databaseOrderId, // Always use database order ID for admin links
+                        items: cart.map((item) => ({
+                          name: item.name,
+                          quantity: item.quantity,
+                          price: item.price,
+                        })),
+                        total: total,
+                        paymentId: response.razorpay_payment_id,
+                      },
+                      customerData: {
+                        name: `${data.firstName} ${data.lastName}`,
+                        email: data.email,
+                        phone: data.phone,
+                        address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
+                      },
+                    }),
+                  });
+                } catch (slackError) {
+                  console.error("Slack notification failed:", slackError);
+                }
               }
 
               // Orders are now stored server-side for authenticated users only

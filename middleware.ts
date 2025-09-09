@@ -22,6 +22,8 @@ const isProtectedRoute = createRouteMatcher([
   "/orders(.*)",
   "/api/user(.*)",
   "/api/orders(.*)",
+  "/api/create-order(.*)",
+  "/api/slack-notification(.*)",
 ]);
 
 // Define admin routes that require admin role
@@ -31,7 +33,7 @@ export default clerkMiddleware(async (auth, req) => {
   // Protect all routes starting with `/admin`
   if (
     isAdminRoute(req) &&
-    ((await auth()).sessionClaims?.publicMetadata as { role?: string })?.role !== "admin"
+    (await auth()).sessionClaims?.metadata?.role !== "admin"
   ) {
     const url = new URL("/", req.url);
     return NextResponse.redirect(url);
