@@ -48,12 +48,6 @@ export default function Products() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isLoaded && !user) {
-      router.push("/auth/signin");
-    }
-  }, [isLoaded, user, router]);
-
-  useEffect(() => {
     async function loadProducts() {
       setLoading(true);
       setError(null);
@@ -67,12 +61,12 @@ export default function Products() {
       setLoading(false);
     }
 
-    if (isLoaded && user) {
+    if (isLoaded) {
       loadProducts();
     }
-  }, [isLoaded, user]);
+  }, [isLoaded]);
 
-  if (!isLoaded || !user) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-orange-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>

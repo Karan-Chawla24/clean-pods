@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { useAppStore } from "../lib/store";
 import { formatPrice, calculateTax, calculateTotal } from "../lib/utils";
 import Header from "../components/Header";
@@ -11,6 +12,7 @@ import toast from "react-hot-toast";
 export default function Cart() {
   const { cart, cartTotal, removeFromCart, updateCartQuantity, clearCart } =
     useAppStore();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
 
   const tax = calculateTax(cartTotal);
@@ -37,6 +39,20 @@ export default function Cart() {
       toast.error("Your cart is empty");
       return;
     }
+    
+    // Check if user is authenticated
+    if (!isLoaded) {
+      toast.error("Please wait...");
+      return;
+    }
+    
+    if (!user) {
+      // Redirect to sign-in with checkout as redirect URL
+      router.push("/auth/signin?redirect_url=/checkout");
+      return;
+    }
+    
+    // User is authenticated, proceed to checkout
     router.push("/checkout");
   };
 

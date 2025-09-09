@@ -20,13 +20,7 @@ export default function Home() {
   const router = useRouter();
   const { addToCart, addToWishlist, wishlist } = useAppStore();
 
-  useEffect(() => {
-    if (isLoaded && !user) {
-      router.push("/auth/signin");
-    }
-  }, [isLoaded, user, router]);
-
-  if (!isLoaded || !user) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-orange-50 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400"></div>

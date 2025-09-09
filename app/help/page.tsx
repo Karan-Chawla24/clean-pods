@@ -21,10 +21,7 @@ export default function HelpCenter() {
     );
   }
 
-  if (!user) {
-    router.push("/auth/signin");
-    return null;
-  }
+
 
   const categories = [
     { id: "general", name: "General", icon: "ri-question-line" },
