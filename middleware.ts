@@ -38,7 +38,6 @@ const isProtectedRoute = createRouteMatcher([
   "/setup-admin",
   "/api/user(.*)",
   "/api/admin(.*)",
-  "/api/download-invoice(.*)",
   "/api/generate-invoice-token",
   "/api/admin-download-orders",
   "/api/migrate-orders",

@@ -133,7 +133,7 @@ export default function Checkout() {
     };
 
     validateCartPrices();
-  }, [cart.length]); // Only run when cart length changes to avoid infinite loops
+  }, [cart, updateCartItemPrice]); // Only run when cart length changes to avoid infinite loops
 
   const processPayment = handleSubmit(async (data: CheckoutForm) => {
     if (cart.length === 0) {

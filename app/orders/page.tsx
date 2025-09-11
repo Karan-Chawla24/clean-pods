@@ -88,7 +88,7 @@ export default function Orders() {
 
       fetchOrders();
     }
-  }, [isLoaded, user, router]);
+  }, [isLoaded, user, router, getToken]);
 
   // Generate secure JWT token for invoice access
   const generateInvoiceToken = async (orderId: string): Promise<string> => {
@@ -121,40 +121,43 @@ export default function Orders() {
     }
   };
 
-  const handleDownloadInvoice = async (orderId: string) => {
+  const handleEmailInvoice = async (orderId: string) => {
     try {
       // Show loading state
-      toast.loading("Generating secure invoice link...", {
-        id: "invoice-loading",
+      toast.loading("Sending invoice to your email...", {
+        id: "email-invoice-loading",
       });
 
       const token = await generateInvoiceToken(orderId);
+      const clerkToken = await getToken();
 
-      // Create secure URL with JWT token only
-      const url = `/api/download-invoice/${orderId}?token=${token}`;
+      // Send email invoice
+      const response = await fetch(`/api/email-invoice/${orderId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${clerkToken}`,
+        },
+        body: JSON.stringify({ token }),
+      });
 
-      // Open in new window with proper sizing
-      const invoiceWindow = window.open(
-        url,
-        "_blank",
-        "width=900,height=700,scrollbars=yes,resizable=yes",
-      );
+      toast.dismiss("email-invoice-loading");
 
-      toast.dismiss("invoice-loading");
-
-      if (!invoiceWindow) {
-        toast.error(
-          'Please allow popups to view your invoice. You can also right-click and select "Open link in new tab".',
-        );
-      } else {
-        toast.success("Invoice opened in new window");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send invoice email");
       }
+
+      const result = await response.json();
+      toast.success("Invoice sent to your email successfully!");
     } catch (error) {
-      toast.dismiss("invoice-loading");
-      console.error("Error generating invoice token:", error);
-      toast.error("Unable to generate secure invoice link. Please try again.");
+      toast.dismiss("email-invoice-loading");
+      console.error("Error sending invoice email:", error);
+      toast.error("Unable to send invoice email. Please try again.");
     }
   };
+
+
 
   return (
     <div className="min-h-screen bg-orange-50">
@@ -273,11 +276,11 @@ export default function Orders() {
                     </div>
                     <div>
                       <button
-                        onClick={() => handleDownloadInvoice(order.id)}
-                        className="px-4 py-2 bg-gradient-to-r from-orange-400 to-amber-400 text-white rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer flex items-center space-x-2"
+                        onClick={() => handleEmailInvoice(order.id)}
+                        className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 cursor-pointer flex items-center space-x-2"
                       >
-                        <i className="ri-download-line w-4 h-4"></i>
-                        <span>Download Invoice</span>
+                        <i className="ri-mail-line w-4 h-4"></i>
+                        <span>Email Invoice</span>
                       </button>
                     </div>
                   </div>

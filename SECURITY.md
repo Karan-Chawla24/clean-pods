@@ -94,7 +94,7 @@ The application uses a **secure authentication-based approach** for orders:
 #### ✅ What's Secure
 
 - **Data Isolation**: Each user can only see orders stored in their own browser
-- **Invoice Protection**: HMAC-SHA256 tokens protect invoice downloads
+- **Invoice Protection**: HMAC-SHA256 tokens protect invoice access
 - **Admin API Security**: Orders API now requires `ADMIN_ORDERS_KEY` for access
 - **Payment Security**: All payments processed through PCI-compliant Razorpay
 

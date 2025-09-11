@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useUser, useAuth, useClerk } from "@clerk/nextjs";
 import Image from "next/image";
@@ -55,9 +55,9 @@ export default function AdminDashboard() {
     // User is authenticated and is admin
     setAuthChecked(true);
     fetchOrders();
-  }, [isLoaded, isSignedIn, user, router]);
+  }, [isLoaded, isSignedIn, user, router, fetchOrders]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
       const token = await getToken();
@@ -79,7 +79,7 @@ export default function AdminDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [getToken]);
 
   const handleLogout = () => {
     clerk.signOut({ redirectUrl: "/" });

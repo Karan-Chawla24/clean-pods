@@ -89,7 +89,7 @@ export default function AdminOrderDetails() {
     };
 
     fetchOrder();
-  }, [orderId, isLoaded, user]);
+  }, [orderId, isLoaded, user, getToken]);
 
   if (!isLoaded || !user || user?.publicMetadata?.role !== "admin") {
     return (
