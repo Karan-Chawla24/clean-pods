@@ -12,6 +12,7 @@ import {
 import Header from "../../components/Header";
 import toast from "react-hot-toast";
 import Image from "next/image";
+import DeliveryBox3D from "../../components/DeliveryBox3D";
 
 interface Product {
   id: string;
@@ -53,7 +54,9 @@ export default function ProductDetail({ productId }: { productId: string }) {
       setLoading(true);
       setError(null);
 
-      const productData = await fetchProduct(productId);
+      // For the generic product-details route, show the single-box product as default
+      const defaultProductId = productId === "product-details" ? "single-box" : productId;
+      const productData = await fetchProduct(defaultProductId);
       if (productData) {
         setProduct(productData);
       } else {
@@ -157,15 +160,37 @@ export default function ProductDetail({ productId }: { productId: string }) {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12">
-          {/* Product Image */}
-          <div className="bg-white rounded-2xl p-4 sm:p-6 lg:p-8">
-            <Image
-              src={product.image}
-              alt={product.name}
-              width={600}
-              height={500}
-              className="w-full max-h-[400px] sm:max-h-[500px] lg:max-h-[600px] object-cover rounded-lg mb-4 transition-transform duration-300 hover:scale-105 hover:-translate-y-1"
-            />
+          {/* Product Image - 3D Delivery Box */}
+          <div className="rounded-2xl p-4 sm:p-6 lg:p-8">
+            <div className="relative">
+              {/* 3D Delivery Box */}
+              <DeliveryBox3D
+                images={{
+                  front: "/front.png",
+                  back: "/back.png",
+                  left: "/left.png",
+                  right: "/right.png",
+                  top: "/top.png",
+                  bottom: "/bottom.png",
+                }}
+                width={400}
+                height={250}
+                depth={300}
+                autoRotate={true}
+                rotationSpeed={1.5}
+              />
+              
+              {/* Fallback static image for mobile or if 3D fails */}
+              <div className="block md:hidden">
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  width={600}
+                  height={500}
+                  className="w-full max-h-[400px] object-cover rounded-lg transition-transform duration-300 hover:scale-105"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Product Info */}

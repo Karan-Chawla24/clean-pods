@@ -6,8 +6,6 @@ import { useForm } from "react-hook-form";
 import { useAppStore } from "../lib/store";
 import {
   formatPrice,
-  calculateTax,
-  calculateTotal,
   generateOrderId,
   validateEmail,
   validatePhone,
@@ -97,8 +95,18 @@ export default function Checkout() {
   }, [user, setValue]);
 
   const subtotal = cartTotal;
-  const tax = calculateTax(subtotal);
-  const total = calculateTotal(subtotal);
+  
+  // Calculate shipping based on total quantity of boxes
+  const totalBoxes = cart.reduce((total, item) => {
+    // Determine boxes per item based on product ID
+    let boxesPerItem = 1; // default
+    if (item.id === 'combo-2box') boxesPerItem = 2;
+    if (item.id === 'combo-3box') boxesPerItem = 3;
+    return total + (boxesPerItem * item.quantity);
+  }, 0);
+  
+  const shipping = totalBoxes >= 3 ? 0 : totalBoxes >= 2 ? 49 : 99;
+  const total = subtotal + shipping;
 
   // Validate and update cart item prices on component mount
   useEffect(() => {
@@ -612,12 +620,17 @@ export default function Checkout() {
                   <span className="font-medium">{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Tax (18% GST)</span>
-                  <span className="font-medium">{formatPrice(tax)}</span>
+                  <span className="text-gray-600">Shipping</span>
+                  <span className="font-medium">
+                    {shipping === 0 ? 'FREE' : formatPrice(shipping)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total</span>
                   <span>{formatPrice(total)}</span>
+                </div>
+                <div className="text-center mt-2">
+                  <span className="text-sm text-gray-500 italic">Inclusive of all taxes</span>
                 </div>
               </div>
             </div>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useAppStore } from "../lib/store";
-import { formatPrice, calculateTax, calculateTotal } from "../lib/utils";
+import { formatPrice } from "../lib/utils";
 import Header from "../components/Header";
 import toast from "react-hot-toast";
 
@@ -15,8 +15,17 @@ export default function Cart() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
 
-  const tax = calculateTax(cartTotal);
-  const total = calculateTotal(cartTotal);
+  // Calculate shipping based on total quantity of boxes
+  const totalBoxes = cart.reduce((total, item) => {
+    // Determine boxes per item based on product ID
+    let boxesPerItem = 1; // default
+    if (item.id === 'combo-2box') boxesPerItem = 2;
+    if (item.id === 'combo-3box') boxesPerItem = 3;
+    return total + (boxesPerItem * item.quantity);
+  }, 0);
+  
+  const shipping = totalBoxes >= 3 ? 0 : totalBoxes >= 2 ? 49 : 99;
+  const total = cartTotal + shipping;
 
   const handleUpdateQuantity = (id: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -245,16 +254,17 @@ export default function Cart() {
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Shipping</span>
-                  <span className="text-green-600">Free</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Tax (18% GST)</span>
-                  <span>{formatPrice(tax)}</span>
+                  <span className={shipping === 0 ? "text-green-600" : "text-gray-900"}>
+                    {shipping === 0 ? 'FREE' : formatPrice(shipping)}
+                  </span>
                 </div>
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-xl font-bold text-gray-900">
                     <span>Total</span>
                     <span>{formatPrice(total)}</span>
+                  </div>
+                  <div className="text-center mt-2">
+                    <span className="text-sm text-gray-500 italic">Inclusive of all taxes</span>
                   </div>
                 </div>
               </div>

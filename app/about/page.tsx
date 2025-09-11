@@ -115,57 +115,6 @@ export default function About() {
             </p>
           </div>
         </div>
-
-        {/* Team Section */}
-        <div className="bg-white rounded-2xl p-8 mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-            Our Team
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
-              <h3 className="font-semibold text-gray-900 mb-1">
-                Dr. Priya Sharma
-              </h3>
-              <p className="text-gray-600 text-sm">CEO & Co-Founder</p>
-            </div>
-            <div className="text-center">
-              <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
-              <h3 className="font-semibold text-gray-900 mb-1">Rajesh Kumar</h3>
-              <p className="text-gray-600 text-sm">CTO & Co-Founder</p>
-            </div>
-            <div className="text-center">
-              <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
-              <h3 className="font-semibold text-gray-900 mb-1">Anita Patel</h3>
-              <p className="text-gray-600 text-sm">Head of R&D</p>
-            </div>
-            <div className="text-center">
-              <div className="w-24 h-24 bg-gray-200 rounded-full mx-auto mb-4"></div>
-              <h3 className="font-semibold text-gray-900 mb-1">Vikram Singh</h3>
-              <p className="text-gray-600 text-sm">Head of Operations</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Section */}
-        <div className="grid md:grid-cols-4 gap-6">
-          <div className="bg-white rounded-2xl p-6 text-center">
-            <div className="text-3xl font-bold text-orange-600 mb-2">50K+</div>
-            <p className="text-gray-600">Happy Customers</p>
-          </div>
-          <div className="bg-white rounded-2xl p-6 text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">3</div>
-            <p className="text-gray-600">Product Variants</p>
-          </div>
-          <div className="bg-white rounded-2xl p-6 text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">95%</div>
-            <p className="text-gray-600">Biodegradable</p>
-          </div>
-          <div className="bg-white rounded-2xl p-6 text-center">
-            <div className="text-3xl font-bold text-orange-600 mb-2">24/7</div>
-            <p className="text-gray-600">Customer Support</p>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -2,23 +2,83 @@
 
 // Server-side product data with secure pricing
 const PRODUCTS = {
-  essential: {
-    id: "essential",
-    name: "Essential Clean Pod",
+  "single-box": {
+    id: "single-box",
+    name: "5-in-1 Laundry Pod - Single Box",
     price: 450,
+    originalPrice: 750,
+    discount: 40,
+    quantity: "30 Pods",
+    boxes: 1,
+    shipping: 99,
     description:
-      "Our signature cleaning pod with essential oils for a fresh, natural clean.",
+      "Perfect starter pack with 30 premium 5-in-1 laundry pods for a months worth of fresh, clean laundry.",
     features: [
-      "Natural essential oils",
-      "Biodegradable formula",
-      "Concentrated cleaning power",
-      "Fresh citrus scent",
+      "30 premium laundry pods",
+      "5-in-1 cleaning formula",
+      "Powerful Stain Removal +  Soften the Clothes + Long Lasting Fragrance",
+      "Colour Protection + Dust Removal",
+      "Works in cold and hot water",
+      "Eco-friendly packaging",
     ],
     image: "/pod_image.jpg",
     ingredients:
-      "Sodium carbonate, essential oils (lemon, eucalyptus), natural surfactants",
+      "Sodium carbonate, essential oils (lemon, eucalyptus), natural surfactants, enzymes, fabric softening agents",
     usage:
-      "Drop one pod into your washing machine drum before adding clothes. Suitable for all fabric types.",
+      "Drop one pod into your washing machine drum before adding clothes. For heavily soiled loads, use two pods.",
+  },
+  "combo-2box": {
+    id: "combo-2box",
+    name: "5-in-1 Laundry Pod - 2 Box Combo",
+    price: 900,
+    originalPrice: 1500,
+    discount: 40,
+    quantity: "60 Pods",
+    boxes: 2,
+    shipping: 49,
+    description:
+      "Great value combo pack with 60 pods. Perfect for families who want to stock up and save on shipping.",
+    features: [
+      "60 premium laundry pods (2 boxes)",
+      "5-in-1 cleaning formula",
+      "Powerful Stain Removal +  Soften the Clothes + Long Lasting Fragrance",
+      "Colour Protection + Dust Removal",
+      "Works in cold & hot water",
+      "Reduced shipping cost",
+      "2 months supply",
+    ],
+    image: "/pod_image.jpg",
+    ingredients:
+      "Sodium carbonate, essential oils (lemon, eucalyptus), natural surfactants, enzymes, fabric softening agents",
+    usage:
+      "Drop one pod into your washing machine drum before adding clothes. For heavily soiled loads, use two pods.",
+  },
+  "combo-3box": {
+    id: "combo-3box",
+    name: "5-in-1 Laundry Pod - 3 Box Combo",
+    price: 1350,
+    originalPrice: 2250,
+    discount: 40,
+    quantity: "90 Pods",
+    boxes: 3,
+    shipping: 0,
+    description:
+      "Best value family pack with 90 pods and FREE shipping. Perfect for large families or bulk buyers.",
+    features: [
+      "90 premium laundry pods (3 boxes)",
+      "5-in-1 cleaning formula",
+      "Powerful Stain Removal +  Soften the Clothes + Long Lasting Fragrance",
+      "Colour Protection + Dust Removal",
+      "Works in cold & hot water",
+      "FREE shipping",
+      "3 months supply",
+      "Best value for money",
+    ],
+    image: "/pod_image.jpg",
+    ingredients:
+      "Sodium carbonate, essential oils (lemon, eucalyptus), natural surfactants, enzymes, fabric softening agents",
+    usage:
+      "Drop one pod into your washing machine drum before adding clothes. For heavily soiled loads, use two pods.",
   },
 };
 
