@@ -179,17 +179,6 @@ export default function ProductDetail({ productId }: { productId: string }) {
                 autoRotate={true}
                 rotationSpeed={1.5}
               />
-              
-              {/* Fallback static image for mobile or if 3D fails */}
-              <div className="block md:hidden">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  width={600}
-                  height={500}
-                  className="w-full max-h-[400px] object-cover rounded-lg transition-transform duration-300 hover:scale-105"
-                />
-              </div>
             </div>
           </div>
 
@@ -325,7 +314,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
                       <li>• Convenient pre-measured pods</li>
                       <li>• No measuring or mess</li>
                       <li>• Concentrated formula</li>
-                      <li>• Eco-friendly packaging</li>
+                      <li>• Eco-friendly and Biodegradable</li>
                     </ul>
                   </div>
                 </div>
@@ -334,73 +323,254 @@ export default function ProductDetail({ productId }: { productId: string }) {
 
             {activeTab === "ingredients" && (
               <div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">
                   Ingredients
                 </h3>
-                <p className="text-gray-700 text-base sm:text-lg mb-6 break-words">
-                  {safeDisplayText(product.ingredients)}
-                </p>
-                <div className="bg-orange-50 p-4 sm:p-6 rounded-lg">
-                  <h4 className="font-semibold text-gray-900 mb-3">
-                    Safety Information:
-                  </h4>
-                  <ul className="space-y-2 text-gray-700 text-sm sm:text-base">
-                    <li>• Keep out of reach of children</li>
-                    <li>• Do not bite or chew pods</li>
-                    <li>• Store in cool, dry place</li>
-                    <li>• Dermatologically tested</li>
-                  </ul>
+                
+                {/* Ingredients Table */}
+                <div className="overflow-x-auto mb-8">
+                  <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-orange-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                            Components
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                            CAS No.
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                            Concentration (Weight%)
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">Dodecylbenzene Sulfonic Acid</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">27176-87-0</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">15-20</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">C12-14 Fatty Alcohol Ethoxylate (9EO)</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">9002-92-0</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">15-20</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">Triethanolamine</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">102-71-6</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">10-15</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">Propylene Glycol</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">57-55-6</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">10-15</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">Sodium Laureth Sulfate</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">1335-72-4</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">5-10</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">Glycerin</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">56-81-5</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">5-10</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">C10-Guerbet Alcohol Alkoxylate (8EO)</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">61827-42-7</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">5-10</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">Water</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">7732-18-5</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">4-8</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">Coconut Acid</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">61688-47-4</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">3-5</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">Parfum</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">8023-88-9</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">0.5-1</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">Sodium Citrate</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">68-04-2</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">0.2-0.5</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">Protease</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">9054-89-1</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">0.1-0.6</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">Dichlorobenzyl Alcohol</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">88-04-0</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">0.1-0.5</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">Methylisothiazolinone / Methylchlor Oisothiazolinone</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">26172-55-4</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">0.05-0.5</td>
+                        </tr>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm text-gray-900">Colour</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">-</td>
+                          <td className="px-4 py-3 text-sm text-gray-600">-</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
+                
               </div>
             )}
 
             {activeTab === "usage" && (
               <div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">
                   How to Use
                 </h3>
-                <p className="text-gray-700 text-base sm:text-lg mb-6 break-words">
-                  {safeDisplayText(product.usage)}
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl font-bold text-orange-600">
-                        1
-                      </span>
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-2">
-                      Place Pod
+                
+                {/* Compatibility Section */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <div className="bg-blue-50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
+                      🌊 Dissolves in Hot & Cold Water
                     </h4>
-                    <p className="text-gray-600 text-sm break-words">
-                      Place pod in the drum before adding clothes
+                    <div className="flex items-center justify-center mb-3">
+                      <div className="text-4xl">🌡️❄️</div>
+                    </div>
+                    <p className="text-gray-700 text-sm text-center">
+                       Works for all water temperatures
                     </p>
                   </div>
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl font-bold text-orange-600">
-                        2
-                      </span>
-                    </div>
-                    <h4 className="font-semibold text-gray-900 mb-2">
-                      Add Clothes
+                  
+                  <div className="bg-green-50 p-6 rounded-lg">
+                    <h4 className="font-semibold text-gray-900 mb-4 flex items-center">
+                      🔄 Automatic & Manual Washing Machines
                     </h4>
-                    <p className="text-gray-600 text-sm break-words">
-                      Add your laundry on top of the pod
+                    <div className="flex items-center justify-center space-x-4 mb-3">
+                      <div className="text-2xl">🧺</div>
+                      <div className="text-2xl">⚙️</div>
+                    </div>
+                    <p className="text-gray-700 text-sm text-center">
+                      Compatible with all washing machine types
                     </p>
                   </div>
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <span className="text-2xl font-bold text-orange-600">
-                        3
-                      </span>
+                </div>
+
+                {/* Usage Instructions */}
+                <div className="bg-orange-50 p-6 rounded-lg mb-8">
+                  <h4 className="font-semibold text-gray-900 mb-6 text-center">
+                    📋 How to Use
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl">💧</span>
+                      </div>
+                      <h5 className="font-semibold text-gray-900 mb-2">
+                        Pour Water in Washing Machines
+                      </h5>
+                      <p className="text-gray-600 text-sm">
+                        Fill your washing machine with water first
+                      </p>
                     </div>
-                    <h4 className="font-semibold text-gray-900 mb-2">
-                      Start Wash
-                    </h4>
-                    <p className="text-gray-600 text-sm break-words">
-                      Run your regular wash cycle
-                    </p>
+                    
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl">🧼</span>
+                      </div>
+                      <h5 className="font-semibold text-gray-900 mb-2">
+                        Insert 1 Pod for Regular Wash
+                      </h5>
+                      <p className="text-gray-600 text-sm">
+                        (6-8 kg Clothes) - Add one pod to the water
+                      </p>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl">👕</span>
+                      </div>
+                      <h5 className="font-semibold text-gray-900 mb-2">
+                        Add Clothes
+                      </h5>
+                      <p className="text-gray-600 text-sm">
+                        Place your laundry into the machine
+                      </p>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl">✨</span>
+                      </div>
+                      <h5 className="font-semibold text-gray-900 mb-2">
+                        Get the Magic
+                      </h5>
+                      <p className="text-gray-600 text-sm">
+                        Start your wash cycle and enjoy fresh, clean clothes
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Safety Instructions */}
+                <div className="bg-red-50 p-6 rounded-lg">
+                  <h4 className="font-semibold text-gray-900 mb-6 text-center">
+                    ⚠️ Precautions & Safety Instructions
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl">✂️</span>
+                      </div>
+                      <h5 className="font-semibold text-gray-900 mb-2">
+                        Do Not Cut or Handle With Wet Hands
+                      </h5>
+                      <p className="text-gray-600 text-sm">
+                        Always handle pods with dry hands
+                      </p>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl">🔆</span>
+                      </div>
+                      <h5 className="font-semibold text-gray-900 mb-2">
+                        Store in Dry or Cold Place, Away From Sunlight
+                      </h5>
+                      <p className="text-gray-600 text-sm">
+                        Keep in a cool, dry storage area
+                      </p>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl">👶</span>
+                      </div>
+                      <h5 className="font-semibold text-gray-900 mb-2">
+                        Keep out of Reach of Children & Pets
+                      </h5>
+                      <p className="text-gray-600 text-sm">
+                        Store safely away from children and animals
+                      </p>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-2xl">👁️</span>
+                      </div>
+                      <h5 className="font-semibold text-gray-900 mb-2">
+                        Avoid Contact With Eyes
+                      </h5>
+                      <p className="text-gray-600 text-sm">
+                        If contact occurs, rinse immediately with water
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>

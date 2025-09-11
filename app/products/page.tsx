@@ -292,7 +292,7 @@ export default function Products() {
                 { icon: "🧽", title: "Powerful Stain Removal", desc: "Advanced formula removes tough stains" },
                 { icon: "👕", title: "Soften the Clothes", desc: "Gentle care for all fabric types" },
                 { icon: "🌺", title: "Long Lasting Fragrance", desc: "Fresh scent that lasts all day" },
-                { icon: "🎨", title: "Colour Protection", desc: "Keeps colors bright and vibrant" },
+                { icon: "🛡️", title: "Colour Protection", desc: "Keeps colors bright and vibrant" },
                 { icon: "💨", title: "Dust Removal", desc: "Eliminates dust and allergens" }
               ].map((benefit, index) => (
                 <div key={index} className="text-center">

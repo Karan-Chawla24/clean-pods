@@ -4,7 +4,7 @@
 const PRODUCTS = {
   "single-box": {
     id: "single-box",
-    name: "5-in-1 Laundry Pod - Single Box",
+    name: "5-in-1 Laundry Pod",
     price: 450,
     originalPrice: 750,
     discount: 40,
