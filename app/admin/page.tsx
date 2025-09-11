@@ -38,25 +38,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [authChecked, setAuthChecked] = useState(false);
 
-  // Check admin authorization using Clerk
-  useEffect(() => {
-    // Only run once when component mounts or auth state changes
-    if (isLoaded === false || user === undefined) {
-      // Still loading auth state
-      return;
-    }
-
-    if (!isSignedIn || user?.publicMetadata?.role !== "admin") {
-      // Not authenticated or not admin, redirect
-      router.replace("/");
-      return;
-    }
-
-    // User is authenticated and is admin
-    setAuthChecked(true);
-    fetchOrders();
-  }, [isLoaded, isSignedIn, user, router, fetchOrders]);
-
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
@@ -80,6 +61,25 @@ export default function AdminDashboard() {
       setLoading(false);
     }
   }, [getToken]);
+
+  // Check admin authorization using Clerk
+  useEffect(() => {
+    // Only run once when component mounts or auth state changes
+    if (isLoaded === false || user === undefined) {
+      // Still loading auth state
+      return;
+    }
+
+    if (!isSignedIn || user?.publicMetadata?.role !== "admin") {
+      // Not authenticated or not admin, redirect
+      router.replace("/");
+      return;
+    }
+
+    // User is authenticated and is admin
+    setAuthChecked(true);
+    fetchOrders();
+  }, [isLoaded, isSignedIn, user, router, fetchOrders]);
 
   const handleLogout = () => {
     clerk.signOut({ redirectUrl: "/" });
