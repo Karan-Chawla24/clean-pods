@@ -25,6 +25,7 @@
     "@clerk/themes": "^2.4.11",
     "@prisma/client": "^6.13.0",
     "@react-google-maps/api": "^2.19.3",
+    "@react-pdf/renderer": "^4.3.0",
     "@react-three/drei": "^10.7.5",
     "@react-three/fiber": "^9.3.0",
     "@slack/webhook": "^7.0.5",
