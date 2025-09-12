@@ -224,7 +224,7 @@ export const POST = withUpstashRateLimit("moderate")(async (
       return NextResponse.json(
         {
           success: false,
-          error: `Total amount mismatch. Expected: ${cartValidation.calculatedTotalWithTax} (including 18% GST), Received: ${amount}`,
+          error: `Total amount mismatch. Expected: ${cartValidation.calculatedTotalWithTax}, Received: ${amount}`,
         },
         { status: 400 },
       );

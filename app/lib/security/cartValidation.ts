@@ -95,37 +95,18 @@ export async function validateCart(
 }
 
 /**
- * Calculates 18% GST on the given amount
- * @param amount - Base amount to calculate tax on
- * @returns Tax amount
- */
-export function calculateTax(amount: number): number {
-  return Math.round(amount * 0.18); // 18% GST
-}
-
-/**
- * Calculates total amount including 18% GST
- * @param amount - Base amount
- * @returns Total amount with tax
- */
-export function calculateTotal(amount: number): number {
-  return amount + calculateTax(amount);
-}
-
-/**
- * Validates that the submitted total matches the calculated total (including GST)
- * @param submittedTotal - Total amount submitted by client (including GST)
- * @param calculatedSubtotal - Subtotal calculated from server-side prices (before GST)
+ * Validates that the submitted total matches the calculated total (no GST)
+ * @param submittedTotal - Total amount submitted by client
+ * @param calculatedTotal - Total calculated from server-side prices
  * @param tolerance - Allowed difference (default: 0.01)
  * @returns boolean indicating if totals match
  */
 export function validateTotal(
   submittedTotal: number,
-  calculatedSubtotal: number,
+  calculatedTotal: number,
   tolerance: number = 0.01,
 ): boolean {
-  const expectedTotal = calculateTotal(calculatedSubtotal);
-  return Math.abs(submittedTotal - expectedTotal) <= tolerance;
+  return Math.abs(submittedTotal - calculatedTotal) <= tolerance;
 }
 
 /**
@@ -145,9 +126,27 @@ export function sanitizeCartItems(cartItems: any[]): CartItem[] {
 }
 
 /**
+ * Calculates shipping cost based on cart items
+ * @param cartItems - Cart items to calculate shipping for
+ * @returns Shipping cost
+ */
+export function calculateShipping(cartItems: CartItem[]): number {
+  // Calculate total boxes based on product IDs
+  const totalBoxes = cartItems.reduce((total, item) => {
+    let boxesPerItem = 1; // default
+    if (item.id === 'combo-2box') boxesPerItem = 2;
+    if (item.id === 'combo-3box') boxesPerItem = 3;
+    return total + (boxesPerItem * item.quantity);
+  }, 0);
+  
+  // Shipping logic: 3+ boxes = free, 2 boxes = 49, 1 box = 99
+  return totalBoxes >= 3 ? 0 : totalBoxes >= 2 ? 49 : 99;
+}
+
+/**
  * Comprehensive cart validation middleware function
  * @param cartItems - Cart items to validate
- * @param submittedTotal - Total submitted by client (including GST)
+ * @param submittedTotal - Total submitted by client (including shipping, no GST)
  * @returns Promise<CartValidationResult & { totalMatches: boolean, calculatedTotalWithTax: number }>
  */
 export async function validateCartAndTotal(
@@ -160,20 +159,29 @@ export async function validateCartAndTotal(
   // Validate cart
   const cartValidation = await validateCart(sanitizedItems);
 
-  // Calculate total with GST
-  const calculatedTotalWithTax = cartValidation.isValid
-    ? calculateTotal(cartValidation.calculatedTotal)
-    : 0;
+  if (!cartValidation.isValid) {
+    return {
+      ...cartValidation,
+      totalMatches: false,
+      calculatedTotalWithTax: 0,
+      sanitizedItems,
+    };
+  }
 
-  // Validate total (comparing submitted total with calculated total including GST)
-  const totalMatches = cartValidation.isValid
-    ? validateTotal(submittedTotal, cartValidation.calculatedTotal)
-    : false;
+  // Calculate shipping (no GST applied)
+  const shipping = calculateShipping(sanitizedItems);
+  
+  // Calculate final total (product price + shipping, no GST)
+  const calculatedTotalWithTax = cartValidation.calculatedTotal + shipping;
+
+  // Validate total (comparing submitted total with calculated total)
+  const totalMatches = Math.abs(submittedTotal - calculatedTotalWithTax) <= 0.01;
 
   return {
     ...cartValidation,
     totalMatches,
     calculatedTotalWithTax,
     sanitizedItems,
+    shipping,
   };
 }
