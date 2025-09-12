@@ -230,14 +230,14 @@ export const POST = withUpstashRateLimit("moderate")(async (
     }, 0);
     
     const shipping = totalBoxes >= 3 ? 0 : totalBoxes >= 2 ? 49 : 99;
-    const expectedTotalWithShipping = cartValidation.calculatedTotalWithTax + shipping;
+    const expectedTotalWithShipping = cartValidation.calculatedTotal + shipping;
 
-    // Validate total including shipping
+    // Validate total including shipping (prices already include all taxes)
     if (Math.abs(amount - expectedTotalWithShipping) > 0.01) {
       return NextResponse.json(
         {
           success: false,
-          error: `Total amount mismatch. Expected: ${expectedTotalWithShipping} (including 18% GST and shipping), Received: ${amount}`,
+          error: `Total amount mismatch. Expected: ${expectedTotalWithShipping} (including shipping), Received: ${amount}`,
         },
         { status: 400 },
       );
@@ -245,7 +245,7 @@ export const POST = withUpstashRateLimit("moderate")(async (
 
     // 🏦 Create Razorpay Order
     const options = {
-      amount: Math.round(expectedTotalWithShipping * 100), // amount in paise (including shipping)
+      amount: Math.round(expectedTotalWithShipping * 100), // amount in paise (cart total + shipping, taxes already included in prices)
       currency: currency || "INR",
       receipt,
       notes: {
