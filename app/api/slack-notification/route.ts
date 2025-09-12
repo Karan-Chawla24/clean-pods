@@ -153,10 +153,7 @@ export async function POST(request: NextRequest) {
       .map((item) => `• ${item.name} x${item.quantity} - ₹${item.price}`)
       .join("\n");
 
-    const totalFormatted = new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-    }).format(orderData.total);
+    const totalFormatted = `₹${orderData.total.toLocaleString('en-IN')}`;
 
     const slackMessage = {
       text: "🎉 *New Order Received!*",

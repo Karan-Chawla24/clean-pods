@@ -112,16 +112,16 @@ function ProductCard({ product, onAddToCart, isPopular = false }: ProductCardPro
         <div className="text-center mb-6">
           {discountPercentage > 0 && (
             <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="text-gray-500 line-through text-lg">₹{originalPrice}</span>
+              <span className="text-gray-500 line-through text-lg">{formatPrice(originalPrice)}</span>
               <span className="text-red-500 font-semibold text-sm bg-red-100 px-2 py-1 rounded">-{discountPercentage}%</span>
             </div>
           )}
-          <div className="text-3xl font-bold text-gray-900 mb-2">₹{product.price}</div>
+          <div className="text-3xl font-bold text-gray-900 mb-2">{formatPrice(product.price)}</div>
           
           {/* Shipping Info */}
           <div className="text-sm text-gray-600 mb-2">
             {product.shipping > 0 ? (
-              <span>+ ₹{product.shipping} shipping</span>
+              <span>+ {formatPrice(product.shipping)} shipping</span>
             ) : (
               <span className="text-green-600 font-semibold">Free shipping included</span>
             )}
@@ -129,7 +129,7 @@ function ProductCard({ product, onAddToCart, isPopular = false }: ProductCardPro
           
           {/* Total Price */}
           <div className="text-lg font-semibold text-orange-600 bg-orange-50 px-4 py-2 rounded-lg">
-            Total: ₹{totalPrice}
+            Total: {formatPrice(totalPrice)}
           </div>
         </div>
 

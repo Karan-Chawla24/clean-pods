@@ -1,377 +1,270 @@
+import React from "react";
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
-import { Document, Page, Text, View, StyleSheet, renderToBuffer } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, pdf } from "@react-pdf/renderer";
+import { z } from "zod";
 import { getOrder } from "../../lib/database";
-import { verifyInvoiceToken } from "../../lib/jwt-utils";
 import { auth } from "@clerk/nextjs/server";
 import { safeLogError } from "../../lib/security/logging";
+import { validateRequest } from "../../lib/security/validation";
 import { withUpstashRateLimit } from "@/app/lib/security/upstashRateLimit";
-import {
-  validateRequest,
-  invoiceTokenSchema,
-  sanitizeObject,
-} from "@/app/lib/security/validation";
 import { assertSameOrigin } from "@/app/lib/security/origin";
 
 // Initialize Resend client
+if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY environment variable is required");
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// PDF Styles for @react-pdf/renderer <mcreference link="https://www.npmjs.com/package/@react-pdf/renderer" index="1">1</mcreference>
+// PDF styles
 const styles = StyleSheet.create({
-  page: {
-    flexDirection: 'column',
-    backgroundColor: '#ffffff',
-    padding: 30,
-    fontFamily: 'Helvetica',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 40,
-    paddingBottom: 20,
-    borderBottomWidth: 2,
-    borderBottomColor: '#e5e7eb',
-  },
-  logo: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#f97316',
-  },
-  invoiceInfo: {
-    textAlign: 'right',
-  },
-  invoiceTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  invoiceNumber: {
-    color: '#6b7280',
-    fontSize: 14,
-  },
-  billingSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 40,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 12,
-    color: '#374151',
-  },
-  table: {
-    width: '100%',
-    borderStyle: 'solid',
-    borderWidth: 1,
-    borderRightWidth: 0,
-    borderBottomWidth: 0,
-    marginBottom: 30,
-  },
-  tableRow: {
-    flexDirection: 'row',
-  },
-  tableColHeader: {
-    borderStyle: 'solid',
-    borderWidth: 1,
-    borderLeftWidth: 0,
-    borderTopWidth: 0,
-    backgroundColor: '#f9fafb',
-    padding: 8,
-  },
-  tableCol: {
-    borderStyle: 'solid',
-    borderWidth: 1,
-    borderLeftWidth: 0,
-    borderTopWidth: 0,
-    padding: 8,
-  },
-  tableColItem: {
-    width: '40%',
-  },
-  tableColQuantity: {
-    width: '15%',
-  },
-  tableColPrice: {
-    width: '22.5%',
-  },
-  tableColTotal: {
-    width: '22.5%',
-  },
-  tableCellQuantity: {
-    textAlign: 'center',
-  },
-  tableCellPrice: {
-    textAlign: 'right',
-  },
-  tableCellTotal: {
-    textAlign: 'right',
-  },
-  tableCellHeader: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#374151',
-  },
-  tableCell: {
-    fontSize: 10,
-  },
-  totalSection: {
-    alignItems: 'flex-end',
-    marginTop: 20,
-    paddingTop: 20,
-    borderTopWidth: 2,
-    borderTopColor: '#e5e7eb',
-  },
-  totalRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    marginBottom: 8,
-    width: '50%',
-  },
-  totalLabel: {
-    width: '60%',
-    textAlign: 'right',
-    paddingRight: 20,
-  },
-  totalAmount: {
-    width: '40%',
-    fontWeight: 'bold',
-    textAlign: 'right',
-  },
-  grandTotal: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#f97316',
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-  },
-  footer: {
-    marginTop: 40,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#e5e7eb',
-    textAlign: 'center',
-    color: '#6b7280',
-    fontSize: 12,
-  },
+  page: { flexDirection: "column", backgroundColor: "#ffffff", padding: 30, fontFamily: "Helvetica" },
+  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, paddingBottom: 15, borderBottomWidth: 1, borderBottomColor: "#e5e7eb" },
+  companyInfo: { flex: 1 },
+  title: { fontSize: 24, fontWeight: "bold", color: "#ff6b35", marginBottom: 5 },
+  companyDetails: { fontSize: 10, color: "#666666", lineHeight: 1.3 },
+  invoiceInfo: { flex: 1, textAlign: "right" },
+  invoiceTitle: { fontSize: 20, fontWeight: "bold", color: "#333333", marginBottom: 5 },
+  invoiceMeta: { fontSize: 10, color: "#666666", lineHeight: 1.4 },
+  taxInfo: { backgroundColor: "#f8f9fa", padding: 12, marginBottom: 15, borderRadius: 4 },
+  taxInfoTitle: { fontSize: 12, fontWeight: "bold", color: "#333333", marginBottom: 8 },
+  taxDetails: { fontSize: 10, color: "#666666", lineHeight: 1.4 },
+  billingSection: { flexDirection: "row", marginBottom: 20 },
+  billingColumn: { flex: 1, marginRight: 20 },
+  section: { marginBottom: 15 },
+  sectionTitle: { fontSize: 12, fontWeight: "bold", color: "#333333", marginBottom: 8 },
+  sectionContent: { fontSize: 10, color: "#666666", lineHeight: 1.4 },
+  table: { marginBottom: 15 },
+  tableHeader: { flexDirection: "row", backgroundColor: "#f8f9fa", paddingVertical: 8, paddingHorizontal: 6, borderWidth: 1, borderColor: "#dee2e6" },
+  tableRow: { flexDirection: "row", paddingVertical: 8, paddingHorizontal: 6, borderWidth: 1, borderColor: "#dee2e6", borderTopWidth: 0 },
+  tableCell: { fontSize: 10, color: "#666666" },
+  tableCellHeader: { fontSize: 10, fontWeight: "bold", color: "#333333" },
+  totalsSection: { marginTop: 20, paddingTop: 15, borderTop: "1px solid #e0e0e0", alignItems: "flex-end" },
+  totalsTable: { width: "100%" },
+  totalRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 3, paddingHorizontal: 8 },
+  totalLabel: { fontSize: 10, color: "#666666", textAlign: "right", flex: 3 },
+  totalValue: { fontSize: 10, fontWeight: "bold", color: "#333333", textAlign: "right", flex: 2 },
+  finalTotalRow: { backgroundColor: "#f8f9fa", borderTopWidth: 1, borderTopColor: "#dee2e6", paddingVertical: 5, paddingHorizontal: 8, borderTop: "1px solid #333", paddingTop: 8, marginTop: 8 },
+  finalTotalLabel: { fontSize: 12, fontWeight: "bold", color: "#333", textAlign: "right", flex: 3 },
+  finalTotalValue: { fontSize: 12, fontWeight: "bold", color: "#ff6b35", textAlign: "right", flex: 2 },
+  footer: { marginTop: 25, paddingTop: 15, borderTopWidth: 1, borderTopColor: "#e5e7eb", textAlign: "center" },
+  footerText: { fontSize: 10, color: "#666666", marginBottom: 3 },
 });
 
-// PDF Document Component
-const InvoicePDF = ({ order }: { order: any }) => {
-  const formatPrice = (price: number) => {
-    return `₹${price.toFixed(2)}`;
+// PDF generator
+function createInvoiceDocument(order: any) {
+  const formatPrice = (price: number | undefined | null) => price ? price.toLocaleString("en-IN") : "0";
+  
+  // Calculate subtotal from items (prices are tax-inclusive)
+  const calculateSubtotal = (items: any[]) => {
+    return items.reduce((sum, item) => {
+      const itemPrice = item.price || 0;
+      const itemQuantity = item.quantity || 1;
+      return sum + (itemPrice * itemQuantity);
+    }, 0);
   };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("en-IN", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  
+  const subtotal = calculateSubtotal(order.items);
+  const tax = 0; // Tax is already included in item prices
+  
+  // Calculate shipping based on total number of boxes (considering combo products)
+  const calculateShipping = (items: any[]) => {
+    const totalBoxes = items.reduce((total, item) => {
+      let boxesPerItem = 1; // default for single box
+      
+      // Check product ID or name to determine boxes per item
+      const productId = item.id || item.productId;
+      const productName = item.name || item.productName || '';
+      
+      if (productId === 'combo-2box' || productName.includes('2 Box Combo')) {
+        boxesPerItem = 2;
+      } else if (productId === 'combo-3box' || productName.includes('3 Box Combo')) {
+        boxesPerItem = 3;
+      }
+      
+      return total + (boxesPerItem * (item.quantity || 1));
+    }, 0);
+    
+    // Shipping logic: 3+ boxes = free, 2 boxes = 49, 1 box = 99
+    if (totalBoxes >= 3) return 0; // Free shipping for 3+ boxes
+    if (totalBoxes === 2) return 49; // ₹49 for 2 boxes
+    return 99; // ₹99 for 1 box
   };
-
-  // Calculate tax and subtotal from total (no GST as per recent changes)
-  const subtotal = order.total;
-  const tax = 0; // No GST as per recent codebase changes
+  
+  const shippingCost = calculateShipping(order.items);
 
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.logo}>BubbleBeads</Text>
+          <View style={styles.companyInfo}>
+            <Text style={styles.title}>R AND D ESSENTIALS TRADING CO</Text>
+            <Text style={styles.companyDetails}>
+              Premium Laundry Detergent Pods{"\n"}
+              02830-004, Shakti Vihar, St No 4, Phase 4{"\n"}
+              Bathinda, Punjab 151001{"\n"}
+              Phone: +91 6239881097{"\n"}
+              Email: customercare.bb@outlook.com
+            </Text>
+          </View>
           <View style={styles.invoiceInfo}>
             <Text style={styles.invoiceTitle}>INVOICE</Text>
-            <Text style={styles.invoiceNumber}>Order #{order.id}</Text>
-            <Text style={styles.invoiceNumber}>Date: {formatDate(order.orderDate)}</Text>
+            <Text style={styles.invoiceMeta}>
+              Invoice #: W-{order.id.slice(-8)}{"\n"}
+              Order #: {order.id}{"\n"}
+              Date: {new Date(order.orderDate).toLocaleDateString("en-IN")}
+            </Text>
           </View>
+        </View>
+
+        {/* Tax Information */}
+        <View style={styles.taxInfo}>
+          <Text style={styles.taxInfoTitle}>Tax Information</Text>
+          <Text style={styles.taxDetails}>
+            GST Number: 03ABLFR9622B1ZC{"\n"}
+            PAN Number: ABLFR9622B{"\n"}
+            {/* Tax Rate: 18% GST (CGST 9% + SGST 9%) */}
+          </Text>
         </View>
 
         {/* Billing Section */}
         <View style={styles.billingSection}>
-          <View>
-            <Text style={styles.sectionTitle}>Bill To:</Text>
-            <Text>{order.customerName}</Text>
-            <Text>{order.customerEmail}</Text>
-            <Text>{order.customerPhone}</Text>
-            <Text>{order.address}</Text>
+          <View style={styles.billingColumn}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Bill To:</Text>
+              <Text style={styles.sectionContent}>
+                {order.customerName}{"\n"}
+                {order.customerEmail}{"\n"}
+                {order.customerPhone}{"\n"}
+                {order.address || order.shippingAddress}
+              </Text>
+            </View>
           </View>
-          <View>
-            <Text style={styles.sectionTitle}>Payment Details:</Text>
-            <Text>Payment ID: {order.paymentId}</Text>
-            <Text>Order ID: {order.razorpayOrderId}</Text>
+          <View style={styles.billingColumn}>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Payment Details:</Text>
+              <Text style={styles.sectionContent}>
+                Payment Method: Online Payment{"\n"}
+                Payment Status: Completed{"\n"}
+                Transaction ID: {order.paymentId}{"\n"}
+                Razorpay Order ID: {order.razorpayOrderId}
+              </Text>
+            </View>
           </View>
         </View>
 
-        {/* Items Table */}
+        {/* Order items */}
         <View style={styles.table}>
-          <View style={styles.tableRow}>
-            <View style={[styles.tableColHeader, styles.tableColItem]}>
-              <Text style={styles.tableCellHeader}>Item</Text>
-            </View>
-            <View style={[styles.tableColHeader, styles.tableColQuantity]}>
-              <Text style={[styles.tableCellHeader, styles.tableCellQuantity]}>Quantity</Text>
-            </View>
-            <View style={[styles.tableColHeader, styles.tableColPrice]}>
-              <Text style={[styles.tableCellHeader, styles.tableCellPrice]}>Unit Price</Text>
-            </View>
-            <View style={[styles.tableColHeader, styles.tableColTotal]}>
-              <Text style={[styles.tableCellHeader, styles.tableCellTotal]}>Total</Text>
-            </View>
+          <View style={styles.tableHeader}>
+            <Text style={[styles.tableCellHeader, { flex: 3 }]}>Item Description</Text>
+            <Text style={[styles.tableCellHeader, { flex: 1, textAlign: "center" }]}>Quantity</Text>
+            <Text style={[styles.tableCellHeader, { flex: 2, textAlign: "right" }]}>Unit Price</Text>
+            <Text style={[styles.tableCellHeader, { flex: 2, textAlign: "right" }]}>Total Amount</Text>
           </View>
           {order.items.map((item: any, index: number) => (
-            <View style={styles.tableRow} key={index}>
-              <View style={[styles.tableCol, styles.tableColItem]}>
-                <Text style={styles.tableCell}>{item.name}</Text>
-              </View>
-              <View style={[styles.tableCol, styles.tableColQuantity]}>
-                <Text style={[styles.tableCell, styles.tableCellQuantity]}>{item.quantity}</Text>
-              </View>
-              <View style={[styles.tableCol, styles.tableColPrice]}>
-                <Text style={[styles.tableCell, styles.tableCellPrice]}>{formatPrice(item.price)}</Text>
-              </View>
-              <View style={[styles.tableCol, styles.tableColTotal]}>
-                <Text style={[styles.tableCell, styles.tableCellTotal]}>{formatPrice(item.price * item.quantity)}</Text>
-              </View>
+            <View key={index} style={styles.tableRow}>
+              <Text style={[styles.tableCell, { flex: 3 }]}>{item.name || item.productName || "Essential Clean Pod"}</Text>
+              <Text style={[styles.tableCell, { flex: 1, textAlign: "center" }]}>{item.quantity || 1}</Text>
+              <Text style={[styles.tableCell, { flex: 2, textAlign: "right" }]}>{formatPrice(item.price)}</Text>
+              <Text style={[styles.tableCell, { flex: 2, textAlign: "right" }]}>{formatPrice((item.price || 0) * (item.quantity || 1))}</Text>
             </View>
           ))}
         </View>
 
-        {/* Total Section */}
-        <View style={styles.totalSection}>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Subtotal:</Text>
-            <Text style={styles.totalAmount}>{formatPrice(subtotal)}</Text>
-          </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Shipping:</Text>
-            <Text style={styles.totalAmount}>₹0.00</Text>
-          </View>
-          <View style={[styles.totalRow, styles.grandTotal]}>
-            <Text style={styles.totalLabel}>Total:</Text>
-            <Text style={styles.totalAmount}>{formatPrice(order.total)}</Text>
+        {/* Totals */}
+        <View style={styles.totalsSection}>
+          <View style={styles.totalsTable}>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Subtotal (Before Tax):</Text>
+              <Text style={styles.totalValue}>{formatPrice(subtotal)}</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>CGST (9%):</Text>
+              <Text style={styles.totalValue}>0</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>SGST (9%):</Text>
+              <Text style={styles.totalValue}>0</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Total Tax (18% GST):</Text>
+              <Text style={styles.totalValue}>0</Text>
+            </View>
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Shipping & Handling:</Text>
+              <Text style={styles.totalValue}>{shippingCost === 0 ? 'FREE' : formatPrice(shippingCost)}</Text>
+            </View>
+            <View style={[styles.totalRow, styles.finalTotalRow]}>
+              <Text style={styles.finalTotalLabel}>Total Amount:</Text>
+              <Text style={styles.finalTotalValue}>{formatPrice(order.total)}</Text>
+            </View>
           </View>
         </View>
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text>Thank you for your business!</Text>
-          <Text>BubbleBeads - Premium Laundry Detergent Pods</Text>
+          <Text style={styles.footerText}>Thank you for your business!</Text>
+          <Text style={styles.footerText}>R AND D ESSENTIALS TRADING CO- Premium Laundry Detergent Pods</Text>
         </View>
       </Page>
     </Document>
   );
-};
+}
 
-export const POST = withUpstashRateLimit("moderate")(async (
-  request: NextRequest,
-) => {
+// Main API handler with all security layers
+export const POST = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   try {
-    // CSRF Protection: Validate origin header
-    try {
-      assertSameOrigin(request);
-    } catch (error) {
-      if (error instanceof Error && error.message === "Invalid Origin") {
-        return NextResponse.json({ error: "Invalid Origin" }, { status: 403 });
-      }
-      throw error;
-    }
+    // CSRF: Assert same origin
+    assertSameOrigin(request);
 
-    // Verify user authentication
+    // Auth
     const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 },
-      );
-    }
+    if (!userId) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
 
-    // Check if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
-      safeLogError("RESEND_API_KEY is not configured");
-      return NextResponse.json(
-        { error: "Email service not configured" },
-        { status: 500 },
-      );
-    }
+    // Validate request data - only orderId is needed from client
+  const simpleOrderSchema = z.object({
+    orderId: z.string().min(1, "Order ID is required")
+  });
+  
+  const validation = await validateRequest(request, simpleOrderSchema);
+  if (!validation.success) {
+    return NextResponse.json(
+      { error: "Invalid request data" },
+      { status: 400 },
+    );
+  }
 
-    // Validate request body
-    const validationResult = await validateRequest(request, invoiceTokenSchema);
-    if (!validationResult.success) {
-      return NextResponse.json(
-        { error: "Invalid request data" },
-        { status: 400 },
-      );
-    }
+  const { orderId } = validation.data;
 
-    // Sanitize the validated data
-    const sanitizedData = sanitizeObject(validationResult.data);
-    const { orderId } = sanitizedData;
-
-    // Get order from database
+    // Get order
     const order = await getOrder(orderId);
-    if (!order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    }
+    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
 
-    // Verify order belongs to the authenticated user (basic check)
-    // In production, you might want more thorough ownership verification
-
-    // Generate PDF from React component using renderToBuffer
-    const pdfBuffer = await renderToBuffer(<InvoicePDF order={order} />);
+    // Generate PDF
+    const pdfInstance = pdf(createInvoiceDocument(order));
+    const pdfStream = await pdfInstance.toBuffer();
+    
+    // Convert Node.js ReadableStream to buffer
+    const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
+      const chunks: any[] = [];
+      pdfStream.on('data', (chunk: any) => chunks.push(chunk));
+      pdfStream.on('end', () => resolve(Buffer.concat(chunks)));
+      pdfStream.on('error', reject);
+    });
+    
     const pdfBase64 = pdfBuffer.toString("base64");
-    // Send email with PDF attachment
+
+    // Send email
     const emailResult = await resend.emails.send({
       from: "noreply@bubblebeads.in",
       to: order.customerEmail,
       subject: `Your Invoice - Order #${orderId}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #f97316;">Hello ${order.customerName},</h2>
-          <p>Please find attached your invoice for Order #${orderId}.</p>
-          <div style="background-color: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="margin-top: 0; color: #374151;">Order Summary:</h3>
-            <p><strong>Order ID:</strong> ${orderId}</p>
-            <p><strong>Payment ID:</strong> ${order.paymentId}</p>
-            <p><strong>Total Amount:</strong> ${new Intl.NumberFormat("en-IN", {
-              style: "currency",
-              currency: "INR",
-            }).format(order.total)}</p>
-            <p><strong>Order Date:</strong> ${new Date(order.orderDate).toLocaleDateString("en-IN")}</p>
-          </div>
-          <p>Thank you for your business!</p>
-          <p style="color: #6b7280; font-size: 14px;">BubbleBeads - Premium Laundry Detergent Pods</p>
-        </div>
-      `,
-      attachments: [
-        {
-          filename: `invoice-${orderId}.pdf`,
-          content: pdfBase64,
-        },
-      ],
+      html: `<div>Hello ${order.customerName}, please find attached your invoice for Order #${orderId}.</div>`,
+      attachments: [{ filename: `invoice-${orderId}.pdf`, content: pdfBase64 }],
     });
 
-    if (emailResult.error) {
-      safeLogError("Failed to send email", emailResult.error);
-      return NextResponse.json(
-        { error: "Failed to send email" },
-        { status: 500 },
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Invoice email sent successfully",
-      emailId: emailResult.data?.id,
-      orderId,
-    });
+    return NextResponse.json({ success: true, message: "Invoice email sent", orderId, emailId: emailResult.data?.id });
   } catch (error) {
-    safeLogError("Error sending invoice email", error);
-    return NextResponse.json(
-      { error: "Failed to send invoice email" },
-      { status: 500 },
-    );
+    safeLogError("Error sending invoice", error);
+    return NextResponse.json({ error: "Failed to send invoice" }, { status: 500 });
   }
 });

@@ -126,6 +126,9 @@ export const invoiceTokenSchema = z.object({
     .string()
     .min(1, "Order ID is required")
     .regex(/^[a-zA-Z0-9_-]+$/, "Invalid order ID format"),
+    token: z
+    .string()
+    .min(1, "Access token is required"),
 });
 
 // Cart item validation schema

@@ -91,10 +91,7 @@ export async function GET(
 
 function generateInvoiceHtml(order: any): string {
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-    }).format(price);
+    return price.toLocaleString('en-IN');
   };
 
   const formatDate = (date: string) => {
@@ -125,8 +122,8 @@ function generateInvoiceHtml(order: any): string {
         <title>Invoice - ${order.id}</title>
         <style>
             body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                line-height: 1.6;
+                font-family: Arial, sans-serif;
+                line-height: 1.4;
                 color: #333;
                 max-width: 800px;
                 margin: 0 auto;
@@ -135,103 +132,141 @@ function generateInvoiceHtml(order: any): string {
             }
             .invoice-container {
                 background: white;
-                padding: 40px;
-                border-radius: 12px;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             }
             .header {
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
-                margin-bottom: 40px;
-                padding-bottom: 20px;
-                border-bottom: 2px solid #e5e7eb;
+                margin-bottom: 30px;
+                padding-bottom: 15px;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            .company-info {
+                flex: 1;
             }
             .logo {
-                font-size: 32px;
+                font-size: 28px;
                 font-weight: bold;
-                color: #f97316;
-                background: linear-gradient(to right, #f97316, #f59e0b);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
+                color: #ff6b35;
+                margin-bottom: 8px;
+            }
+            .company-details {
+                font-size: 12px;
+                color: #666;
+                line-height: 1.3;
             }
             .invoice-info {
                 text-align: right;
+                flex: 1;
             }
             .invoice-title {
                 font-size: 24px;
                 font-weight: bold;
                 margin-bottom: 8px;
+                color: #333;
             }
-            .invoice-number {
-                color: #6b7280;
+            .invoice-meta {
+                color: #666;
+                font-size: 12px;
+                line-height: 1.4;
+            }
+            .tax-info {
+                background: #f8f9fa;
+                padding: 15px;
+                margin-bottom: 20px;
+                border-radius: 4px;
+            }
+            .tax-info h3 {
+                margin: 0 0 10px 0;
                 font-size: 14px;
+                font-weight: bold;
+                color: #333;
+            }
+            .tax-details {
+                font-size: 12px;
+                color: #666;
+                line-height: 1.4;
             }
             .billing-section {
                 display: grid;
                 grid-template-columns: 1fr 1fr;
-                gap: 40px;
-                margin-bottom: 40px;
+                gap: 30px;
+                margin-bottom: 30px;
             }
             .section-title {
-                font-size: 16px;
-                font-weight: 600;
-                margin-bottom: 12px;
-                color: #374151;
+                font-size: 14px;
+                font-weight: bold;
+                margin-bottom: 10px;
+                color: #333;
+            }
+            .section-content {
+                font-size: 12px;
+                color: #666;
+                line-height: 1.4;
             }
             .items-table {
                 width: 100%;
                 border-collapse: collapse;
-                margin-bottom: 30px;
-            }
-            .items-table th,
-            .items-table td {
-                padding: 12px;
-                text-align: left;
-                border-bottom: 1px solid #e5e7eb;
+                margin-bottom: 20px;
+                font-size: 12px;
             }
             .items-table th {
-                background-color: #f9fafb;
-                font-weight: 600;
-                color: #374151;
+                background-color: #f8f9fa;
+                padding: 10px 8px;
+                text-align: left;
+                border: 1px solid #dee2e6;
+                font-weight: bold;
+                color: #333;
+            }
+            .items-table td {
+                padding: 10px 8px;
+                border: 1px solid #dee2e6;
+                color: #666;
             }
             .items-table .text-right {
                 text-align: right;
             }
-            .total-section {
-                text-align: right;
+            .totals-section {
                 margin-top: 20px;
-                padding-top: 20px;
-                border-top: 2px solid #e5e7eb;
-            }
-            .total-row {
                 display: flex;
                 justify-content: flex-end;
-                margin-bottom: 8px;
             }
-            .total-label {
-                margin-right: 40px;
-                min-width: 100px;
+            .totals-table {
+                width: 300px;
+                font-size: 12px;
             }
-            .total-amount {
-                font-weight: 600;
-                min-width: 120px;
+            .totals-table td {
+                padding: 5px 10px;
+                border: none;
             }
-            .grand-total {
-                font-size: 20px;
+            .totals-table .label {
+                text-align: right;
+                color: #666;
+                width: 60%;
+            }
+            .totals-table .amount {
+                text-align: right;
+                color: #333;
                 font-weight: bold;
-                color: #f97316;
-                padding-top: 12px;
-                border-top: 1px solid #e5e7eb;
+                width: 40%;
+            }
+            .total-amount-final {
+                background-color: #f8f9fa;
+                border-top: 1px solid #dee2e6;
+                font-weight: bold;
+                color: #ff6b35;
+                font-size: 14px;
             }
             .footer {
-                margin-top: 40px;
-                padding-top: 20px;
+                margin-top: 30px;
+                padding-top: 15px;
                 border-top: 1px solid #e5e7eb;
                 text-align: center;
-                color: #6b7280;
-                font-size: 14px;
+                color: #666;
+                font-size: 12px;
             }
             .invoice-actions {
                 position: fixed;
@@ -284,18 +319,39 @@ function generateInvoiceHtml(order: any): string {
 
         <div class="invoice-container">
             <div class="header">
-                <div class="logo">BubbleBeads</div>
+                <div class="company-info">
+                    <div class="logo">BubbleBeads</div>
+                    <div class="company-details">
+                        Premium Laundry Detergent Pods<br>
+                        123 Business Street<br>
+                        Mumbai, Maharashtra 400001<br>
+                        Phone: +91 98765 43210<br>
+                        Email: support@bubble-beads.com
+                    </div>
+                </div>
                 <div class="invoice-info">
                     <div class="invoice-title">INVOICE</div>
-                    <div class="invoice-number">Order #${order.id}</div>
-                    <div class="invoice-number">Date: ${formatDate(order.orderDate)}</div>
+                    <div class="invoice-meta">
+                        Invoice #: RV-${order.id.slice(-8)}<br>
+                        Order #: ${order.id}<br>
+                        Date: ${formatDate(order.orderDate)}
+                    </div>
+                </div>
+            </div>
+
+            <div class="tax-info">
+                <h3>Tax Information</h3>
+                <div class="tax-details">
+                    <strong>GST Number:</strong> 27AABCU9603R1ZX<br>
+                    <strong>PAN Number:</strong> AABCU9603R<br>
+                    <strong>Tax Rate:</strong> 18% GST (CGST 9% + SGST 9%)
                 </div>
             </div>
 
             <div class="billing-section">
                 <div>
                     <div class="section-title">Bill To:</div>
-                    <div>
+                    <div class="section-content">
                         <strong>${order.customerName}</strong><br>
                         ${order.customerEmail}<br>
                         ${order.customerPhone}<br>
@@ -304,9 +360,11 @@ function generateInvoiceHtml(order: any): string {
                 </div>
                 <div>
                     <div class="section-title">Payment Details:</div>
-                    <div>
-                        <strong>Payment ID:</strong> ${order.paymentId}<br>
-                        <strong>Order ID:</strong> ${order.razorpayOrderId}
+                    <div class="section-content">
+                        <strong>Payment Method:</strong> Online Payment<br>
+                        <strong>Payment Status:</strong> Completed<br>
+                        <strong>Transaction ID:</strong> ${order.paymentId}<br>
+                        <strong>Razorpay Order ID:</strong> ${order.razorpayOrderId}
                     </div>
                 </div>
             </div>
@@ -314,10 +372,10 @@ function generateInvoiceHtml(order: any): string {
             <table class="items-table">
                 <thead>
                     <tr>
-                        <th>Item</th>
+                        <th>Item Description</th>
                         <th class="text-right">Quantity</th>
                         <th class="text-right">Unit Price</th>
-                        <th class="text-right">Total</th>
+                        <th class="text-right">Total Amount</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -336,23 +394,33 @@ function generateInvoiceHtml(order: any): string {
                 </tbody>
             </table>
 
-            <div class="total-section">
-                <div class="total-row">
-                    <div class="total-label">Subtotal:</div>
-                    <div class="total-amount">${formatPrice(subtotal)}</div>
-                </div>
-                <div class="total-row">
-                    <div class="total-label">Tax (18% GST):</div>
-                    <div class="total-amount">${formatPrice(tax)}</div>
-                </div>
-                <div class="total-row">
-                    <div class="total-label">Shipping:</div>
-                    <div class="total-amount">₹0.00</div>
-                </div>
-                <div class="total-row grand-total">
-                    <div class="total-label">Total:</div>
-                    <div class="total-amount">${formatPrice(order.total)}</div>
-                </div>
+            <div class="totals-section">
+                <table class="totals-table">
+                    <tr>
+                        <td class="label">Subtotal (Before Tax):</td>
+                        <td class="amount">${formatPrice(subtotal)}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">CGST (9%):</td>
+                        <td class="amount">${formatPrice(tax / 2)}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">SGST (9%):</td>
+                        <td class="amount">${formatPrice(tax / 2)}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Total Tax (18% GST):</td>
+                        <td class="amount">${formatPrice(tax)}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Shipping & Handling:</td>
+                        <td class="amount">0.00</td>
+                    </tr>
+                    <tr class="total-amount-final">
+                        <td class="label"><strong>Total Amount:</strong></td>
+                        <td class="amount"><strong>${formatPrice(order.total)}</strong></td>
+                    </tr>
+                </table>
             </div>
 
             <div class="footer">
