@@ -163,6 +163,43 @@ export default function Orders() {
     }
   };
 
+  const handleEmailInvoice = async (orderId: string) => {
+    try {
+      // Show loading state
+      toast.loading("Sending invoice email...", {
+        id: "email-invoice-loading",
+      });
+
+      const token = await getToken();
+      if (!token) {
+        throw new Error("User not authenticated");
+      }
+
+      const response = await fetch("/api/email-invoice", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ orderId }),
+      });
+
+      toast.dismiss("email-invoice-loading");
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to send invoice email");
+      }
+
+      const data = await response.json();
+      toast.success("Invoice email sent successfully! Check your inbox.");
+    } catch (error) {
+      toast.dismiss("email-invoice-loading");
+      console.error("Error sending invoice email:", error);
+      toast.error("Failed to send invoice email. Please try again.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-orange-50">
       <Header />
@@ -278,7 +315,14 @@ export default function Orders() {
                         Total: {formatPrice(order.total)}
                       </p>
                     </div>
-                    <div>
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => handleEmailInvoice(order.id)}
+                        className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 cursor-pointer flex items-center space-x-2"
+                      >
+                        <i className="ri-mail-line w-4 h-4"></i>
+                        <span>Email Invoice</span>
+                      </button>
                       <button
                         onClick={() => handleDownloadInvoice(order.id)}
                         className="px-4 py-2 bg-gradient-to-r from-orange-400 to-amber-400 text-white rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer flex items-center space-x-2"
