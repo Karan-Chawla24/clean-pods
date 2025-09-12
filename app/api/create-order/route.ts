@@ -220,11 +220,24 @@ export const POST = withUpstashRateLimit("moderate")(async (
       );
     }
 
-    if (!cartValidation.totalMatches) {
+    // 🚚 Calculate shipping based on total quantity of boxes
+    const totalBoxes = cart.reduce((total, item) => {
+      // Determine boxes per item based on product ID
+      let boxesPerItem = 1; // default
+      if (item.id === 'combo-2box') boxesPerItem = 2;
+      if (item.id === 'combo-3box') boxesPerItem = 3;
+      return total + (boxesPerItem * item.quantity);
+    }, 0);
+    
+    const shipping = totalBoxes >= 3 ? 0 : totalBoxes >= 2 ? 49 : 99;
+    const expectedTotalWithShipping = cartValidation.calculatedTotalWithTax + shipping;
+
+    // Validate total including shipping
+    if (Math.abs(amount - expectedTotalWithShipping) > 0.01) {
       return NextResponse.json(
         {
           success: false,
-          error: `Total amount mismatch. Expected: ${cartValidation.calculatedTotalWithTax} (including 18% GST), Received: ${amount}`,
+          error: `Total amount mismatch. Expected: ${expectedTotalWithShipping} (including 18% GST and shipping), Received: ${amount}`,
         },
         { status: 400 },
       );
@@ -232,11 +245,13 @@ export const POST = withUpstashRateLimit("moderate")(async (
 
     // 🏦 Create Razorpay Order
     const options = {
-      amount: Math.round(cartValidation.calculatedTotalWithTax * 100), // amount in paise
+      amount: Math.round(expectedTotalWithShipping * 100), // amount in paise (including shipping)
       currency: currency || "INR",
       receipt,
       notes: {
         cart_items: JSON.stringify(cartValidation.validatedItems),
+        shipping_cost: shipping,
+        total_boxes: totalBoxes,
       },
     };
 
