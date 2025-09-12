@@ -32,15 +32,22 @@ interface Order {
 
 // Product image mapping based on product names and IDs
 const productImageMap: { [key: string]: string } = {
-  // By ID
+  // Current product IDs (from products.ts)
+  "single-box": "/pod_image.jpg",
+  "combo-2box": "/pod_image.jpg",
+  "combo-3box": "/pod_image.jpg",
+  // Current product names
+  "5-in-1 Laundry Pod": "/pod_image.jpg",
+  "5-in-1 Laundry Pod - 2 Box Combo": "/pod_image.jpg",
+  "5-in-1 Laundry Pod - 3 Box Combo": "/pod_image.jpg",
+  // Legacy IDs (for backward compatibility)
   essential: "/pod_image.jpg",
   "soft-fresh": "/Threein1.jpg",
   ultimate: "/fivein1.jpg",
-  // By name (for backward compatibility with old orders)
+  // Legacy names (for backward compatibility with old orders)
   "Essential Clean": "/pod_image.jpg",
   "Soft & Fresh": "/Threein1.jpg",
   "Ultimate Care": "/fivein1.jpg",
-  // Current product name (post August 20th)
   "Essential Clean Pod": "/pod_image.jpg",
 };
 

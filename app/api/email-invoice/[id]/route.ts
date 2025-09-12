@@ -82,41 +82,62 @@ export async function POST(
     // Generate enhanced invoice HTML
     const invoiceHtml = generateEnhancedInvoiceHtml(order);
 
-    // Convert HTML to PDF using Puppeteer
-    const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
+    // Convert HTML to PDF using Puppeteer with production-friendly config
+    let browser;
+    let pdfBuffer;
     
-    const page = await browser.newPage();
-    await page.setContent(invoiceHtml, { waitUntil: 'networkidle0' });
-    
-    const pdfUint8Array = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '20px',
-        bottom: '20px',
-        left: '20px',
-        right: '20px',
-      },
-    });
-    
-    const pdfBuffer = Buffer.from(pdfUint8Array);
-    
-    await browser.close();
+    try {
+      browser = await puppeteer.launch({
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--no-zygote',
+          '--single-process',
+          '--disable-gpu'
+        ]
+      });
+      
+      const page = await browser.newPage();
+      await page.setContent(invoiceHtml, { waitUntil: 'networkidle0' });
+      
+      const pdfUint8Array = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: {
+          top: '20px',
+          bottom: '20px',
+          left: '20px',
+          right: '20px',
+        },
+      });
+      
+      pdfBuffer = Buffer.from(pdfUint8Array);
+    } catch (puppeteerError) {
+      safeLogError("Puppeteer PDF generation failed", puppeteerError);
+      throw new Error(`PDF generation failed: ${puppeteerError instanceof Error ? puppeteerError.message : 'Unknown error'}`);
+    } finally {
+      if (browser) {
+        await browser.close();
+      }
+    }
 
     // Send email with PDF attachment
-    const emailResult = await resend.emails.send({
-      from: "noreply@bubblebeads.in",
-      to: [order.customerEmail],
-      subject: `Your Invoice - Order #${order.id}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #f97316; margin: 0;">BubbleBeads</h1>
-            <p style="color: #6b7280; margin: 5px 0;">Premium Laundry Detergent Pods</p>
-          </div>
+    let emailResult;
+    try {
+      emailResult = await resend.emails.send({
+        from: "noreply@bubblebeads.in",
+        to: [order.customerEmail],
+        subject: `Your Invoice - Order #${order.id}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #f97316; margin: 0;">BubbleBeads</h1>
+              <p style="color: #6b7280; margin: 5px 0;">Premium Laundry Detergent Pods</p>
+            </div>
           
           <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
             <h2 style="color: #374151; margin-top: 0;">Hello ${order.customerName},</h2>
@@ -153,13 +174,17 @@ export async function POST(
           </div>
         </div>
       `,
-      attachments: [
-        {
-          filename: `invoice-${order.id}.pdf`,
-          content: pdfBuffer,
-        },
-      ],
-    });
+        attachments: [
+          {
+            filename: `invoice-${order.id}.pdf`,
+            content: pdfBuffer,
+          },
+        ],
+      });
+    } catch (emailError) {
+      safeLogError("Email sending failed", emailError);
+      throw new Error(`Email sending failed: ${emailError instanceof Error ? emailError.message : 'Unknown error'}`);
+    }
 
     return NextResponse.json({
       success: true,
