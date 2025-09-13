@@ -36,7 +36,7 @@ node scripts/admin-orders.js
 
 Order #1:
   ID: order_12345
-  Payment ID: pay_67890
+  Transaction ID: pay_67890
   Customer: John Doe
   Email: john@example.com
   Phone: +1234567890

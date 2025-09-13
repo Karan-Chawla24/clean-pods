@@ -263,7 +263,7 @@ export default function AdminOrderDetails() {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 font-medium">Payment ID:</span>
+                  <span className="text-gray-600 font-medium">Transaction ID:</span>
                   <span className="text-gray-900 font-mono text-sm">
                     {safeDisplayOrderId(order.paymentId)}
                   </span>

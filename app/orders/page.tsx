@@ -266,7 +266,7 @@ export default function Orders() {
                     Placed on {formatDate(order.orderDate)}
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
-                    Payment ID: {order.paymentId}
+                    Transaction ID: {order.paymentId}
                   </p>
                 </div>
 
@@ -316,6 +316,13 @@ export default function Orders() {
                       </p>
                     </div>
                     <div className="flex space-x-3">
+                      <Link
+                        href={`/orders/${order.id}`}
+                        className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 cursor-pointer flex items-center space-x-2"
+                      >
+                        <i className="ri-eye-line w-4 h-4"></i>
+                        <span>Order Details</span>
+                      </Link>
                       <button
                         onClick={() => handleEmailInvoice(order.id)}
                         className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 cursor-pointer flex items-center space-x-2"

@@ -110,7 +110,7 @@ async function main() {
     orders.forEach((order, index) => {
       safeLog("info", `Order #${index + 1}:`);
       safeLog("info", `  ID: ${order.id}`);
-      safeLog("info", `  Payment ID: ${order.paymentId}`);
+      safeLog("info", `  Transaction ID: ${order.paymentId}`);
       safeLog(
         "info",
         `  Customer: ${order.customer?.firstName} ${order.customer?.lastName}`,

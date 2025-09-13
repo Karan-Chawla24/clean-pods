@@ -39,8 +39,8 @@ export function validateRazorpayOrder(orderId: string): boolean {
 }
 
 export function validateRazorpayPayment(paymentId: string): boolean {
-  // Basic validation for Razorpay payment ID format
-  // Razorpay payment IDs typically start with 'pay_' and contain alphanumeric characters
+  // Basic validation for Razorpay Transaction ID format
+  // Razorpay Transaction IDs typically start with 'pay_' and contain alphanumeric characters
   const paymentIdPattern = /^pay_[a-zA-Z0-9]+$/;
   return paymentIdPattern.test(paymentId);
 }

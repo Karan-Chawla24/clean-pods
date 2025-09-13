@@ -51,7 +51,7 @@ Razorpay security utilities:
 
 - `verifyRazorpaySignature()` - Verify webhook signatures
 - `validateRazorpayOrder()` - Validate order ID format
-- `validateRazorpayPayment()` - Validate payment ID format
+- `validateRazorpayPayment()` - Validate Transaction ID format
 - `sanitizeRazorpayPayload()` - Sanitize webhook payloads
 
 ### `config.ts`

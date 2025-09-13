@@ -69,7 +69,7 @@ const orderDataSchema = z.object({
     .regex(/^[a-zA-Z0-9_-]+$/, "Invalid order ID format"),
   items: z.array(orderItemSchema).min(1, "Order must have at least one item"),
   total: z.number().positive("Total must be positive"),
-  paymentId: z.string().min(1, "Payment ID is required"),
+  paymentId: z.string().min(1, "Transaction ID is required"),
 });
 
 const slackNotificationSchema = z.object({
@@ -175,7 +175,7 @@ export async function POST(request: NextRequest) {
             },
             {
               type: "mrkdwn",
-              text: `*Payment ID:*\n\`${orderData.paymentId}\``,
+              text: `*Transaction ID:*\n\`${orderData.paymentId}\``,
             },
             {
               type: "mrkdwn",

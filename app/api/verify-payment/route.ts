@@ -54,7 +54,7 @@ export const POST = withUpstashRateLimit("strict")(async (
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
       validationResult.data;
 
-    // Additional validation for order and payment IDs
+    // Additional validation for order and Transaction IDs
     if (!validateRazorpayOrder(razorpay_order_id)) {
       return NextResponse.json(
         { success: false, error: "Invalid order ID format" },
@@ -64,7 +64,7 @@ export const POST = withUpstashRateLimit("strict")(async (
 
     if (!validateRazorpayPayment(razorpay_payment_id)) {
       return NextResponse.json(
-        { success: false, error: "Invalid payment ID format" },
+        { success: false, error: "Invalid Transaction ID format" },
         { status: 400 },
       );
     }

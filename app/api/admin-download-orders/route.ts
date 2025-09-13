@@ -34,7 +34,7 @@ export const GET = withUpstashRateLimit("moderate")(async (
     const worksheet = workbook.addWorksheet("Orders");
     worksheet.columns = [
       { header: "Razorpay Order ID", key: "razorpayOrderId", width: 25 },
-      { header: "Payment ID", key: "paymentId", width: 20 },
+      { header: "Transaction ID", key: "paymentId", width: 20 },
       { header: "Customer Name", key: "customerName", width: 25 },
       { header: "Customer Email", key: "customerEmail", width: 30 },
       { header: "Customer Phone", key: "customerPhone", width: 18 },

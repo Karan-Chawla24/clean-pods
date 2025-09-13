@@ -66,7 +66,7 @@ export const POST = withUpstashRateLimit("strict")(async (
 
     if (!validateRazorpayPayment(sanitizedPayload.razorpay_payment_id)) {
       return NextResponse.json(
-        { success: false, error: "Invalid payment ID" },
+        { success: false, error: "Invalid Transaction ID" },
         { status: 400 },
       );
     }

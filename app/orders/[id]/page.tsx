@@ -145,7 +145,7 @@ export default function OrderDetails() {
                       : "bg-gray-100 text-gray-800"
                 }`}
               >
-                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                {order.status ? order.status.charAt(0).toUpperCase() + order.status.slice(1) : 'Unknown'}
               </span>
             </div>
           </div>
@@ -188,12 +188,12 @@ export default function OrderDetails() {
                         : "bg-yellow-100 text-yellow-800"
                     }`}
                   >
-                    {order.payment_status.charAt(0).toUpperCase() +
-                      order.payment_status.slice(1)}
+                    {order.payment_status ? order.payment_status.charAt(0).toUpperCase() +
+                      order.payment_status.slice(1) : 'Unknown'}
                   </span>
                 </p>
                 <p>
-                  <strong>Payment ID:</strong>{" "}
+                  <strong>Transaction ID:</strong>{" "}
                   {safeDisplayOrderId(order.payment_id)}
                 </p>
                 <p>
@@ -244,17 +244,17 @@ export default function OrderDetails() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
           <Link
-            href="/"
+            href="/orders"
             className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors text-center"
+          >
+            Back to Orders
+          </Link>
+          <Link
+            href="/products"
+            className="bg-gray-200 text-gray-800 px-8 py-3 rounded-lg hover:bg-gray-300 transition-colors text-center"
           >
             Continue Shopping
           </Link>
-          <button
-            onClick={() => window.print()}
-            className="bg-gray-200 text-gray-800 px-8 py-3 rounded-lg hover:bg-gray-300 transition-colors"
-          >
-            Print Order
-          </button>
         </div>
       </div>
     </div>
