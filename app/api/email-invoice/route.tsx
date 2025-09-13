@@ -180,8 +180,7 @@ function createInvoiceDocument(order: any) {
               <Text style={styles.sectionContent}>
                 Payment Method: Online Payment{"\n"}
                 Payment Status: Completed{"\n"}
-                Transaction ID: {order.paymentId}{"\n"}
-                Razorpay Order ID: {order.razorpayOrderId}
+                Transaction ID: {order.paymentId}
               </Text>
             </View>
           </View>

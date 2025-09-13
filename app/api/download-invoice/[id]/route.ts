@@ -426,7 +426,6 @@ function generateInvoiceHtml(order: any): string {
                         <strong>Payment Method:</strong> Online Payment<br>
                         <strong>Payment Status:</strong> Completed<br>
                         <strong>Transaction ID:</strong> ${order.paymentId}<br>
-                        <strong>Razorpay Order ID:</strong> ${order.razorpayOrderId}
                     </div>
                 </div>
             </div>
