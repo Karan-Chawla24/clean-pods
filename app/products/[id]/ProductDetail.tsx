@@ -42,7 +42,7 @@ async function fetchProduct(id: string): Promise<Product | null> {
 
 export default function ProductDetail({ productId }: { productId: string }) {
   const [quantity, setQuantity] = useState(1);
-  const [activeTab, setActiveTab] = useState("description");
+  const [activeTab, setActiveTab] = useState("ingredients");
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -269,7 +269,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
         <div className="bg-white rounded-2xl mt-8 sm:mt-12">
           <div className="border-b overflow-x-auto">
             <div className="flex min-w-full">
-              {["description", "ingredients", "usage"].map((tab) => (
+              {["ingredients", "usage"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -286,41 +286,6 @@ export default function ProductDetail({ productId }: { productId: string }) {
           </div>
 
           <div className="p-4 sm:p-6 md:p-8">
-            {activeTab === "description" && (
-              <div>
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">
-                  Product Description
-                </h3>
-                <p className="text-gray-700 text-base sm:text-lg leading-relaxed mb-6 break-words">
-                  {safeDisplayText(product.description)}
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
-                  <div className="w-full">
-                    <h4 className="font-semibold text-gray-900 mb-3">
-                      Perfect For:
-                    </h4>
-                    <ul className="space-y-2 text-gray-700 text-sm sm:text-base">
-                      <li>• Daily laundry loads</li>
-                      <li>• All fabric types</li>
-                      <li>• Front and top-load washers</li>
-                      <li>• Cold and warm water washing</li>
-                    </ul>
-                  </div>
-                  <div className="w-full">
-                    <h4 className="font-semibold text-gray-900 mb-3">
-                      Benefits:
-                    </h4>
-                    <ul className="space-y-2 text-gray-700 text-sm sm:text-base">
-                      <li>• Convenient pre-measured pods</li>
-                      <li>• No measuring or mess</li>
-                      <li>• Concentrated formula</li>
-                      <li>• Eco-friendly and Biodegradable</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {activeTab === "ingredients" && (
               <div>
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-6">

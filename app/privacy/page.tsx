@@ -46,7 +46,7 @@ export default function Privacy() {
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">Introduction</h3>
                 <p>
                   This Privacy Policy describes how R AND D ESSENTIALS TRADING CO and its affiliates 
-                  (collectively "R AND D ESSENTIALS TRADING CO, we, our, us") collect, use, share, protect or 
+                  (collectively &quot;R AND D ESSENTIALS TRADING CO, we, our, us&quot;) collect, use, share, protect or 
                   otherwise process your information/ personal data through our website https://www.bubblebeads.in
                   (hereinafter referred to as Platform). Please note that you may be able to browse certain sections of the 
                   Platform without registering with us. We do not offer any product/service under this Platform outside 
@@ -150,10 +150,10 @@ export default function Privacy() {
               <div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">Grievance Officer</h3>
                 <p>
-                  Insert Name of the Office:<br/>
-                  Designation:<br/>
-                  Insert Name and Address of the Company:<br/>
-                  Contact us:
+                  Insert Name of the Office: Rohit Malhotra<br/>
+                  Designation: Sales Head<br/>
+                  Insert Name and Address of the Company: 02830-004, Shakti Vihar, St No 4, Phase - 4, Bathinda, Punjab, 151001 <br/>
+                  Contact us: +91 6239881097
                 </p>
               </div>
             </div>
