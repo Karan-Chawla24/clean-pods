@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import Link from "next/link";
 import Header from "../components/Header";
 import FadeInOnScroll from "../components/FadeInOnScroll";
 
@@ -26,7 +26,7 @@ export default function Returns() {
         {/* Page Header */}
         <FadeInOnScroll className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Returns & Exchanges
+            Returns & Refunds
           </h1>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             We want you to be completely satisfied with your BubbleBeads
@@ -53,7 +53,8 @@ export default function Returns() {
               Returns are only applicable if the product is damaged or if items
               are missing from your order. We stand behind the quality of our
               BubbleBeads and want to ensure you receive exactly what you
-              ordered.
+              ordered. Please note that exchanges are not available - only
+              refunds for eligible cases.
             </p>
             <div className="flex items-center text-orange-700">
               <i className="ri-time-line text-base mr-2"></i>
@@ -104,7 +105,7 @@ export default function Returns() {
                 <p className="text-gray-600 mb-3">
                   Email us at{" "}
                   <span className="font-medium text-orange-600">
-                    returns@bubblebeads.com
+                    customercare.bb@outlook.com
                   </span>{" "}
                   with:
                 </p>
@@ -122,11 +123,11 @@ export default function Returns() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900 mb-2">
-                  Wait for Review
+                  Review & Refund Process
                 </h3>
                 <p className="text-gray-600">
                   {
-                    "Our team will review your return request and get back to you within 48 hours with next steps. We'll provide instructions for return shipping if your request is approved."
+                    "Our team will review your return request and get back to you within 48 hours with next steps. Upon successful approval, we will initiate a refund that will be processed to your bank account within 5-7 business days."
                   }
                 </p>
               </div>
@@ -175,61 +176,79 @@ export default function Returns() {
           </div>
         </FadeInOnScroll>
 
-        {/* Timeline */}
-        <FadeInOnScroll
-          delay={0.4}
-          className="bg-white rounded-2xl p-8 shadow-sm border border-orange-100 mb-8"
-        >
-          <div className="flex items-center mb-6">
-            <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-amber-400 rounded-full flex items-center justify-center mr-4">
-              <i className="ri-calendar-line text-white text-xl"></i>
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              Return Timeline
-            </h2>
-          </div>
-          <div className="relative">
-            <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-orange-200"></div>
-            <div className="space-y-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center text-white font-bold text-sm relative z-10">
-                  0
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Delivery Date</h3>
-                  <p className="text-gray-600 text-sm">
-                    Your BubbleBeads order is delivered
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center text-white font-bold text-sm relative z-10">
-                  24-48h
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">Return Window</h3>
-                  <p className="text-gray-600 text-sm">
-                    Submit return request with photos via email
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="w-8 h-8 bg-orange-400 rounded-full flex items-center justify-center text-white font-bold text-sm relative z-10">
-                  48h
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-900">
-                    Review Response
-                  </h3>
-                  <p className="text-gray-600 text-sm">
-                    Our team reviews and responds to your request
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </FadeInOnScroll>
+        
       </div>
+
+      {/* Contact Support Section */}
+      <FadeInOnScroll>
+        <div className="bg-white border-t border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Still Need Help?
+              </h2>
+              <p className="text-xl text-gray-600">
+                Our support team is here to assist you
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+              <div className="text-center">
+                <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="ri-mail-line text-2xl text-orange-600"></i>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Email Support</h3>
+                <p className="text-gray-600 mb-4">
+                  Get detailed help via email
+                </p>
+                <a
+                  href="mailto:customercare.bb@outlook.com"
+                  className="text-orange-600 hover:text-orange-700 font-medium"
+                >
+                  customercare.bb@outlook.com
+                </a>
+              </div>
+
+              <div className="text-center">
+                <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="ri-phone-line text-2xl text-orange-600"></i>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Phone Support</h3>
+                <p className="text-gray-600 mb-4">
+                  Speak with our team directly
+                </p>
+                <a
+                  href="tel:+911234567890"
+                  className="text-orange-600 hover:text-orange-700 font-medium"
+                >
+                  +91 6239881097
+                </a>
+              </div>
+            </div>
+
+            <div className="mt-12 text-center">
+              <p className="text-gray-600 mb-4">
+                Business Hours: Monday - Friday, 9:00 AM - 6:00 PM IST
+              </p>
+              <div className="flex justify-center space-x-6">
+                <Link
+                  href="/shipping"
+                  className="text-orange-600 hover:text-orange-700 font-medium"
+                >
+                  Shipping Info
+                </Link>
+                <Link
+                  href="/contact"
+                  className="text-orange-600 hover:text-orange-700 font-medium"
+                >
+                  Contact Us
+                </Link>
+
+              </div>
+            </div>
+          </div>
+        </div>
+      </FadeInOnScroll>
     </div>
   );
 }

@@ -164,18 +164,11 @@ function OrderSuccessContent() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
-                href="mailto:support@bubblebeads.com"
+                href="mailto:customercare.bb@outlook.com"
                 className="text-orange-600 hover:text-orange-700 cursor-pointer"
               >
                 <i className="ri-mail-line w-4 h-4 inline-block mr-2"></i>
-                support@bubblebeads.com
-              </a>
-              <a
-                href="tel:1-800-BUBBLEBEADS"
-                className="text-orange-600 hover:text-orange-700 cursor-pointer"
-              >
-                <i className="ri-phone-line w-4 h-4 inline-block mr-2"></i>
-                1-800-BUBBLEBEADS
+                customercare.bb@outlook.com
               </a>
             </div>
           </div>

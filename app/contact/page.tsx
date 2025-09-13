@@ -114,10 +114,7 @@ export default function Contact() {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Email</h3>
                   <p className="text-gray-600 text-sm">
-                    support@bubblebeads.com
-                  </p>
-                  <p className="text-gray-600 text-sm">
-                    orders@bubblebeads.com
+                    customercare.bb@outlook.com
                   </p>
                 </div>
               </div>
@@ -128,8 +125,7 @@ export default function Contact() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Phone</h3>
-                  <p className="text-gray-600 text-sm">1-800-BUBBLEBEADS</p>
-                  <p className="text-gray-600 text-sm">+91 98765 43210</p>
+                  <p className="text-gray-600 text-sm">+91 6239881097</p>
                 </div>
               </div>
 
@@ -144,9 +140,6 @@ export default function Contact() {
                   <p className="text-gray-600 text-sm">
                     Mon-Fri: 9:00 AM - 6:00 PM
                   </p>
-                  <p className="text-gray-600 text-sm">
-                    Sat: 10:00 AM - 4:00 PM
-                  </p>
                 </div>
               </div>
 
@@ -159,9 +152,11 @@ export default function Contact() {
                   <p className="text-gray-600 text-sm">
                     BubbleBeads Headquarters
                     <br />
-                    123 Laundry Street, Mumbai
-                    <br />
-                    Maharashtra 400001, India
+                    Premium Laundry Detergent Pods
+                     <br />
+                    02830-004, Shakti Vihar, St No 4, Phase 4
+                     <br />
+                    Bathinda, Punjab 151001
                   </p>
                 </div>
               </div>

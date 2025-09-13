@@ -322,11 +322,11 @@ function generateInvoiceHtml(order: any): string {
                 <div class="company-info">
                     <div class="logo">BubbleBeads</div>
                     <div class="company-details">
-                        Premium Laundry Detergent Pods<br>
-                        123 Business Street<br>
-                        Mumbai, Maharashtra 400001<br>
-                        Phone: +91 98765 43210<br>
-                        Email: support@bubble-beads.com
+                        Premium Laundry Detergent Pods<br>              
+                        02830-004, Shakti Vihar, St No 4, Phase 4<br>
+                        Bathinda, Punjab 151001<br>
+                        Phone: +91 6239881097<br>
+                        Email: customercare.bb@outlook.com
                     </div>
                 </div>
                 <div class="invoice-info">

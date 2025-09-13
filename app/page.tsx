@@ -256,14 +256,7 @@ export default function Home() {
             <div>
               <h5 className="font-semibold text-sky-700 mb-4">Support</h5>
               <ul className="space-y-2 text-gray-600">
-                <li>
-                  <Link
-                    href="/help"
-                    className="hover:text-orange-500 transition-colors"
-                  >
-                    Help Center
-                  </Link>
-                </li>
+
                 <li>
                   <Link
                     href="/shipping"
@@ -280,21 +273,37 @@ export default function Home() {
                     Returns
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    href="/terms-and-conditions"
+                    className="hover:text-orange-500 transition-colors"
+                  >
+                    T&amp;C
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/privacy"
+                    className="hover:text-orange-500 transition-colors"
+                  >
+                    Privacy Policy
+                  </Link>
+                </li>
               </ul>
             </div>
 
             <div>
               <h5 className="font-semibold text-sky-700 mb-4">Contact</h5>
               <ul className="space-y-2 text-gray-600">
-                <li>support@bubblebeads.com</li>
-                <li>1-800-BUBBLEBEADS</li>
+                <li>customercare.bb@outlook.com</li>
+                <li>+91 6239881097</li>
                 <li>Mon-Fri 9AM-6PM</li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-gray-200 mt-8 pt-8 text-center text-gray-500">
-            <p>&copy; 2024 BubbleBeads. All rights reserved.</p>
+            <p>&copy; 2025 BubbleBeads. All rights reserved.</p>
           </div>
         </div>
       </footer>

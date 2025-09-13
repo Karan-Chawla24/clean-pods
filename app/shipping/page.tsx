@@ -3,6 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import Link from "next/link";
 import Header from "../components/Header";
 import FadeInOnScroll from "../components/FadeInOnScroll";
 
@@ -51,10 +52,10 @@ export default function Shipping() {
               Standard Delivery
             </h3>
             <p className="text-orange-700 text-lg font-medium mb-2">
-              5-7 Business Days
+              3-4 Business Days
             </p>
             <p className="text-gray-600">
-              Your BubbleBeads order will be delivered within 5-7 business days
+              Your BubbleBeads order will be delivered within 3-4 business days
               from the date of order confirmation. Delivery times may vary based
               on your location and local courier schedules.
             </p>
@@ -150,11 +151,10 @@ export default function Shipping() {
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <h3 className="font-semibold text-gray-900 mb-2">
-                Free Shipping
+                Shipping
               </h3>
               <p className="text-gray-600 mb-4">
-                We offer free standard shipping on all BubbleBeads orders across
-                India.
+                We offer simple shipping rates: ₹99 for 1 box, ₹49 for 2 boxes, and free standard shipping on 3 or more BubbleBeads boxes.
               </p>
             </div>
             <div>
@@ -216,15 +216,7 @@ export default function Shipping() {
             </li>
             <li>
               <span className="font-semibold text-orange-700">
-                Delayed / Lost Packages:
-              </span>
-              {
-                " In rare cases of courier delays or lost packages, please contact our support team. We’ll ensure your order is either reshipped or refunded."
-              }
-            </li>
-            <li>
-              <span className="font-semibold text-orange-700">
-                Returns & Exchanges:
+                Returns & Refunds:
               </span>
               {" Please refer to our "}
               <a
@@ -238,6 +230,76 @@ export default function Shipping() {
           </ul>
         </FadeInOnScroll>
       </div>
+
+      {/* Contact Support Section */}
+      <FadeInOnScroll>
+        <div className="bg-white border-t border-gray-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Still Need Help?
+              </h2>
+              <p className="text-xl text-gray-600">
+                Our support team is here to assist you
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
+              <div className="text-center">
+                <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="ri-mail-line text-2xl text-orange-600"></i>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Email Support</h3>
+                <p className="text-gray-600 mb-4">
+                  Get detailed help via email
+                </p>
+                <a
+                  href="mailto:customercare.bb@outlook.com"
+                  className="text-orange-600 hover:text-orange-700 font-medium"
+                >
+                  customercare.bb@outlook.com
+                </a>
+              </div>
+
+              <div className="text-center">
+                <div className="bg-orange-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <i className="ri-phone-line text-2xl text-orange-600"></i>
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Phone Support</h3>
+                <p className="text-gray-600 mb-4">
+                  Speak with our team directly
+                </p>
+                <a
+                  href="tel:+911234567890"
+                  className="text-orange-600 hover:text-orange-700 font-medium"
+                >
+                  +91 6239881097
+                </a>
+              </div>
+            </div>
+
+            <div className="mt-12 text-center">
+              <p className="text-gray-600 mb-4">
+                Business Hours: Monday - Friday, 9:00 AM - 6:00 PM IST
+              </p>
+              <div className="flex justify-center space-x-6">
+                <Link
+                  href="/shipping"
+                  className="text-orange-600 hover:text-orange-700 font-medium"
+                >
+                  Shipping Info
+                </Link>
+                <Link
+                  href="/contact"
+                  className="text-orange-600 hover:text-orange-700 font-medium"
+                >
+                  Contact Us
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </FadeInOnScroll>
     </div>
   );
 }
