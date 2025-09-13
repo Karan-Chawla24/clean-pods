@@ -102,16 +102,78 @@ function generateInvoiceHtml(order: any): string {
     });
   };
 
-  // Calculate tax and subtotal from total (18% GST)
-  const calculateTax = (total: number) => {
-    // If total includes tax, extract it: total = subtotal + (subtotal * 0.18)
-    // So: total = subtotal * 1.18, therefore subtotal = total / 1.18
-    const subtotal = total / 1.18;
-    const tax = total - subtotal;
-    return { subtotal: Math.round(subtotal), tax: Math.round(tax) };
+  // Extract state from address to determine GST breakdown
+  const extractStateFromAddress = (address: string): string => {
+    const addressLower = address.toLowerCase();
+    if (addressLower.includes('punjab') || addressLower.includes('pb')) {
+      return 'punjab';
+    }
+    return 'other';
   };
 
-  const { subtotal, tax } = calculateTax(order.total);
+  // Calculate tax and subtotal from total (18% GST)
+  const calculateTaxWithGST = (total: number, customerAddress: string) => {
+    const state = extractStateFromAddress(customerAddress);
+    const isPunjab = state.toLowerCase() === 'punjab';
+    
+    // Calculate subtotal by removing GST (total includes 18% tax)
+    const subtotal = total / 1.18;
+    const totalTax = total - subtotal;
+    
+    if (isPunjab) {
+      // For Punjab: Split tax into CGST and SGST (equal halves)
+      const cgst = totalTax / 2;
+      const sgst = totalTax / 2;
+      return {
+        subtotal: Math.round(subtotal * 100) / 100,
+        cgst: Math.round(cgst * 100) / 100,
+        sgst: Math.round(sgst * 100) / 100,
+        igst: 0,
+        totalTax: Math.round(totalTax * 100) / 100,
+        isPunjab: true
+      };
+    } else {
+      // For other states: Show entire tax as IGST
+      return {
+        subtotal: Math.round(subtotal * 100) / 100,
+        cgst: 0,
+        sgst: 0,
+        igst: Math.round(totalTax * 100) / 100,
+        totalTax: Math.round(totalTax * 100) / 100,
+        isPunjab: false
+      };
+    }
+  };
+
+  // Calculate shipping based on total number of boxes (considering combo products)
+  const calculateShipping = (items: any[]) => {
+    const totalBoxes = items.reduce((total, item) => {
+      let boxesPerItem = 1; // default for single box
+      
+      // Check product ID or name to determine boxes per item
+      const productId = item.id || item.productId;
+      const productName = item.name || item.productName || '';
+      
+      if (productId === 'combo-2box' || productName.includes('2 Box Combo')) {
+        boxesPerItem = 2;
+      } else if (productId === 'combo-3box' || productName.includes('3 Box Combo')) {
+        boxesPerItem = 3;
+      }
+      
+      return total + (boxesPerItem * (item.quantity || 1));
+    }, 0);
+    
+    // Shipping logic: 3+ boxes = free, 2 boxes = 49, 1 box = 99
+    if (totalBoxes >= 3) return 0; // Free shipping for 3+ boxes
+    if (totalBoxes === 2) return 49; // ₹49 for 2 boxes
+    return 99; // ₹99 for 1 box
+  };
+  
+  const shippingCost = calculateShipping(order.items);
+  
+  // Calculate GST only on product amount (excluding shipping)
+  const productAmount = order.total - shippingCost;
+  const taxDetails = calculateTaxWithGST(productAmount, order.address);
 
   return `
     <!DOCTYPE html>
@@ -342,9 +404,9 @@ function generateInvoiceHtml(order: any): string {
             <div class="tax-info">
                 <h3>Tax Information</h3>
                 <div class="tax-details">
-                    <strong>GST Number:</strong> 27AABCU9603R1ZX<br>
-                    <strong>PAN Number:</strong> AABCU9603R<br>
-                    <strong>Tax Rate:</strong> 18% GST (CGST 9% + SGST 9%)
+                    <strong>GST Number:</strong> 03ABLFR9622B1ZC<br>
+                    <strong>PAN Number:</strong> ABLFR9622B<br>
+                    <strong>Tax Rate:</strong> 18% GST ${taxDetails.isPunjab ? '(CGST 9% + SGST 9%)' : '(IGST 18%)'}
                 </div>
             </div>
 
@@ -398,23 +460,28 @@ function generateInvoiceHtml(order: any): string {
                 <table class="totals-table">
                     <tr>
                         <td class="label">Subtotal (Before Tax):</td>
-                        <td class="amount">${formatPrice(subtotal)}</td>
+                        <td class="amount">${formatPrice(taxDetails.subtotal)}</td>
                     </tr>
+                    ${taxDetails.isPunjab ? `
                     <tr>
                         <td class="label">CGST (9%):</td>
-                        <td class="amount">${formatPrice(tax / 2)}</td>
+                        <td class="amount">${formatPrice(taxDetails.cgst)}</td>
                     </tr>
                     <tr>
                         <td class="label">SGST (9%):</td>
-                        <td class="amount">${formatPrice(tax / 2)}</td>
-                    </tr>
+                        <td class="amount">${formatPrice(taxDetails.sgst)}</td>
+                    </tr>` : `
+                    <tr>
+                        <td class="label">IGST (18%):</td>
+                        <td class="amount">${formatPrice(taxDetails.igst)}</td>
+                    </tr>`}
                     <tr>
                         <td class="label">Total Tax (18% GST):</td>
-                        <td class="amount">${formatPrice(tax)}</td>
+                        <td class="amount">${formatPrice(taxDetails.totalTax)}</td>
                     </tr>
                     <tr>
                         <td class="label">Shipping & Handling:</td>
-                        <td class="amount">0.00</td>
+                        <td class="amount">${shippingCost === 0 ? 'FREE' : formatPrice(shippingCost)}</td>
                     </tr>
                     <tr class="total-amount-final">
                         <td class="label"><strong>Total Amount:</strong></td>

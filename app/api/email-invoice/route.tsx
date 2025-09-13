@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
   page: { flexDirection: "column", backgroundColor: "#ffffff", padding: 30, fontFamily: "Helvetica" },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20, paddingBottom: 15, borderBottomWidth: 1, borderBottomColor: "#e5e7eb" },
   companyInfo: { flex: 1 },
-  title: { fontSize: 24, fontWeight: "bold", color: "#ff6b35", marginBottom: 5 },
+  title: { fontSize: 12, fontWeight: "bold", color: "#333333", marginBottom: 5 },
   companyDetails: { fontSize: 10, color: "#666666", lineHeight: 1.3 },
   invoiceInfo: { flex: 1, textAlign: "right" },
   invoiceTitle: { fontSize: 20, fontWeight: "bold", color: "#333333", marginBottom: 5 },
@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   totalValue: { fontSize: 10, fontWeight: "bold", color: "#333333", textAlign: "right", flex: 2 },
   finalTotalRow: { backgroundColor: "#f8f9fa", borderTopWidth: 1, borderTopColor: "#dee2e6", paddingVertical: 5, paddingHorizontal: 8, borderTop: "1px solid #333", paddingTop: 8, marginTop: 8 },
   finalTotalLabel: { fontSize: 12, fontWeight: "bold", color: "#333", textAlign: "right", flex: 3 },
-  finalTotalValue: { fontSize: 12, fontWeight: "bold", color: "#ff6b35", textAlign: "right", flex: 2 },
+  finalTotalValue: { fontSize: 12, fontWeight: "bold", color: "#333333", textAlign: "right", flex: 2 },
   footer: { marginTop: 25, paddingTop: 15, borderTopWidth: 1, borderTopColor: "#e5e7eb", textAlign: "center" },
   footerText: { fontSize: 10, color: "#666666", marginBottom: 3 },
 });
@@ -53,18 +53,49 @@ const styles = StyleSheet.create({
 function createInvoiceDocument(order: any) {
   const formatPrice = (price: number | undefined | null) => price ? price.toLocaleString("en-IN") : "0";
   
-  // Calculate subtotal from items (prices are tax-inclusive)
-  const calculateSubtotal = (items: any[]) => {
-    return items.reduce((sum, item) => {
-      const itemPrice = item.price || 0;
-      const itemQuantity = item.quantity || 1;
-      return sum + (itemPrice * itemQuantity);
-    }, 0);
+  // Extract state from address to determine GST breakdown
+  const extractStateFromAddress = (address: string): string => {
+    const addressLower = address.toLowerCase();
+    if (addressLower.includes('punjab') || addressLower.includes('pb')) {
+      return 'punjab';
+    }
+    return 'other';
   };
-  
-  const subtotal = calculateSubtotal(order.items);
-  const tax = 0; // Tax is already included in item prices
-  
+
+  // Calculate tax from total (total includes 18% GST)
+  const calculateTaxWithGST = (total: number, customerAddress: string) => {
+    const state = extractStateFromAddress(customerAddress);
+    const isPunjab = state.toLowerCase() === 'punjab';
+    
+    // Calculate subtotal by removing GST (total includes 18% tax)
+    const subtotal = total / 1.18;
+    const totalTax = total - subtotal;
+    
+    if (isPunjab) {
+      // For Punjab: Split tax into CGST and SGST (equal halves)
+      const cgst = totalTax / 2;
+      const sgst = totalTax / 2;
+      return {
+        subtotal: Math.round(subtotal * 100) / 100,
+        totalTax: Math.round(totalTax * 100) / 100,
+        cgst: Math.round(cgst * 100) / 100,
+        sgst: Math.round(sgst * 100) / 100,
+        igst: 0,
+        isPunjab: true
+      };
+    } else {
+      // For other states: Show entire tax as IGST
+      return {
+        subtotal: Math.round(subtotal * 100) / 100,
+        totalTax: Math.round(totalTax * 100) / 100,
+        cgst: 0,
+        sgst: 0,
+        igst: Math.round(totalTax * 100) / 100,
+        isPunjab: false
+      };
+    }
+  };
+
   // Calculate shipping based on total number of boxes (considering combo products)
   const calculateShipping = (items: any[]) => {
     const totalBoxes = items.reduce((total, item) => {
@@ -90,6 +121,10 @@ function createInvoiceDocument(order: any) {
   };
   
   const shippingCost = calculateShipping(order.items);
+  
+  // Calculate GST only on product amount (excluding shipping)
+  const productAmount = order.total - shippingCost;
+  const taxDetails = calculateTaxWithGST(productAmount, order.address);
 
   return (
     <Document>
@@ -122,7 +157,7 @@ function createInvoiceDocument(order: any) {
           <Text style={styles.taxDetails}>
             GST Number: 03ABLFR9622B1ZC{"\n"}
             PAN Number: ABLFR9622B{"\n"}
-            {/* Tax Rate: 18% GST (CGST 9% + SGST 9%) */}
+            Tax Rate: 18% GST {taxDetails.isPunjab ? '(CGST 9% + SGST 9%)' : '(IGST 18%)'}
           </Text>
         </View>
 
@@ -175,19 +210,28 @@ function createInvoiceDocument(order: any) {
           <View style={styles.totalsTable}>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Subtotal (Before Tax):</Text>
-              <Text style={styles.totalValue}>{formatPrice(subtotal)}</Text>
+              <Text style={styles.totalValue}>{formatPrice(taxDetails.subtotal)}</Text>
             </View>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>CGST (9%):</Text>
-              <Text style={styles.totalValue}>0</Text>
-            </View>
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>SGST (9%):</Text>
-              <Text style={styles.totalValue}>0</Text>
-            </View>
+            {taxDetails.isPunjab ? (
+              <>
+                <View style={styles.totalRow}>
+                  <Text style={styles.totalLabel}>CGST (9%):</Text>
+                  <Text style={styles.totalValue}>{formatPrice(taxDetails.cgst)}</Text>
+                </View>
+                <View style={styles.totalRow}>
+                  <Text style={styles.totalLabel}>SGST (9%):</Text>
+                  <Text style={styles.totalValue}>{formatPrice(taxDetails.sgst)}</Text>
+                </View>
+              </>
+            ) : (
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>IGST (18%):</Text>
+                <Text style={styles.totalValue}>{formatPrice(taxDetails.igst)}</Text>
+              </View>
+            )}
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Total Tax (18% GST):</Text>
-              <Text style={styles.totalValue}>0</Text>
+              <Text style={styles.totalValue}>{formatPrice(taxDetails.totalTax)}</Text>
             </View>
             <View style={styles.totalRow}>
               <Text style={styles.totalLabel}>Shipping & Handling:</Text>
