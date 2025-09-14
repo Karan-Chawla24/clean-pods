@@ -26,7 +26,7 @@ export default function About() {
             About BubbleBeads
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Hard on Stains, Soft on Clothes — That's the BubbleBeads way.
+            Hard on Stains, Soft on Clothes — That&apos;s the BubbleBeads way.
           </p>
         </div>
 
@@ -38,13 +38,13 @@ export default function About() {
                 Our Story
               </h2>
               <p className="text-gray-600 mb-4">
-                At BubbleBeads, we're redefining the way you do laundry — one powerful pod at a time. Tired of messy powders, bulky bottles, and wasteful routines, we created a smarter solution: ultra-concentrated laundry pods that are tough on stains, gentle on fabrics, and kind to the planet.
+                At BubbleBeads, we&apos;re redefining the way you do laundry — one powerful pod at a time. Tired of messy powders, bulky bottles, and wasteful routines, we created a smarter solution: ultra-concentrated laundry pods that are tough on stains, gentle on fabrics, and kind to the planet.
               </p>
               <p className="text-gray-600 mb-4">
-                We're not just here to clean your clothes — we're here to clean up the laundry industry. Our pods are pre-measured, plastic-free, and packed with plant-based cleaning power, making laundry day faster, easier, and more sustainable than ever.
+                We&apos;re not just here to clean your clothes — we&apos;re here to clean up the laundry industry. Our pods are pre-measured, plastic-free, and packed with plant-based cleaning power, making laundry day faster, easier, and more sustainable than ever.
               </p>
               <p className="text-gray-600">
-                Whether you're a busy parent, a college student, or someone who just loves the smell of fresh laundry — welcome to the future of clean.
+                Whether you&apos;re a busy parent, a college student, or someone who just loves the smell of fresh laundry — welcome to the future of clean.
               </p>
             </div>
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-8">
@@ -56,7 +56,7 @@ export default function About() {
                   Our Mission
                 </h3>
                 <p className="text-gray-700">
-                  Hard on Stains, Soft on Clothes — That's the BubbleBeads way.
+                  Hard on Stains, Soft on Clothes — That&apos;s the BubbleBeads way.
                 </p>
               </div>
             </div>
