@@ -26,8 +26,7 @@ export default function About() {
             About BubbleBeads
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Revolutionizing laundry care with innovative, eco-friendly detergent
-            pods designed for modern households.
+            Hard on Stains, Soft on Clothes — That's the BubbleBeads way.
           </p>
         </div>
 
@@ -39,20 +38,13 @@ export default function About() {
                 Our Story
               </h2>
               <p className="text-gray-600 mb-4">
-                BubbleBeads was born from a simple observation: traditional
-                laundry detergents were messy, wasteful, and harmful to the
-                environment. We set out to create a better solution.
+                At BubbleBeads, we're redefining the way you do laundry — one powerful pod at a time. Tired of messy powders, bulky bottles, and wasteful routines, we created a smarter solution: ultra-concentrated laundry pods that are tough on stains, gentle on fabrics, and kind to the planet.
               </p>
               <p className="text-gray-600 mb-4">
-                Our journey began in 2020 when our founders, a team of chemical
-                engineers and environmental scientists, came together with a
-                shared vision: to revolutionize laundry care with products that
-                are both effective and eco-friendly.
+                We're not just here to clean your clothes — we're here to clean up the laundry industry. Our pods are pre-measured, plastic-free, and packed with plant-based cleaning power, making laundry day faster, easier, and more sustainable than ever.
               </p>
               <p className="text-gray-600">
-                Today, BubbleBeads is proud to serve thousands of households
-                across India, providing premium laundry solutions that make
-                cleaning easier, more efficient, and better for our planet.
+                Whether you're a busy parent, a college student, or someone who just loves the smell of fresh laundry — welcome to the future of clean.
               </p>
             </div>
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-8">
@@ -64,9 +56,7 @@ export default function About() {
                   Our Mission
                 </h3>
                 <p className="text-gray-700">
-                  To provide innovative, sustainable laundry solutions that
-                  simplify household cleaning while protecting our environment
-                  for future generations.
+                  Hard on Stains, Soft on Clothes — That's the BubbleBeads way.
                 </p>
               </div>
             </div>

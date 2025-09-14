@@ -137,7 +137,7 @@ function ProductCard({ product, onAddToCart, isPopular = false }: ProductCardPro
         <div className="mb-6">
           <h4 className="font-semibold text-gray-900 mb-3 text-center">Key Benefits:</h4>
           <ul className="text-sm text-gray-600 space-y-2">
-            {product.features.slice(0, 4).map((feature, index) => (
+            {product.features.slice(0, 5).map((feature, index) => (
               <li key={index} className="flex items-start">
                 <span className="text-orange-500 mr-2 mt-0.5 flex-shrink-0">✓</span>
                 <span>{safeDisplayText(feature, 80)}</span>
@@ -262,7 +262,7 @@ export default function Products() {
               Choose the perfect pack size for your laundry needs. All our pods deliver the same premium 5-in-1 cleaning power with amazing discounts!
             </p>
             <div className="inline-block bg-gradient-to-r from-orange-400 to-amber-400 text-white px-6 py-3 rounded-full font-semibold">
-              🚚 Free shipping on 3+ boxes • 💰 Save up to 40%
+              🚚 Free shipping on 3 or more boxes • 💰 Save up to 40%
             </div>
           </div>
         </FadeInOnScroll>

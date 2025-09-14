@@ -184,41 +184,54 @@ export default function Home() {
             </h3>
           </FadeInOnScroll>
 
-          <div className="grid md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
             <FadeInOnScroll delay={0.1} className="text-center">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="ri-drop-line text-orange-500 w-8 h-8 flex items-center justify-center"></i>
-              </div>
+              <div className="text-4xl mb-3">🧽</div>
               <h4 className="text-xl font-bold text-gray-900 mb-2">
-                Concentrated Formula
+                Powerful Stain Removal
               </h4>
               <p className="text-gray-600">
-                Powerful cleaning in a compact pod. Less waste, more results.
+                Advanced formula removes tough stains
               </p>
             </FadeInOnScroll>
 
             <FadeInOnScroll delay={0.2} className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="ri-leaf-line text-green-600 w-8 h-8 flex items-center justify-center"></i>
-              </div>
+              <div className="text-4xl mb-3">👕</div>
               <h4 className="text-xl font-bold text-gray-900 mb-2">
-                Eco-Friendly
+                Soften the Clothes
               </h4>
               <p className="text-gray-600">
-                Biodegradable ingredients that are safe for you and the
-                environment.
+                Gentle care for all fabric types
               </p>
             </FadeInOnScroll>
 
             <FadeInOnScroll delay={0.3} className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i className="ri-shield-check-line text-purple-600 w-8 h-8 flex items-center justify-center"></i>
-              </div>
+              <div className="text-4xl mb-3">🌺</div>
               <h4 className="text-xl font-bold text-gray-900 mb-2">
-                Safe & Gentle
+                Long Lasting Fragrance
               </h4>
               <p className="text-gray-600">
-                Dermatologically tested and safe for all fabric types.
+                Fresh scent that lasts all day
+              </p>
+            </FadeInOnScroll>
+
+            <FadeInOnScroll delay={0.4} className="text-center">
+              <div className="text-4xl mb-3">🛡️</div>
+              <h4 className="text-xl font-bold text-gray-900 mb-2">
+                Colour Protection
+              </h4>
+              <p className="text-gray-600">
+                Keeps colors bright and vibrant
+              </p>
+            </FadeInOnScroll>
+
+            <FadeInOnScroll delay={0.5} className="text-center">
+              <div className="text-4xl mb-3">💨</div>
+              <h4 className="text-xl font-bold text-gray-900 mb-2">
+                Dust Removal
+              </h4>
+              <p className="text-gray-600">
+                Eliminates dust and allergens
               </p>
             </FadeInOnScroll>
           </div>
@@ -297,7 +310,7 @@ export default function Home() {
               <ul className="space-y-2 text-gray-600">
                 <li>customercare.bb@outlook.com</li>
                 <li>+91 6239881097</li>
-                <li>Mon-Fri 9AM-6PM</li>
+                <li>Mon-Sun 9AM-6PM</li>
               </ul>
             </div>
           </div>

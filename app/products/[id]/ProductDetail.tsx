@@ -257,10 +257,6 @@ export default function ProductDetail({ productId }: { productId: string }) {
                 <i className="ri-shield-check-line text-green-600 w-5 h-5 mr-2 flex items-center justify-center"></i>
                 <span className="text-sm">Secure Payment</span>
               </div>
-              <div className="flex items-center text-gray-600">
-                <i className="ri-truck-line text-orange-600 w-5 h-5 mr-2 flex items-center justify-center"></i>
-                <span className="text-sm">Free Shipping</span>
-              </div>
             </div>
           </div>
         </div>
