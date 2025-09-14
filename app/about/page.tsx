@@ -26,7 +26,7 @@ export default function About() {
             About BubbleBeads
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Hard on Stains, Soft on Clothes — That&apos;s the BubbleBeads way.
+            Soft on Clothes Hard on Stains  — That&apos;s the BubbleBeads way.
           </p>
         </div>
 
@@ -56,7 +56,7 @@ export default function About() {
                   Our Mission
                 </h3>
                 <p className="text-gray-700">
-                  Hard on Stains, Soft on Clothes — That&apos;s the BubbleBeads way.
+                  Soft on Clothes Hard on Stains  — That&apos;s the BubbleBeads way.
                 </p>
               </div>
             </div>

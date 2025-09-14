@@ -56,16 +56,16 @@ export default function Header() {
                 Products
               </Link>
               <Link
-                href="/blog"
-                className="text-gray-700 hover:text-orange-600 transition-colors"
-              >
-                Blog
-              </Link>
-              <Link
                 href="/about"
                 className="text-gray-700 hover:text-orange-600 transition-colors"
               >
                 About
+              </Link>
+              <Link
+                href="/blog"
+                className="text-gray-700 hover:text-orange-600 transition-colors"
+              >
+                Blog
               </Link>
               <Link
                 href="/contact"

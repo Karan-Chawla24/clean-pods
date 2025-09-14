@@ -150,7 +150,7 @@ export default function Contact() {
                 <div>
                   <h3 className="font-semibold text-gray-900 mb-1">Address</h3>
                   <p className="text-gray-600 text-sm">
-                    BubbleBeads Headquarters
+                    R & D Headquarters
                     <br />
                     Premium Laundry Detergent Pods
                      <br />

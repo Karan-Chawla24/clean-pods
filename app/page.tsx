@@ -247,7 +247,7 @@ export default function Home() {
                 BubbleBeads
               </h1>
               <p className="text-gray-600">
-                Premium detergent pods for the modern household. Clean, simple,
+                Premium 5-in-1 laundry pods for the modern household. Clean, simple,
                 effective.
               </p>
             </div>
@@ -257,10 +257,10 @@ export default function Home() {
               <ul className="space-y-2 text-gray-600">
                 <li>
                   <Link
-                    href="/products/essential"
+                    href="/products"
                     className="hover:text-orange-500 transition-colors"
                   >
-                    Essential Clean
+                    5-in-1 Laundry Pod
                   </Link>
                 </li>
               </ul>

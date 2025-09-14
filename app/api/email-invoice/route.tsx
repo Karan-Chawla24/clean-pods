@@ -196,7 +196,7 @@ function createInvoiceDocument(order: any) {
           </View>
           {order.items.map((item: any, index: number) => (
             <View key={index} style={styles.tableRow}>
-              <Text style={[styles.tableCell, { flex: 3 }]}>{item.name || item.productName || "Essential Clean Pod"}</Text>
+              <Text style={[styles.tableCell, { flex: 3 }]}>{item.name || item.productName || "5-in-1 Laundry Pod"}</Text>
               <Text style={[styles.tableCell, { flex: 1, textAlign: "center" }]}>{item.quantity || 1}</Text>
               <Text style={[styles.tableCell, { flex: 2, textAlign: "right" }]}>{formatPrice(item.price)}</Text>
               <Text style={[styles.tableCell, { flex: 2, textAlign: "right" }]}>{formatPrice((item.price || 0) * (item.quantity || 1))}</Text>
