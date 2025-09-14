@@ -274,7 +274,7 @@ For support and questions:
 
 - Email: support@bubblebeads.com
 - Phone: 1-800-BUBBLEBEADS
-- Hours: Mon-Fri 9AM-6PM
+- Hours: Mon-Sun 9AM-6PM
 
 ---
 

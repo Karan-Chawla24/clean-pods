@@ -138,7 +138,7 @@ export default function Contact() {
                     Business Hours
                   </h3>
                   <p className="text-gray-600 text-sm">
-                    Mon-Fri: 9:00 AM - 6:00 PM
+                    Mon-Sun: 9:00 AM - 6:00 PM
                   </p>
                 </div>
               </div>
