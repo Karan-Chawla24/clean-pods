@@ -69,9 +69,9 @@ Our pods are formulated with biodegradable ingredients and water-soluble packagi
 ## Conclusion
 
 Laundry pods represent the future of fabric care - combining convenience, effectiveness, and environmental responsibility in one innovative package. Make the switch today and experience the difference!`,
-    image: "/Single.jpg",
+    image: "/tips.jpg",
     author: "BubbleBeads Team",
-    publishedAt: "2024-01-15",
+    publishedAt: "2025-08-15",
     readTime: "5 min read",
     tags: ["Laundry Tips", "Product Guide", "Cleaning"],
   },
@@ -127,7 +127,7 @@ Higher-quality garments last longer and require less frequent washing, reducing 
 ## The Bottom Line
 
 Small changes in your laundry routine can make a big difference for the environment. Start with one or two tips and gradually incorporate more as they become habits.`,
-    image: "/fivein1.jpg",
+    image: "/tips.jpg",
     author: "BubbleBeads Team",
     publishedAt: "2024-01-10",
     readTime: "4 min read",
@@ -210,7 +210,7 @@ Some stains may be permanent, especially if they've been set by heat or have bee
 Using a high-quality, enzyme-rich detergent like our 5-in-1 pods can prevent many stains from setting in the first place. The enzymes break down proteins and other stain-causing compounds during the wash cycle.
 
 Remember, the key to successful stain removal is quick action and the right technique for each type of stain!`,
-    image: "/three.jpg",
+    image: "/stain.jpg",
     author: "BubbleBeads Team",
     publishedAt: "2024-01-05",
     readTime: "6 min read",
@@ -309,7 +309,7 @@ This causes odors and bacteria growth. Always dry clothes promptly.
 
 ## Conclusion
 Laundry doesn’t have to be complicated. By avoiding these mistakes and using pre-measured pods, you ensure cleaner, fresher, and longer-lasting clothes with every wash.`,
-  image: "/single.jpg",
+  image: "/mistakes.jpg",
   author: "BubbleBeads Team",
   publishedAt: "2024-04-20",
   readTime: "5 min read",
@@ -370,7 +370,7 @@ No guessing, no measuring. Just one pod per wash makes traveling stress-free.
 
 ## Conclusion
 For frequent travelers, students, or professionals, pods are the ultimate travel laundry hack—clean clothes, no mess, anywhere you go.`,
-  image: "/single.jpg",
+  image: "/gamechanger.jpg",
   author: "BubbleBeads Team",
   publishedAt: "2024-05-12",
   readTime: "4 min read",
