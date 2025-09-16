@@ -136,6 +136,7 @@ export default function Checkout() {
           name: `${data.firstName} ${data.lastName}`,
           email: data.email,
           phone: data.phone,
+          address: `${data.address}, ${data.city}, ${data.state} - ${data.pincode}`,
         },
       };
 

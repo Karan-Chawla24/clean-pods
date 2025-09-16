@@ -10,7 +10,25 @@ import { safeLogError } from "../../../lib/security/logging";
 
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    // Get authentication info from Clerk using standard cookie-based session
+    const authResult = await auth();
+    const user = await currentUser();
+    
+    // Fallback: if auth() doesn't return userId, try to extract from JWT
+    let userId = authResult.userId;
+    if (!userId) {
+      const sessionCookie = request.headers.get('cookie')?.split(';').find(c => c.trim().startsWith('__session'));
+      if (sessionCookie) {
+        try {
+          const jwt = sessionCookie.split('=')[1];
+          const payload = jwt.split('.')[1];
+          const jwtPayload = JSON.parse(Buffer.from(payload, 'base64').toString());
+          userId = jwtPayload?.sub;
+        } catch (e) {
+          // JWT decode failed
+        }
+      }
+    }
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -27,6 +45,12 @@ export async function GET(request: NextRequest) {
         orderDate: "desc",
       },
     });
+
+    // console.log('Orders API Debug:', {
+    //   userId,
+    //   ordersCount: orders.length,
+    //   orders: orders.map(o => ({ id: o.id, userId: o.userId, total: o.total, itemsCount: o.items.length }))
+    // });
 
     return NextResponse.json(orders);
   } catch (error) {
@@ -50,8 +74,25 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
-    const { userId } = await auth();
-
+    // Get authentication info from Clerk using standard cookie-based session
+    const authResult = await auth();
+    
+    // Fallback: if auth() doesn't return userId, try to extract from JWT
+    let userId = authResult.userId;
+    if (!userId) {
+      const sessionCookie = request.headers.get('cookie')?.split(';').find(c => c.trim().startsWith('__session'));
+      if (sessionCookie) {
+        try {
+          const jwt = sessionCookie.split('=')[1];
+          const payload = jwt.split('.')[1];
+          const jwtPayload = JSON.parse(Buffer.from(payload, 'base64').toString());
+          userId = jwtPayload?.sub;
+        } catch (e) {
+          // JWT decode failed
+        }
+      }
+    }
+    
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

@@ -62,6 +62,8 @@ export default function Orders() {
   const { orders: storeOrders, clearCart } = useAppStore();
 
   useEffect(() => {
+    console.log('Client auth status:', { isLoaded, userId: user?.id });
+    
     if (!isLoaded || !user) {
       if (isLoaded && !user) {
         router.push(
@@ -74,16 +76,18 @@ export default function Orders() {
     if (isLoaded && user) {
       const fetchOrders = async () => {
         try {
-          const token = await getToken();
-          const response = await fetch("/api/user/orders", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          console.log('Fetching orders for user:', user.id);
+          // For same-origin requests, Clerk automatically handles authentication via cookies
+          // No need to manually send Bearer token for same-origin API routes
+          const response = await fetch("/api/user/orders");
+          console.log('Orders API response status:', response.status);
           if (!response.ok) {
+            const errorText = await response.text();
+            console.error('Orders API error:', errorText);
             throw new Error("Failed to fetch orders");
           }
           const data = await response.json();
+          console.log('Orders data received:', data);
           setOrders(Array.isArray(data) ? data : data.orders || []);
         } catch (err) {
           console.error("Error fetching orders:", err);
@@ -101,16 +105,11 @@ export default function Orders() {
   // Generate secure JWT token for invoice access
   const generateInvoiceToken = async (orderId: string): Promise<string> => {
     try {
-      const token = await getToken();
-      if (!token) {
-        throw new Error("User not authenticated");
-      }
-
+      // Use cookie-based authentication for same-origin requests
       const response = await fetch("/api/generate-invoice-token", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ orderId }),
       });

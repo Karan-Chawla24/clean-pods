@@ -30,6 +30,7 @@ model Order {
   id              String      @id @default(cuid())
   merchantOrderId String?     @unique
   phonePeOrderId  String?     @unique
+  transactionId   String?
   paymentId       String
   total           Float
   orderDate       DateTime    @default(now())

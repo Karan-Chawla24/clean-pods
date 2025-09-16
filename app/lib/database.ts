@@ -8,6 +8,7 @@ const db = process.env.VERCEL ? prismaVercel : prisma;
 export async function saveOrder(orderData: {
   merchantOrderId?: string;
   phonePeOrderId?: string;
+  transactionId?: string;
   paymentId: string;
   customer?: {
     firstName: string;
@@ -50,17 +51,34 @@ export async function saveOrder(orderData: {
         ? `${orderData.customer.address}, ${orderData.customer.city}, ${orderData.customer.state} ${orderData.customer.pincode}`
         : "");
 
+    // Check if user exists before associating
+    let validUserId = null;
+    if (orderData.userId) {
+      try {
+        const userExists = await db.user.findUnique({
+          where: { id: orderData.userId }
+        });
+        if (userExists) {
+          validUserId = orderData.userId;
+        }
+      } catch (error) {
+        // User doesn't exist, proceed without userId
+        safeLogError("User not found for order, proceeding without userId", { userId: orderData.userId });
+      }
+    }
+
     const order = await db.order.create({
-        data: {
-          merchantOrderId: orderData.merchantOrderId,
-          phonePeOrderId: orderData.phonePeOrderId,
-          paymentId: orderData.paymentId,
-          customerName,
+      data: {
+        merchantOrderId: orderData.merchantOrderId,
+        phonePeOrderId: orderData.phonePeOrderId,
+        transactionId: orderData.transactionId,
+        paymentId: orderData.paymentId,
+        customerName,
         customerEmail,
         customerPhone,
         address,
         total: orderData.total,
-        userId: orderData.userId, // Associate with user if provided
+        userId: validUserId, // Only associate if user exists
         items: {
           create: orderData.items.map((item) => ({
             name: item.name,
@@ -73,7 +91,7 @@ export async function saveOrder(orderData: {
     });
 
     // Order created
-    return order.id;
+    return order;
   } catch (error) {
     safeLogError("Error in saveOrder", error);
     throw error;
@@ -81,10 +99,21 @@ export async function saveOrder(orderData: {
 }
 
 export async function getOrder(orderId: string) {
-  return db.order.findUnique({
-    where: { id: orderId },
+  // First try to find by merchantOrderId, then by id
+  let order = await db.order.findUnique({
+    where: { merchantOrderId: orderId },
     include: { items: true },
   });
+  
+  // If not found by merchantOrderId, try by id
+  if (!order) {
+    order = await db.order.findUnique({
+      where: { id: orderId },
+      include: { items: true },
+    });
+  }
+  
+  return order;
 }
 
 export async function getAllOrders() {

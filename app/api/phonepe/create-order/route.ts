@@ -22,7 +22,8 @@ const createOrderSchema = z.object({
   customerInfo: z.object({
     name: z.string().min(1, "Customer name is required"),
     email: z.string().email("Valid email is required"),
-    phone: z.string().min(10, "Valid phone number is required")
+    phone: z.string().min(10, "Valid phone number is required"),
+    address: z.string().min(1, "Address is required")
   })
 });
 
@@ -52,6 +53,10 @@ export const POST = withUpstashRateLimit("moderate")(async (
     // 🔍 Validate request body
     const validationResult = await validateRequest(request, createOrderSchema);
     if (!validationResult.success) {
+      safeLogError("Validation failed in create-order", {
+        error: validationResult.error,
+        requestBody: await request.clone().json().catch(() => "Could not parse request body")
+      });
       return NextResponse.json(
         { success: false, error: validationResult.error },
         { status: 400 }
@@ -96,7 +101,9 @@ export const POST = withUpstashRateLimit("moderate")(async (
         udf2: customerInfo.email,
         udf3: customerInfo.phone,
         udf4: JSON.stringify(cart.slice(0, 3)), // Store first 3 items
-        udf5: `items:${cart.length}`
+        udf5: `items:${cart.length}`,
+        address: customerInfo.address,
+        userId: userId
       },
       paymentFlow: {
         type: "PG_CHECKOUT" as const,

@@ -8,19 +8,87 @@ import { useSearchParams } from "next/navigation";
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
   const [orderNumber, setOrderNumber] = useState("");
+  const [displayOrderNumber, setDisplayOrderNumber] = useState("");
+  const [notificationSent, setNotificationSent] = useState(false);
 
   useEffect(() => {
     // Get order ID from URL params or generate one
     const urlOrderId = searchParams.get("order_id");
+    const phonePeOrderId = searchParams.get("phonePeOrderId");
+    
     if (urlOrderId) {
       setOrderNumber(urlOrderId);
+      // Use phonePeOrderId for display if available, otherwise use merchantOrderId
+      setDisplayOrderNumber(phonePeOrderId || urlOrderId);
     } else {
       // Generate a random order number for demo
       const randomOrder =
         "CP" + Math.random().toString(36).substr(2, 9).toUpperCase();
       setOrderNumber(randomOrder);
+      setDisplayOrderNumber(randomOrder);
     }
   }, [searchParams]);
+
+  // Send Slack notification when order details are available
+  useEffect(() => {
+    const sendSlackNotification = async () => {
+      if (!orderNumber || notificationSent) return;
+
+      try {
+        const transactionId = searchParams.get("transactionId");
+        const phonePeOrderId = searchParams.get("phonePeOrderId");
+        
+        // Get order details from the database
+        const orderResponse = await fetch(`/api/orders/${orderNumber}`);
+        if (!orderResponse.ok) {
+          console.error('Failed to fetch order details');
+          return;
+        }
+        
+        const orderDetails = await orderResponse.json();
+        
+        // Prepare data for Slack notification
+        const notificationData = {
+          orderData: {
+            id: orderDetails.id,
+            items: orderDetails.items.map((item: any) => ({
+              name: item.product_name,
+              quantity: item.quantity,
+              price: item.unit_price
+            })),
+            total: orderDetails.total_amount,
+            paymentId: transactionId || orderDetails.payment_id
+          },
+          customerData: {
+            name: orderDetails.customer_name,
+            email: orderDetails.customer_email,
+            phone: orderDetails.customer_phone,
+            address: orderDetails.shipping_address
+          }
+        };
+        
+        // Send notification to Slack
+        const slackResponse = await fetch('/api/slack-notification', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(notificationData)
+        });
+        
+        if (slackResponse.ok) {
+          console.log('Slack notification sent successfully');
+          setNotificationSent(true);
+        } else {
+          console.error('Failed to send Slack notification');
+        }
+      } catch (error) {
+        console.error('Error sending Slack notification:', error);
+      }
+    };
+
+    sendSlackNotification();
+  }, [orderNumber, searchParams, notificationSent]);
 
   return (
     <div className="min-h-screen bg-orange-50">
@@ -66,7 +134,7 @@ function OrderSuccessContent() {
                 <div className="space-y-2 text-gray-600">
                   <p>
                     <strong>Order Number:</strong>{" "}
-                    {safeDisplayOrderId(orderNumber)}
+                    {safeDisplayOrderId(displayOrderNumber)}
                   </p>
                   <p>
                     <strong>Order Date:</strong>{" "}
