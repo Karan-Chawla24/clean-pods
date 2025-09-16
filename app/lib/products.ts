@@ -74,6 +74,28 @@ const PRODUCTS = {
     usage:
       "Drop one pod into your washing machine drum before adding clothes. For heavily soiled loads, use two pods.",
   },
+  "test-product": {
+    id: "test-product",
+    name: "Test Product - Live Payment",
+    price: 1,
+    originalPrice: 1,
+    discount: 0,
+    quantity: "1 Test Item",
+    boxes: 1,
+    description:
+      "Test product for live payment verification - ₹1 only with no shipping.",
+    features: [
+      "Live Payment Testing",
+      "Minimal Amount",
+      "No Shipping Cost",
+      "Quick Verification",
+    ],
+    image: "/pod_image.jpg",
+    ingredients:
+      "Test product for payment gateway verification",
+    usage:
+      "This is a test product for verifying live payment integration.",
+  },
 };
 
 // Helper function to get product by ID
