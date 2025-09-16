@@ -92,6 +92,27 @@ class PhonePeOAuthClient {
   }
 
   /**
+   * Determine if we're in production environment based on base URL
+   */
+  private isProduction(): boolean {
+    return this.config.baseUrl.includes('api.phonepe.com');
+  }
+
+  /**
+   * Get the correct API path prefix based on environment
+   */
+  private getApiPathPrefix(): string {
+    return this.isProduction() ? '/apis/pg/checkout/v2' : '/apis/pg-sandbox/checkout/v2';
+  }
+
+  /**
+   * Get the correct OAuth token endpoint based on environment
+   */
+  private getTokenEndpoint(): string {
+    return this.isProduction() ? '/apis/identity-manager/v1/oauth/token' : '/apis/pg-sandbox/v1/oauth/token';
+  }
+
+  /**
    * Get a valid OAuth access token, refreshing if necessary
    */
   private async getAccessToken(): Promise<string> {
@@ -101,11 +122,7 @@ class PhonePeOAuthClient {
     }
 
     // Request new token - use different endpoints for sandbox vs production
-    const isProduction = this.config.baseUrl.includes('api.phonepe.com');
-    const tokenEndpoint = isProduction 
-      ? '/apis/identity-manager/v1/oauth/token'
-      : '/apis/pg-sandbox/v1/oauth/token';
-    const tokenUrl = `${this.config.baseUrl}${tokenEndpoint}`;
+    const tokenUrl = `${this.config.baseUrl}${this.getTokenEndpoint()}`;
     
     const params = new URLSearchParams({
       client_id: this.config.clientId,
@@ -156,7 +173,7 @@ class PhonePeOAuthClient {
    */
   async createPayment(paymentRequest: PhonePePaymentRequest): Promise<PhonePePaymentResponse> {
     const accessToken = await this.getAccessToken();
-    const paymentUrl = `${this.config.baseUrl}/apis/pg-sandbox/checkout/v2/pay`;
+    const paymentUrl = `${this.config.baseUrl}${this.getApiPathPrefix()}/pay`;
 
     try {
       const response = await fetch(paymentUrl, {
@@ -202,7 +219,7 @@ class PhonePeOAuthClient {
    */
   async getOrderStatus(merchantOrderId: string, details: boolean = false): Promise<PhonePeOrderStatusResponse> {
     const accessToken = await this.getAccessToken();
-    const statusUrl = `${this.config.baseUrl}/apis/pg-sandbox/checkout/v2/order/${merchantOrderId}/status?details=${details}`;
+    const statusUrl = `${this.config.baseUrl}${this.getApiPathPrefix()}/order/${merchantOrderId}/status?details=${details}`;
 
     try {
       const response = await fetch(statusUrl, {
