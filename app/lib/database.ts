@@ -6,7 +6,8 @@ import { safeLogError } from "./security/logging";
 const db = process.env.VERCEL ? prismaVercel : prisma;
 
 export async function saveOrder(orderData: {
-  razorpayOrderId: string;
+  merchantOrderId?: string;
+  phonePeOrderId?: string;
   paymentId: string;
   customer?: {
     firstName: string;
@@ -50,10 +51,11 @@ export async function saveOrder(orderData: {
         : "");
 
     const order = await db.order.create({
-      data: {
-        razorpayOrderId: orderData.razorpayOrderId,
-        paymentId: orderData.paymentId,
-        customerName,
+        data: {
+          merchantOrderId: orderData.merchantOrderId,
+          phonePeOrderId: orderData.phonePeOrderId,
+          paymentId: orderData.paymentId,
+          customerName,
         customerEmail,
         customerPhone,
         address,

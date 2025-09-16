@@ -41,7 +41,7 @@ export const SECURITY_CONFIG = {
       "'unsafe-eval'",
       "'unsafe-inline'",
       "https://js.stripe.com",
-      "https://checkout.razorpay.com",
+  
       "https://challenges.cloudflare.com",
       "https://*.cloudflare.com",
       "https://cloudflare.com",
@@ -66,8 +66,7 @@ export const SECURITY_CONFIG = {
     IMG_SRC: ["'self'", "data:", "https:", "blob:"],
     CONNECT_SRC: [
       "'self'",
-      "https://api.razorpay.com",
-      "https://lumberjack.razorpay.com",
+
       "https://hooks.slack.com",
       "https://challenges.cloudflare.com",
       "https://*.cloudflare.com",
@@ -82,8 +81,7 @@ export const SECURITY_CONFIG = {
     ],
     FRAME_SRC: [
       "'self'",
-      "https://checkout.razorpay.com",
-      "https://api.razorpay.com",
+
       "https://challenges.cloudflare.com",
       "https://*.cloudflare.com",
       "https://cloudflare.com",

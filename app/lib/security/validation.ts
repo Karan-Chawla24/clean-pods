@@ -168,13 +168,7 @@ export const createOrderSchema = z.object({
     .array(cartItemSchema)
     .min(1, "Cart must contain at least one item")
     .max(50, "Cart cannot contain more than 50 items"),
-});
 
-// Razorpay webhook validation schema
-export const razorpayWebhookSchema = z.object({
-  razorpay_payment_id: z.string().min(1, "Transaction ID is required"),
-  razorpay_order_id: z.string().min(1, "Order ID is required"),
-  razorpay_signature: z.string().min(1, "Signature is required"),
   // Add other fields as needed based on your webhook payload
 });
 

@@ -17,7 +17,8 @@ interface OrderItem {
 
 interface Order {
   id: string;
-  razorpayOrderId: string;
+  merchantOrderId: string;
+  phonePeOrderId: string;
   paymentId: string;
   customerName: string;
   customerEmail: string;
@@ -297,9 +298,9 @@ export default function AdminDashboard() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {order.razorpayOrderId}
-                      </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {order.merchantOrderId || order.paymentId}
+                        </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(order.orderDate)}
                       </td>

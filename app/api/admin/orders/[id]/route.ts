@@ -33,10 +33,11 @@ export async function GET(
 
     // Return full order details for admin (no masking)
     return NextResponse.json({
-      id: order.id,
-      razorpayOrderId: order.razorpayOrderId,
-      paymentId: order.paymentId,
-      customerName: order.customerName,
+        id: order.id,
+        merchantOrderId: order.merchantOrderId,
+        phonePeOrderId: order.phonePeOrderId,
+        paymentId: order.paymentId,
+        customerName: order.customerName,
       customerEmail: order.customerEmail,
       customerPhone: order.customerPhone,
       address: order.address,

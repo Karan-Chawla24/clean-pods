@@ -19,7 +19,8 @@ interface OrderItem {
 
 interface Order {
   id: string;
-  razorpayOrderId: string;
+  merchantOrderId: string;
+  phonePeOrderId: string;
   paymentId: string;
   customerName: string;
   customerEmail: string;

@@ -53,13 +53,7 @@ export const createOrderSchema = z.object({
       /^[a-zA-Z0-9\-_]+$/,
       "Receipt can only contain letters, numbers, hyphens, and underscores",
     ),
-});
 
-// Razorpay webhook validation schema
-export const razorpayWebhookSchema = z.object({
-  razorpay_payment_id: z.string().min(1, "Transaction ID is required"),
-  razorpay_order_id: z.string().min(1, "Order ID is required"),
-  razorpay_signature: z.string().min(1, "Signature is required"),
   // Add other fields as needed based on your webhook payload
 });
 

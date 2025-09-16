@@ -46,10 +46,11 @@ export async function POST(request: NextRequest) {
     // Received order request
 
     // Prepare order data for saving
-    const orderData: any = {
-      razorpayOrderId: data.razorpayOrderId,
-      paymentId: data.paymentId,
-      items: data.items,
+      const orderData: any = {
+        merchantOrderId: data.merchantOrderId,
+        phonePeOrderId: data.phonePeOrderId,
+        paymentId: data.paymentId,
+        items: data.items,
       total: data.total,
       userId: userId, // Associate with authenticated user
     };

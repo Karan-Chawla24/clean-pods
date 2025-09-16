@@ -32,10 +32,11 @@ export const GET = withUpstashRateLimit("moderate")(async (
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Orders");
-    worksheet.columns = [
-      { header: "Razorpay Order ID", key: "razorpayOrderId", width: 25 },
-      { header: "Transaction ID", key: "paymentId", width: 20 },
-      { header: "Customer Name", key: "customerName", width: 25 },
+      worksheet.columns = [
+        { header: "Merchant Order ID", key: "merchantOrderId", width: 25 },
+        { header: "PhonePe Order ID", key: "phonePeOrderId", width: 25 },
+        { header: "Transaction ID", key: "paymentId", width: 20 },
+        { header: "Customer Name", key: "customerName", width: 25 },
       { header: "Customer Email", key: "customerEmail", width: 30 },
       { header: "Customer Phone", key: "customerPhone", width: 18 },
       { header: "Address", key: "address", width: 40 },
@@ -49,9 +50,10 @@ export const GET = withUpstashRateLimit("moderate")(async (
         .map((item: any) => `${item.name} (x${item.quantity}) - ₹${item.price}`)
         .join("; ");
       worksheet.addRow({
-        razorpayOrderId: order.razorpayOrderId,
-        paymentId: order.paymentId,
-        customerName: order.customerName,
+          merchantOrderId: order.merchantOrderId,
+          phonePeOrderId: order.phonePeOrderId,
+          paymentId: order.paymentId,
+          customerName: order.customerName,
         customerEmail: order.customerEmail,
         customerPhone: order.customerPhone,
         address: order.address,

@@ -130,10 +130,11 @@ export async function POST(request: NextRequest) {
 
       // Create order with user association
       const order = await tx.order.create({
-        data: {
-          razorpayOrderId: data.razorpayOrderId,
-          paymentId: data.paymentId,
-          total: data.total,
+          data: {
+            merchantOrderId: data.merchantOrderId,
+            phonePeOrderId: data.phonePeOrderId,
+            paymentId: data.paymentId,
+            total: data.total,
           customerName: data.customerName,
           customerEmail: data.customerEmail,
           customerPhone: data.customerPhone,

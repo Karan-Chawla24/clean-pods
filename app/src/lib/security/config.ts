@@ -43,17 +43,17 @@ export const SECURITY_CONFIG = {
       "'unsafe-eval'",
       "'unsafe-inline'",
       "https://js.stripe.com",
-      "https://checkout.razorpay.com",
+  
     ],
     STYLE_SRC: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
     FONT_SRC: ["'self'", "https://fonts.gstatic.com"],
     IMG_SRC: ["'self'", "data:", "https:", "blob:"],
     CONNECT_SRC: [
       "'self'",
-      "https://api.razorpay.com",
+  
       "https://hooks.slack.com",
     ],
-    FRAME_SRC: ["'self'", "https://checkout.razorpay.com"],
+    FRAME_SRC: ["'self'"],
     OBJECT_SRC: ["'none'"],
     BASE_URI: ["'self'"],
     FORM_ACTION: ["'self'"],

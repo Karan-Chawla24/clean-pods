@@ -27,11 +27,7 @@ interface CheckoutForm {
   pincode: string;
 }
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
+
 
 export default function Checkout() {
   const { user, isLoaded } = useUser();
@@ -47,7 +43,7 @@ export default function Checkout() {
   } = useAppStore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
-  const [isRazorpayLoaded, setIsRazorpayLoaded] = useState(false);
+
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {
@@ -56,26 +52,7 @@ export default function Checkout() {
     }
   }, [isLoaded, user, router]);
 
-  // Check if Razorpay script is loaded
-  useEffect(() => {
-    const checkRazorpay = () => {
-      if (typeof window !== 'undefined' && window.Razorpay) {
-        setIsRazorpayLoaded(true);
-      }
-    };
 
-    // Check immediately
-    checkRazorpay();
-
-    // Also check when window loads
-    if (typeof window !== 'undefined') {
-      window.addEventListener('load', checkRazorpay);
-      
-      return () => {
-        window.removeEventListener('load', checkRazorpay);
-      };
-    }
-  }, []);
 
   const {
     register,
@@ -144,22 +121,26 @@ export default function Checkout() {
     setIsProcessing(true);
 
     try {
-      // Create Razorpay order with cart validation
+      // Create PhonePe order with cart validation
       const requestBody = {
         amount: total,
         currency: "INR",
-        receipt: generateOrderId(),
+        merchantOrderId: generateOrderId(),
         cart: cart.map((item) => ({
           id: item.id,
           name: item.name,
           price: item.price,
           quantity: item.quantity,
         })),
+        customerInfo: {
+          name: `${data.firstName} ${data.lastName}`,
+          email: data.email,
+          phone: data.phone,
+        },
       };
 
-      // Request sent to /api/create-order
-
-      const orderResponse = await fetch("/api/create-order", {
+      // Request sent to /api/phonepe/create-order (OAuth)
+      const orderResponse = await fetch("/api/phonepe/create-order", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -178,168 +159,14 @@ export default function Checkout() {
         throw new Error(orderData.error || "Failed to create order");
       }
 
-      // Check if Razorpay is loaded
-      if (typeof window.Razorpay === "undefined") {
-        throw new Error("Payment system is still loading. Please wait a moment and try again.");
+      // Redirect to PhonePe payment page
+      if (orderData.paymentUrl) {
+        window.location.href = orderData.paymentUrl;
+      } else {
+        throw new Error("Payment URL not received from server");
       }
 
-      // Initialize Razorpay
-      const razorpayKey = orderData.key;
-      if (!razorpayKey) {
-        throw new Error("Razorpay key missing from server response");
-      }
 
-      const options = {
-        key: razorpayKey,
-        amount: orderData.order.amount,
-        currency: orderData.order.currency,
-        name: "BubbleBeads",
-        description: "Laundry Detergent Pods",
-        order_id: orderData.order.id,
-        handler: async function (response: any) {
-          // Show loader immediately when payment is completed
-          setIsRedirecting(true);
-
-          try {
-            // Verify payment
-            const verifyResponse = await fetch("/api/verify-payment", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
-
-            const verifyData = await verifyResponse.json();
-
-            if (verifyData.success) {
-              // Use Razorpay order ID instead of generating custom one
-              const orderId = response.razorpay_order_id;
-
-              // Save order to database (authenticated users get it saved to their account)
-              let databaseOrderId = null;
-              try {
-                const orderApiUrl = "/api/user/orders";
-
-                const orderPayload = {
-                  razorpayOrderId: response.razorpay_order_id,
-                  paymentId: response.razorpay_payment_id,
-                  total: total,
-                  customerName: `${data.firstName} ${data.lastName}`,
-                  customerEmail: data.email,
-                  customerPhone: data.phone,
-                  address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
-                  items: cart.map((item) => ({
-                    name: item.name,
-                    quantity: item.quantity,
-                    price: item.price,
-                  })),
-                };
-                // Note: userId is handled by the server via Clerk's auth()
-
-                // Sending order payload to server
-                // Get auth token for authenticated user
-                const headers: Record<string, string> = {
-                  "Content-Type": "application/json",
-                };
-                const token = await getToken();
-                if (token) {
-                  headers.Authorization = `Bearer ${token}`;
-                }
-
-                const orderResponse = await fetch(orderApiUrl, {
-                  method: "POST",
-                  headers,
-                  body: JSON.stringify(orderPayload),
-                });
-
-                if (!orderResponse.ok) {
-                  const errorText = await orderResponse.text();
-                  console.error("Order creation failed:", errorText);
-                } else {
-                  const orderResult = await orderResponse.json();
-                  databaseOrderId = orderResult.orderId; // Capture the database order ID
-                }
-              } catch (dbError) {
-                console.error("Order creation error:", dbError);
-                // Continue with Slack notification even if DB fails
-              }
-
-              // Create order in our system (existing code)
-              const order = {
-                id: orderId,
-                items: cart,
-                total: total,
-                status: "processing" as const,
-                orderDate: new Date().toISOString(),
-                trackingNumber: `TRK${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-                paymentId: response.razorpay_payment_id,
-              };
-
-              // Send Slack notification only if we have a database order ID
-              if (databaseOrderId) {
-                try {
-                  await fetch("/api/slack-notification", {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      orderData: {
-                        id: databaseOrderId, // Always use database order ID for admin links
-                        items: cart.map((item) => ({
-                          name: item.name,
-                          quantity: item.quantity,
-                          price: item.price,
-                        })),
-                        total: total,
-                        paymentId: response.razorpay_payment_id,
-                      },
-                      customerData: {
-                        name: `${data.firstName} ${data.lastName}`,
-                        email: data.email,
-                        phone: data.phone,
-                        address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
-                      },
-                    }),
-                  });
-                } catch (slackError) {
-                  console.error("Slack notification failed:", slackError);
-                }
-              }
-
-              // Orders are now stored server-side for authenticated users only
-
-              addOrder(order);
-              clearCart();
-              toast.success("Payment successful! Your order has been placed.");
-              router.push(`/orders/${orderId}`);
-            } else {
-              toast.error("Payment verification failed");
-            }
-          } catch (error) {
-            toast.error("Payment verification failed");
-          }
-        },
-        prefill: {
-          name: `${data.firstName} ${data.lastName}`,
-          email: data.email,
-          contact: data.phone,
-        },
-        notes: {
-          address: `${data.address}, ${data.city}, ${data.state} ${data.pincode}`,
-        },
-        theme: {
-          color: "#2563eb",
-        },
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
     } catch (error) {
       toast.error(
         error instanceof Error

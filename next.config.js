@@ -7,12 +7,12 @@ const nextConfig = {
 
     const ContentSecurityPolicy = [
       "default-src 'self'",
-      `script-src 'self' ${isProd ? "" : "'unsafe-eval'"} https://js.stripe.com https://checkout.razorpay.com https://*.clerk.accounts.dev https://*.clerk.com`,
+      `script-src 'self' ${isProd ? "" : "'unsafe-eval'"} https://js.stripe.com https://*.clerk.accounts.dev https://*.clerk.com`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: https: blob:",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://api.razorpay.com https://lumberjack.razorpay.com https://hooks.slack.com https://*.clerk.accounts.dev https://*.clerk.com https://api.clerk.com",
-      "frame-src 'self' https://checkout.razorpay.com https://*.clerk.accounts.dev https://*.clerk.com",
+      "connect-src 'self' https://hooks.slack.com https://*.clerk.accounts.dev https://*.clerk.com https://api.clerk.com",
+      "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

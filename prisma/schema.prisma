@@ -28,7 +28,8 @@ model User {
 
 model Order {
   id              String      @id @default(cuid())
-  razorpayOrderId String?     @unique
+  merchantOrderId String?     @unique
+  phonePeOrderId  String?     @unique
   paymentId       String
   total           Float
   orderDate       DateTime    @default(now())

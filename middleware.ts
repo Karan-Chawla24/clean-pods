@@ -22,8 +22,8 @@ const isPublicRoute = createRouteMatcher([
   "/api/public(.*)",
   "/api/products",
   "/api/init-payment",
-  "/api/verify-payment",
-  "/api/razorpay/webhook",
+  "/api/phonepe/verify",
+
   "/api/contact-notification",
   "/api/debug-middleware",
   "/api/test-middleware-logic",

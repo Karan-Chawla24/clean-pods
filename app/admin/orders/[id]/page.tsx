@@ -24,7 +24,8 @@ interface OrderItem {
 
 interface Order {
   id: string;
-  razorpayOrderId: string;
+  merchantOrderId: string;
+  phonePeOrderId: string;
   paymentId: string;
   customerName: string;
   customerEmail: string;
@@ -198,8 +199,8 @@ export default function AdminOrderDetails() {
               </h1>
             </div>
             <div className="text-sm text-gray-500">
-              Order ID: {safeDisplayOrderId(order.razorpayOrderId)}
-            </div>
+                Order ID: {safeDisplayOrderId(order.merchantOrderId || order.paymentId)}
+              </div>
           </div>
         </div>
       </header>
@@ -210,8 +211,8 @@ export default function AdminOrderDetails() {
           <div className="flex justify-between items-start mb-6">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Order #{safeDisplayOrderId(order.razorpayOrderId)}
-              </h2>
+                  Order #{safeDisplayOrderId(order.merchantOrderId || order.paymentId)}
+                </h2>
               <p className="text-gray-600">
                 Placed on {formatDate(order.orderDate)}
               </p>

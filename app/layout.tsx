@@ -52,10 +52,7 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
           rel="stylesheet"
         />
-        <script
-          src="https://checkout.razorpay.com/v1/checkout.js"
-          async
-        ></script>
+
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pacifico.variable} antialiased bg-gradient-to-br from-orange-50 to-amber-50 min-h-screen`}
