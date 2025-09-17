@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { formatPrice, formatDate } from "../lib/utils";
 import Header from "../components/Header";
 import Link from "next/link";
@@ -31,6 +31,25 @@ interface Order {
   items: OrderItem[];
 }
 
+// Component to handle search parameters with Suspense boundary
+function SearchParamsHandler({ setHighlightOrderId }: { setHighlightOrderId: (id: string | null) => void }) {
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const merchantOrderId = searchParams.get('merchantOrderId');
+    if (merchantOrderId) {
+      setHighlightOrderId(merchantOrderId);
+      toast.success('Payment completed! Your order has been processed.');
+      // Clear the URL parameter after showing the message
+      const url = new URL(window.location.href);
+      url.searchParams.delete('merchantOrderId');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams, setHighlightOrderId]);
+
+  return null;
+}
+
 // Product image mapping based on product names and IDs
 const productImageMap: { [key: string]: string } = {
   // Current combo box IDs
@@ -56,25 +75,11 @@ export default function Orders() {
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [highlightOrderId, setHighlightOrderId] = useState<string | null>(null);
   const { orders: storeOrders, clearCart } = useAppStore();
-
-  // Check for merchantOrderId parameter and show success message
-  useEffect(() => {
-    const merchantOrderId = searchParams.get('merchantOrderId');
-    if (merchantOrderId) {
-      setHighlightOrderId(merchantOrderId);
-      toast.success('Payment completed! Your order has been processed.');
-      // Clear the URL parameter after showing the message
-      const url = new URL(window.location.href);
-      url.searchParams.delete('merchantOrderId');
-      window.history.replaceState({}, '', url.toString());
-    }
-  }, [searchParams]);
 
   useEffect(() => {
     console.log('Client auth status:', { isLoaded, userId: user?.id });
@@ -218,6 +223,9 @@ export default function Orders() {
   return (
     <div className="min-h-screen bg-orange-50">
       <Header />
+      <Suspense fallback={null}>
+        <SearchParamsHandler setHighlightOrderId={setHighlightOrderId} />
+      </Suspense>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
