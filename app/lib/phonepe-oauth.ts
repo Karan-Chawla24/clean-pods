@@ -95,9 +95,17 @@ class PhonePeOAuthClient {
    * Get the API path based on environment (sandbox vs production)
    */
   private getApiPath(): string {
-    // Check if baseUrl contains 'preprod' or 'sandbox' for development
-    const isProduction = !this.config.baseUrl.includes('preprod') && !this.config.baseUrl.includes('sandbox');
-    return isProduction ? '/apis/checkout/v2' : '/apis/pg-sandbox/checkout/v2';
+    // Use same detection approach as token endpoint
+    const isProduction = this.config.baseUrl.includes('api.phonepe.com');
+    // Production uses /apis/pg/checkout/v2, Sandbox uses /apis/pg-sandbox/checkout/v2
+    const apiPath = isProduction ? '/apis/pg/checkout/v2' : '/apis/pg-sandbox/checkout/v2';
+    
+    safeLog('PhonePe API path determination', {
+      isProduction,
+      apiPath
+    });
+    
+    return apiPath;
   }
 
   /**
@@ -165,7 +173,15 @@ class PhonePeOAuthClient {
    */
   async createPayment(paymentRequest: PhonePePaymentRequest): Promise<PhonePePaymentResponse> {
     const accessToken = await this.getAccessToken();
-    const paymentUrl = `${this.config.baseUrl}${this.getApiPath()}/pay`;
+    const apiPath = this.getApiPath();
+    const paymentUrl = `${this.config.baseUrl}${apiPath}/pay`;
+    
+    safeLog('PhonePe payment URL construction', {
+      baseUrl: this.config.baseUrl,
+      apiPath,
+      paymentUrl,
+      merchantOrderId: paymentRequest.merchantOrderId
+    });
 
     try {
       const response = await fetch(paymentUrl, {
@@ -275,7 +291,7 @@ export function createPhonePeOAuthClient(): PhonePeOAuthClient {
     clientId: process.env.PHONEPE_CLIENT_ID || "",
     clientSecret: process.env.PHONEPE_CLIENT_SECRET || "",
     clientVersion: process.env.PHONEPE_CLIENT_VERSION || "1",
-    baseUrl: process.env.PHONEPE_BASE_URL || "https://api-preprod.phonepe.com",
+    baseUrl: process.env.PHONEPE_BASE_URL || "https://api.phonepe.com",
     callbackUrl: process.env.PHONEPE_CALLBACK_URL || "http://localhost:3000/api/phonepe/callback"
   };
 
