@@ -100,10 +100,10 @@ class PhonePeOAuthClient {
     // Production uses /apis/pg/checkout/v2, Sandbox uses /apis/pg-sandbox/checkout/v2
     const apiPath = isProduction ? '/apis/pg/checkout/v2' : '/apis/pg-sandbox/checkout/v2';
     
-    safeLog('PhonePe API path determination', {
-      isProduction,
-      apiPath
-    });
+    // safeLog('PhonePe API path determination', {
+    //   isProduction,
+    //   apiPath
+    // });
     
     return apiPath;
   }
@@ -176,12 +176,12 @@ class PhonePeOAuthClient {
     const apiPath = this.getApiPath();
     const paymentUrl = `${this.config.baseUrl}${apiPath}/pay`;
     
-    safeLog('PhonePe payment URL construction', {
-      baseUrl: this.config.baseUrl,
-      apiPath,
-      paymentUrl,
-      merchantOrderId: paymentRequest.merchantOrderId
-    });
+    // safeLog('info', {
+    //   baseUrl: this.config.baseUrl,
+    //   apiPath,
+    //   paymentUrl,
+    //   merchantOrderId: paymentRequest.merchantOrderId
+    // });
 
     try {
       const response = await fetch(paymentUrl, {
