@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Pacifico } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import ToastProvider from "./components/ToastProvider";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -52,7 +53,6 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css"
           rel="stylesheet"
         />
-        <script src="https://mercury.phonepe.com/web/bundle/checkout.js"></script>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pacifico.variable} antialiased bg-gradient-to-br from-orange-50 to-amber-50 min-h-screen`}
@@ -61,6 +61,10 @@ export default function RootLayout({
           publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
           telemetry={false}
         >
+          <Script 
+            src="https://mercury.phonepe.com/web/bundle/checkout.js"
+            strategy="beforeInteractive"
+          />
           {children}
           <ToastProvider />
         </ClerkProvider>
