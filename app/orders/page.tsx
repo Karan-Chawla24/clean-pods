@@ -7,7 +7,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAppStore } from "../lib/store";
 import { useUser, useAuth } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 
 interface OrderItem {
@@ -56,10 +56,25 @@ export default function Orders() {
   const { user, isLoaded } = useUser();
   const { getToken } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [highlightOrderId, setHighlightOrderId] = useState<string | null>(null);
   const { orders: storeOrders, clearCart } = useAppStore();
+
+  // Check for merchantOrderId parameter and show success message
+  useEffect(() => {
+    const merchantOrderId = searchParams.get('merchantOrderId');
+    if (merchantOrderId) {
+      setHighlightOrderId(merchantOrderId);
+      toast.success('Payment completed! Your order has been processed.');
+      // Clear the URL parameter after showing the message
+      const url = new URL(window.location.href);
+      url.searchParams.delete('merchantOrderId');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     console.log('Client auth status:', { isLoaded, userId: user?.id });
@@ -253,11 +268,25 @@ export default function Orders() {
           </div>
         ) : (
           <div className="space-y-6">
-            {orders.map((order) => (
-              <div
-                key={order.id}
-                className="bg-white rounded-2xl p-6 shadow-sm border"
-              >
+            {orders.map((order) => {
+              const isHighlighted = highlightOrderId === order.merchantOrderId || highlightOrderId === order.id;
+              return (
+                <div
+                  key={order.id}
+                  className={`bg-white rounded-2xl p-6 shadow-sm border transition-all duration-300 ${
+                    isHighlighted 
+                      ? 'border-green-400 bg-green-50 shadow-lg ring-2 ring-green-200' 
+                      : 'border-gray-200'
+                  }`}
+                >
+                  {isHighlighted && (
+                    <div className="mb-4 p-3 bg-green-100 border border-green-300 rounded-lg">
+                      <div className="flex items-center">
+                        <i className="ri-check-circle-line text-green-600 mr-2"></i>
+                        <span className="text-green-800 font-medium">Payment Completed Successfully!</span>
+                      </div>
+                    </div>
+                  )}
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
                     Order #{order.id}
@@ -341,7 +370,8 @@ export default function Orders() {
                   </div>
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>

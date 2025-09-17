@@ -160,9 +160,32 @@ export default function Checkout() {
         throw new Error(orderData.error || "Failed to create order");
       }
 
-      // Redirect to PhonePe payment page
+      // Use PhonePe iframe mode (recommended)
       if (orderData.paymentUrl) {
-        window.location.href = orderData.paymentUrl;
+        // Define callback function for payment completion
+        const callback = (response: string) => {
+          if (response === 'USER_CANCEL') {
+            toast.error('Payment was cancelled by user');
+            setIsProcessing(false);
+            return;
+          } else if (response === 'CONCLUDED') {
+            // Payment completed (success or failure), redirect to verify status
+            window.location.href = `/orders?merchantOrderId=${orderData.merchantOrderId}`;
+            return;
+          }
+        };
+
+        // Use PhonePe checkout script with iframe mode
+        if (typeof window !== 'undefined' && (window as any).PhonePeCheckout) {
+          (window as any).PhonePeCheckout.transact({
+            tokenUrl: orderData.paymentUrl,
+            callback: callback,
+            type: "IFRAME"
+          });
+        } else {
+          // Fallback to redirect if script not loaded
+          window.location.href = orderData.paymentUrl;
+        }
       } else {
         throw new Error("Payment URL not received from server");
       }
