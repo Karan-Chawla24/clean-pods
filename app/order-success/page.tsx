@@ -14,12 +14,19 @@ function OrderSuccessContent() {
   useEffect(() => {
     // Get order ID from URL params or generate one
     const urlOrderId = searchParams.get("order_id");
+    const merchantOrderId = searchParams.get("merchantOrderId");
     const phonePeOrderId = searchParams.get("phonePeOrderId");
     
+    // Priority: order_id > merchantOrderId > generate random
     if (urlOrderId) {
       setOrderNumber(urlOrderId);
-      // Use phonePeOrderId for display if available, otherwise use merchantOrderId
       setDisplayOrderNumber(phonePeOrderId || urlOrderId);
+    } else if (merchantOrderId) {
+      setOrderNumber(merchantOrderId);
+      setDisplayOrderNumber(phonePeOrderId || merchantOrderId);
+      
+      // Verify payment status for merchantOrderId
+      verifyPaymentStatus(merchantOrderId);
     } else {
       // Generate a random order number for demo
       const randomOrder =
@@ -28,6 +35,36 @@ function OrderSuccessContent() {
       setDisplayOrderNumber(randomOrder);
     }
   }, [searchParams]);
+
+  // Verify payment status for orders coming from PhonePe redirect
+  const verifyPaymentStatus = async (merchantOrderId: string) => {
+    try {
+      const response = await fetch(`/api/phonepe/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ merchantOrderId })
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok || result.status !== 'COMPLETED') {
+        // Payment not completed, redirect to checkout with status
+        window.location.href = `/checkout?status=pending&orderId=${merchantOrderId}&message=Payment verification in progress`;
+        return;
+      }
+      
+      // Payment successful, update display with actual order details
+      if (result.phonePeOrderId) {
+        setDisplayOrderNumber(result.phonePeOrderId);
+      }
+    } catch (error) {
+      console.error('Payment verification failed:', error);
+      // Redirect to checkout on verification error
+      window.location.href = `/checkout?error=verification_failed&orderId=${merchantOrderId}`;
+    }
+  };
 
   // Send Slack notification when order details are available
   useEffect(() => {

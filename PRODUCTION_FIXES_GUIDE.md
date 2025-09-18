@@ -61,6 +61,7 @@ CLERK_SECRET_KEY=sk_live_your_actual_key
 PHONEPE_CLIENT_ID=your_production_client_id
 PHONEPE_CLIENT_SECRET=your_production_client_secret
 PHONEPE_BASE_URL=https://api.phonepe.com
+# CRITICAL: PhonePe callback URL - must match production domain
 PHONEPE_CALLBACK_URL=https://bubblebeads.in/api/phonepe/callback
 
 # Database

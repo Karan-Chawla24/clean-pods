@@ -88,8 +88,8 @@ export const POST = withUpstashRateLimit("moderate")(async (
       : 'http://localhost:3000';
     
     // The redirectUrl is where users are redirected after payment (frontend page)
-    // The webhook callback is configured separately in PhonePe dashboard
-    const redirectUrl = `${baseUrl}/api/phonepe/callback?merchantOrderId=${merchantOrderId}`;
+    // This should be a user-facing page, not the API callback endpoint
+    const redirectUrl = `${baseUrl}/order-success?merchantOrderId=${merchantOrderId}`;
     
     const paymentRequest = {
       merchantOrderId,
