@@ -103,8 +103,7 @@ export const POST = withUpstashRateLimit("moderate")(async (
     // 🏦 Create PhonePe payment request
     // Get the correct base URL for redirects
     const baseUrl = process.env.NODE_ENV === 'production' 
-      ? process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 
-        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://bubblebeads.in')
+      ? process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://bubblebeads.in'
       : 'http://localhost:3000';
     
     // The redirectUrl is where users are redirected after payment (frontend page)

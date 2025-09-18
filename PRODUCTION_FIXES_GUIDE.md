@@ -61,7 +61,8 @@
 ### Critical Variables (Must be set in Vercel Dashboard):
 
 ```bash
-# Application URLs
+# CRITICAL: Application URLs (prevents Vercel URL redirects)
+# These MUST be set to prevent users being redirected to vercel.app URLs
 NEXT_PUBLIC_APP_URL=https://bubblebeads.in
 APP_URL=https://bubblebeads.in
 
@@ -82,6 +83,20 @@ PHONEPE_CALLBACK_URL=https://bubblebeads.in/api/phonepe/callback
 # Database
 DATABASE_URL=your_production_database_url
 DIRECT_URL=your_production_database_url
+
+# Slack Notifications
+SLACK_WEBHOOK_URL=your_slack_webhook_url
+SLACK_CONTACT_URL=your_slack_contact_webhook_url
+
+# Rate Limiting
+UPSTASH_REDIS_REST_URL=your_upstash_redis_rest_url
+UPSTASH_REDIS_REST_TOKEN=your_upstash_redis_rest_token
+
+# Security
+JWT_SECRET=your_jwt_secret_key_here
+ADMIN_PASSWORD=your_hashed_admin_password
+ADMIN_PASSWORD_SALT=your_random_salt_string
+ADMIN_ORDERS_KEY=your_secret_admin_key_here
 ```
 
 ## Deployment Checklist
