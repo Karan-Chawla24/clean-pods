@@ -37,12 +37,31 @@ function SearchParamsHandler({ setHighlightOrderId }: { setHighlightOrderId: (id
 
   useEffect(() => {
     const merchantOrderId = searchParams.get('merchantOrderId');
+    const status = searchParams.get('status');
+    const error = searchParams.get('error');
+    
     if (merchantOrderId) {
       setHighlightOrderId(merchantOrderId);
-      toast.success('Payment completed! Your order has been processed.');
-      // Clear the URL parameter after showing the message
+      
+      // Show appropriate message based on status
+       if (status === 'pending') {
+         toast('Payment is still pending. Please complete the payment.', {
+           icon: '⏳',
+           duration: 4000
+         });
+      } else if (error === 'payment_failed') {
+        toast.error('Payment failed. Please try again.');
+      } else if (error === 'callback_error') {
+        toast.error('Payment verification failed. Please contact support if payment was deducted.');
+      }
+      
+      // Clear the URL parameters after showing the message
       const url = new URL(window.location.href);
       url.searchParams.delete('merchantOrderId');
+      url.searchParams.delete('status');
+      url.searchParams.delete('error');
+      url.searchParams.delete('orderId');
+      url.searchParams.delete('message');
       window.history.replaceState({}, '', url.toString());
     }
   }, [searchParams, setHighlightOrderId]);

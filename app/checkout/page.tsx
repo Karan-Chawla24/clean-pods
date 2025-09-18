@@ -169,8 +169,8 @@ export default function Checkout() {
             setIsProcessing(false);
             return;
           } else if (response === 'CONCLUDED') {
-            // Payment completed (success or failure), redirect to verify status
-            window.location.href = `/orders?merchantOrderId=${orderData.merchantOrderId}`;
+            // Payment completed (success or failure), redirect to PhonePe callback for verification
+            window.location.href = `/api/phonepe/callback?merchantOrderId=${orderData.merchantOrderId}`;
             return;
           }
         };
