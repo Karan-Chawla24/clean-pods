@@ -122,16 +122,35 @@ export const POST = withUpstashRateLimit("moderate")(async (
         udf4: JSON.stringify(cart.slice(0, 3)), // Store first 3 items
         udf5: `items:${cart.length}`,
         address: customerInfo.address,
-        userId: userId
+        userId: userId,
+        // Additional security metadata
+        merchantName: "BubbleBeads",
+        merchantDomain: "bubblebeads.in",
+        requestOrigin: request.headers.get('origin') || baseUrl,
+        userAgent: request.headers.get('user-agent') || 'BubbleBeads-Web'
       },
       paymentFlow: {
         type: "PG_CHECKOUT" as const,
-        message: "BubbleBeads - Laundry Detergent Pods",
+        message: "BubbleBeads - Premium Laundry Detergent Pods",
+        // Add flow configuration to prevent UI endpoint redirects
+        flow: "REDIRECT",
         merchantUrls: {
-          redirectUrl: redirectUrl
+          redirectUrl: redirectUrl,
+          // Add callback URL for webhook notifications
+          callbackUrl: `${baseUrl}/api/phonepe/callback`
         }
       }
     };
+
+    // Add request validation logging for debugging
+    safeLog("info", "PhonePe payment request details", {
+      merchantOrderId,
+      amount: amount * 100,
+      redirectUrl,
+      origin: request.headers.get('origin'),
+      referer: request.headers.get('referer'),
+      userAgent: request.headers.get('user-agent')
+    });
 
     try {
       const paymentResponse = await phonePeClient.createPayment(paymentRequest);

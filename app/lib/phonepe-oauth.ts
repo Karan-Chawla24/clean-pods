@@ -98,12 +98,14 @@ class PhonePeOAuthClient {
     // Use same detection approach as token endpoint
     const isProduction = this.config.baseUrl.includes('api.phonepe.com');
     // Production uses /apis/pg/checkout/v2, Sandbox uses /apis/pg-sandbox/checkout/v2
+    // Note: UI endpoints use /apis/pg/checkout/ui/v2 but those are for frontend redirects
     const apiPath = isProduction ? '/apis/pg/checkout/v2' : '/apis/pg-sandbox/checkout/v2';
     
-    // safeLog('PhonePe API path determination', {
-    //   isProduction,
-    //   apiPath
-    // });
+    safeLog('info', 'PhonePe API path determination', {
+      isProduction,
+      apiPath,
+      baseUrl: this.config.baseUrl
+    });
     
     return apiPath;
   }
@@ -189,6 +191,11 @@ class PhonePeOAuthClient {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `O-Bearer ${accessToken}`,
+          "User-Agent": "BubbleBeads-Ecommerce/1.0",
+          "X-Merchant-Id": this.config.clientId,
+          "X-Client-Version": this.config.clientVersion,
+          "Accept": "application/json",
+          "Cache-Control": "no-cache",
         },
         body: JSON.stringify(paymentRequest),
       });
@@ -199,8 +206,26 @@ class PhonePeOAuthClient {
           status: response.status,
           statusText: response.statusText,
           error: errorText,
-          merchantOrderId: paymentRequest.merchantOrderId
+          merchantOrderId: paymentRequest.merchantOrderId,
+          paymentUrl,
+          requestHeaders: {
+            'Content-Type': 'application/json',
+            'Authorization': 'O-Bearer [REDACTED]',
+            'User-Agent': 'BubbleBeads-Ecommerce/1.0',
+            'X-Merchant-Id': this.config.clientId
+          },
+          paymentRequest: {
+            ...paymentRequest,
+            // Log payment request structure for debugging
+            paymentFlow: paymentRequest.paymentFlow
+          }
         });
+        
+        // Special handling for UI endpoint errors
+        if (errorText.includes('ui/v2') || response.url?.includes('ui/v2')) {
+          throw new Error(`PhonePe UI endpoint error - check payment flow configuration: ${response.status} - ${errorText}`);
+        }
+        
         throw new Error(`Payment creation failed: ${response.status} - ${errorText}`);
       }
 
@@ -235,6 +260,11 @@ class PhonePeOAuthClient {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `O-Bearer ${accessToken}`,
+          "User-Agent": "BubbleBeads-Ecommerce/1.0",
+          "X-Merchant-Id": this.config.clientId,
+          "X-Client-Version": this.config.clientVersion,
+          "Accept": "application/json",
+          "Cache-Control": "no-cache",
         },
       });
 
