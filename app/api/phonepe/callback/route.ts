@@ -167,9 +167,7 @@ async function saveOrderToDatabase({
 async function checkOrderStatusAndRedirect(merchantOrderId: string, request: NextRequest) {
   // Get the correct base URL for redirects (use localhost instead of 0.0.0.0)
   const baseUrl = process.env.NODE_ENV === 'production' 
-    ? process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}`
-      : 'https://your-domain.com'
+    ? process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://bubblebeads.in'
     : 'http://localhost:3000';
     
   try {

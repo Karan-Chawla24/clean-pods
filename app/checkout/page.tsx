@@ -44,6 +44,39 @@ export default function Checkout() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
+  // Handle URL parameters for payment status messages
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      const status = urlParams.get('status');
+      const message = urlParams.get('message');
+      const error = urlParams.get('error');
+      const orderId = urlParams.get('orderId');
+
+      if (status === 'pending' && message) {
+        toast(message, {
+          icon: '⏳',
+          duration: 6000,
+        });
+      } else if (error) {
+        let errorMessage = 'Payment failed. Please try again.';
+        if (error === 'payment_failed') {
+          errorMessage = 'Payment was not successful. Please try again.';
+        } else if (error === 'callback_error') {
+          errorMessage = 'There was an error processing your payment. Please try again.';
+        } else if (error === 'system_error') {
+          errorMessage = 'Payment system is temporarily unavailable. Please try again later.';
+        }
+        toast.error(errorMessage);
+      }
+
+      // Clean up URL parameters after showing the message
+      if (status || message || error) {
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, '', newUrl);
+      }
+    }
+  }, []);
 
   // Redirect to sign-in if not authenticated
   useEffect(() => {

@@ -23,6 +23,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/products",
   "/api/init-payment",
   "/api/phonepe/verify",
+  "/api/phonepe/callback",
 
   "/api/contact-notification",
   "/api/debug-middleware",
