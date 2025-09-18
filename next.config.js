@@ -7,12 +7,12 @@ const nextConfig = {
 
     const ContentSecurityPolicy = [
       "default-src 'self'",
-      `script-src 'self' ${isProd ? "" : "'unsafe-eval'"} https://js.stripe.com https://*.clerk.accounts.dev https://*.clerk.com`,
+      `script-src 'self' ${isProd ? "" : "'unsafe-eval'"} https://js.stripe.com https://*.clerk.accounts.dev https://*.clerk.com https://*.phonepe.com`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: https: blob:",
       "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://hooks.slack.com https://*.clerk.accounts.dev https://*.clerk.com https://api.clerk.com",
-      "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com",
+      "connect-src 'self' https://hooks.slack.com https://*.clerk.accounts.dev https://*.clerk.com https://api.clerk.com https://api.phonepe.com https://api-preprod.phonepe.com",
+      "frame-src 'self' https://*.clerk.accounts.dev https://*.clerk.com https://*.phonepe.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",

@@ -154,6 +154,13 @@ export default function Checkout() {
     setIsProcessing(true);
 
     try {
+      // Validate domain to ensure payment originates from whitelisted domain
+      const currentDomain = window.location.hostname;
+      const allowedDomains = ['bubblebeads.in', 'www.bubblebeads.in', 'localhost'];
+      
+      if (!allowedDomains.includes(currentDomain)) {
+        throw new Error(`Payment requests are only allowed from registered domains. Current domain: ${currentDomain}`);
+      }
       // Create PhonePe order with cart validation
       const requestBody = {
         amount: total,

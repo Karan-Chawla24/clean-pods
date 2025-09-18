@@ -50,6 +50,26 @@ export const POST = withUpstashRateLimit("moderate")(async (
       throw error;
     }
 
+    // 🌐 Domain Validation for PhonePe Security
+    const origin = request.headers.get('origin');
+    const referer = request.headers.get('referer');
+    const allowedDomains = ['https://bubblebeads.in', 'https://www.bubblebeads.in', 'http://localhost:3000'];
+    
+    const isValidOrigin = origin && allowedDomains.some(domain => origin.startsWith(domain));
+    const isValidReferer = referer && allowedDomains.some(domain => referer.startsWith(domain));
+    
+    if (!isValidOrigin && !isValidReferer) {
+      safeLogError("PhonePe payment request from unauthorized domain", {
+        origin,
+        referer,
+        allowedDomains
+      });
+      return NextResponse.json(
+        { success: false, error: "Payment requests are only allowed from registered domains" },
+        { status: 403 }
+      );
+    }
+
     // 🔍 Validate request body
     const validationResult = await validateRequest(request, createOrderSchema);
     if (!validationResult.success) {

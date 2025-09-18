@@ -41,6 +41,21 @@
 - Added toast notifications for pending, error, and success states
 - Automatic URL cleanup after showing messages
 
+### 4. PhonePe Security Block Error - FIXED ✅
+
+**Problem**: PhonePe blocking payment requests due to security policy violations.
+
+**Root Cause**: 
+- Missing referrer policy configuration
+- Domain not whitelisted in PhonePe security settings
+- Insufficient Content Security Policy (CSP) configuration
+
+**Fix Applied**:
+- Set referrer policy to 'strict-origin-when-cross-origin'
+- Added PhonePe domains to CSP whitelist
+- Implemented domain validation for payment requests
+- Added server-side origin validation
+
 ## Required Environment Variables for Production
 
 ### Critical Variables (Must be set in Vercel Dashboard):
@@ -76,12 +91,26 @@ DIRECT_URL=your_production_database_url
 - [ ] Verify PhonePe production credentials
 - [ ] Test Clerk authentication in staging
 - [ ] Ensure database is accessible from Vercel
+- [ ] **CRITICAL**: Whitelist domain with PhonePe support
 
 ### After Deployment:
 - [ ] Test complete payment flow
 - [ ] Verify Clerk authentication works
 - [ ] Check callback URL handling
 - [ ] Monitor error logs for any remaining issues
+
+## PhonePe Domain Whitelisting
+
+**CRITICAL**: Contact PhonePe support to whitelist your production domain:
+- **Domain to whitelist**: `bubblebeads.in` and `www.bubblebeads.in`
+- **Callback URL**: `https://bubblebeads.in/api/phonepe/callback`
+- **Referrer Policy**: `strict-origin-when-cross-origin`
+
+**Important Notes**:
+- Payments will be blocked if initiated from non-whitelisted domains
+- Never test payments using Postman/ThunderClient in production
+- All payment requests must originate from the registered domain
+- Consider PhonePe Checkout Bundle (iFrame) for additional security
 
 ## Testing Payment Flow
 
