@@ -8,6 +8,24 @@ import { createPhonePeOAuthClient } from "@/app/lib/phonepe-oauth";
 import { generateOrderId } from "@/app/lib/utils";
 import { z } from "zod";
 
+// Type for stored metadata
+interface OrderMetadata {
+  userId: string;
+  customerInfo: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+  };
+  cart: any[];
+  timestamp: number;
+}
+
+// Extend global type
+declare global {
+  var orderMetadataCache: Map<string, OrderMetadata> | undefined;
+}
+
 // Validation schema for create order request
 const createOrderSchema = z.object({
   amount: z.number().min(1, "Amount must be greater than 0").max(1000000, "Amount too large"),
@@ -117,6 +135,28 @@ export const POST = withUpstashRateLimit("moderate")(async (
         { status: 500 }
       );
     }
+
+    // 🔑 Store order metadata temporarily (since PhonePe doesn't reliably return metaInfo)
+    const orderMetadata = {
+      userId: userId,
+      customerInfo: customerInfo,
+      cart: cart,
+      timestamp: Date.now()
+    };
+    
+    // Store in a simple in-memory cache (you might want to use Redis in production)
+    global.orderMetadataCache = global.orderMetadataCache || new Map();
+    global.orderMetadataCache.set(merchantOrderId, orderMetadata);
+    
+    // Clean up old entries (older than 30 minutes)
+    const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000;
+    for (const [key, value] of global.orderMetadataCache.entries()) {
+      if (value.timestamp < thirtyMinutesAgo) {
+        global.orderMetadataCache.delete(key);
+      }
+    }
+    
+    console.log('🔍 CREATE ORDER DEBUG: Stored order metadata for merchantOrderId:', merchantOrderId);
 
     // 🏦 Create PhonePe payment request
     // Get the correct base URL for redirects

@@ -2,6 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createPhonePeOAuthClient } from '@/app/lib/phonepe-oauth';
 import { safeLog, safeLogError } from '@/app/lib/security/logging';
 import { saveOrder } from '@/app/lib/database';
+import { prisma } from '@/app/lib/prisma';
+import prismaVercel from '@/app/lib/prisma-vercel';
+
+// Use Vercel-optimized Prisma client in production, standard client in development
+const db = process.env.VERCEL ? prismaVercel : prisma;
+
+// Type for stored metadata
+interface OrderMetadata {
+  userId: string;
+  customerInfo: {
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+  };
+  cart: any[];
+  timestamp: number;
+}
+
+// Access the global cache
+declare global {
+  var orderMetadataCache: Map<string, OrderMetadata> | undefined;
+}
+
+const orderMetadataCache = global.orderMetadataCache || new Map<string, OrderMetadata>();
 
 export async function GET(request: NextRequest) {
   return handleCallback(request);
@@ -71,12 +96,29 @@ async function saveOrderToDatabase({
     // Extract customer info and cart from PhonePe metaInfo
     const metaInfo = paymentDetails.metaInfo || {};
     console.log('🔄 CALLBACK DEBUG: MetaInfo extracted:', JSON.stringify(metaInfo, null, 2));
+    console.log('🔄 CALLBACK DEBUG: MetaInfo keys:', Object.keys(metaInfo));
+    console.log('🔄 CALLBACK DEBUG: Has userId in metaInfo:', !!metaInfo.userId);
+    console.log('🔄 CALLBACK DEBUG: Has address in metaInfo:', !!metaInfo.address);
     
-    const customerName = metaInfo.udf1 || 'Unknown Customer';
-    const customerEmail = metaInfo.udf2 || '';
-    const customerPhone = metaInfo.udf3 || '';
-    const cartItemsJson = metaInfo.udf4 || '[]';
-    const itemsCount = metaInfo.udf5 || 'items:0';
+    // Try to get stored order metadata if metaInfo is incomplete
+    global.orderMetadataCache = global.orderMetadataCache || new Map();
+    const storedMetadata = global.orderMetadataCache.get(merchantOrderId);
+    console.log('🔄 CALLBACK DEBUG: Stored metadata found:', !!storedMetadata);
+    
+    if (storedMetadata) {
+      console.log('🔄 CALLBACK DEBUG: Using stored metadata:', {
+        hasUserId: !!storedMetadata.userId,
+        hasCustomerInfo: !!storedMetadata.customerInfo,
+        hasCart: !!storedMetadata.cart
+      });
+    }
+    
+    // Use metaInfo first, fallback to stored metadata
+    const customerName = metaInfo.udf1 || storedMetadata?.customerInfo?.name || 'Unknown Customer';
+    const customerEmail = metaInfo.udf2 || storedMetadata?.customerInfo?.email || '';
+    const customerPhone = metaInfo.udf3 || storedMetadata?.customerInfo?.phone || '';
+    const cartItemsJson = metaInfo.udf4 || (storedMetadata?.cart ? JSON.stringify(storedMetadata.cart.slice(0, 3)) : '[]');
+    const itemsCount = metaInfo.udf5 || (storedMetadata?.cart ? `items:${storedMetadata.cart.length}` : 'items:0');
     
     console.log('🔄 CALLBACK DEBUG: Extracted fields:', {
       customerName,
@@ -95,9 +137,13 @@ async function saveOrderToDatabase({
       safeLogError('Failed to parse cart items from metaInfo', { cartItemsJson, error: e });
     }
 
+    // Get userId from metaInfo or stored metadata
+    const userId = metaInfo.userId || storedMetadata?.userId;
+    console.log('🔄 CALLBACK DEBUG: Final userId to use:', userId);
+    
     // If userId is available, create/update user in database first
     let validUserId = undefined;
-    if (metaInfo.userId) {
+    if (userId) {
       try {
         // Import required modules for user creation
         const { prisma } = await import('@/app/lib/prisma');
@@ -106,7 +152,7 @@ async function saveOrderToDatabase({
         
         // Try to find existing user
         let user = await db.user.findUnique({
-          where: { id: metaInfo.userId }
+          where: { id: userId }
         });
         
         if (!user) {
@@ -162,7 +208,7 @@ async function saveOrderToDatabase({
       customerName,
       customerEmail,
       customerPhone,
-      address: metaInfo.address || 'Address not provided', // Add address from metaInfo or default
+      address: metaInfo.address || storedMetadata?.customerInfo?.address || 'Address not provided', // Add address from metaInfo, stored metadata, or default
       userId: validUserId, // Use the validated userId
       items: cartItems.length > 0 ? cartItems : [
         {
@@ -255,6 +301,12 @@ async function checkOrderStatusAndRedirect(merchantOrderId: string, request: Nex
           paymentDetails: orderStatus
         });
         console.log('✅ CALLBACK DEBUG: Order saved successfully, redirecting to success page...');
+        
+        // Clean up stored metadata after successful processing
+        if (orderMetadataCache.has(merchantOrderId)) {
+          orderMetadataCache.delete(merchantOrderId);
+          console.log('🧹 CALLBACK DEBUG: Cleaned up stored metadata for order:', merchantOrderId);
+        }
       } catch (error) {
         console.error('❌ CALLBACK DEBUG: Failed to save order, but payment was successful:', error);
         console.error('❌ CALLBACK DEBUG: Save error stack:', error instanceof Error ? error.stack : 'No stack trace');
