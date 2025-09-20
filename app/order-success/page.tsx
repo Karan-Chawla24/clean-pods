@@ -4,9 +4,11 @@ import Link from "next/link";
 import { safeDisplayOrderId } from "../lib/security/ui-escaping";
 import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import { useAppStore } from "../lib/store";
 
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
+  const { clearCart } = useAppStore();
   const [orderNumber, setOrderNumber] = useState("");
   const [displayOrderNumber, setDisplayOrderNumber] = useState("");
   const [notificationSent, setNotificationSent] = useState(false);
@@ -21,19 +23,14 @@ function OrderSuccessContent() {
     setIsLoadingOrder(true);
     setOrderFetchError(null);
     
-    console.log('DEBUG: Starting fetchOrderWithRetry for orderId:', orderId);
-    
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         setCurrentAttempt(attempt);
-        console.log(`DEBUG: Attempt ${attempt}/${maxRetries} - Fetching order ${orderId}`);
         
         const response = await fetch(`/api/orders/${orderId}`);
-        console.log(`DEBUG: Attempt ${attempt} - Response status:`, response.status);
         
         if (response.ok) {
           const orderData = await response.json();
-          console.log('DEBUG: Order details fetched successfully:', orderData);
           setOrderDetails(orderData);
           setIsLoadingOrder(false);
           return orderData;
@@ -43,19 +40,14 @@ function OrderSuccessContent() {
             ? 2000 * attempt  // 2s, 4s, 6s for first 3 attempts
             : Math.min(3000 * (attempt - 2), 15000); // 3s, 6s, 9s, 12s, 15s for later attempts
           
-          console.log(`DEBUG: Order not found yet (404) - Order may still be processing, retrying in ${delay}ms...`);
           const errorData = await response.json().catch(() => ({}));
-          console.log('DEBUG: 404 Error response:', errorData);
           await new Promise(resolve => setTimeout(resolve, delay));
           continue;
         } else {
           const errorData = await response.json().catch(() => ({}));
-          console.log(`DEBUG: Unexpected error ${response.status}:`, errorData);
           throw new Error(`Failed to fetch order: ${response.status}`);
         }
       } catch (error) {
-        console.error(`DEBUG: Attempt ${attempt} failed:`, error);
-        
         if (attempt === maxRetries) {
           setOrderFetchError(`Order not found after ${maxRetries} attempts. This may indicate:\n1. The payment is still being processed by PhonePe\n2. There was an issue saving the order\n\nPlease wait a moment and refresh the page, or contact support if the issue persists.`);
           setIsLoadingOrder(false);
@@ -67,7 +59,6 @@ function OrderSuccessContent() {
           ? 2000 * attempt 
           : Math.min(3000 * (attempt - 2), 15000);
         
-        console.log(`DEBUG: Waiting ${delay}ms before retry...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
@@ -75,6 +66,11 @@ function OrderSuccessContent() {
     setIsLoadingOrder(false);
     return null;
   };
+
+  // Clear cart when user reaches order success page
+  useEffect(() => {
+    clearCart();
+  }, [clearCart]);
 
   useEffect(() => {
     // Get order ID from URL params or generate one
@@ -110,8 +106,6 @@ function OrderSuccessContent() {
   // Verify payment status for orders coming from PhonePe redirect
   const verifyPaymentStatus = async (merchantOrderId: string) => {
     try {
-      console.log('DEBUG: Verifying payment status for merchantOrderId:', merchantOrderId);
-      
       const response = await fetch(`/api/phonepe/verify`, {
         method: 'POST',
         headers: {
@@ -121,10 +115,8 @@ function OrderSuccessContent() {
       });
       
       const result = await response.json();
-      console.log('DEBUG: Payment verification result:', result);
       
       if (!response.ok) {
-        console.error('DEBUG: Payment verification API failed:', result);
         // Only redirect on API errors, not payment status
         window.location.href = `/checkout?error=verification_failed&orderId=${merchantOrderId}`;
         return;
@@ -132,8 +124,6 @@ function OrderSuccessContent() {
       
       // Check the correct field: result.state (not result.status)
       if (result.state !== 'COMPLETED' && !result.success) {
-        console.log('DEBUG: Payment not completed, state:', result.state);
-        
         // Only redirect if payment actually failed, not if it's still pending
         if (result.state === 'FAILED' || result.isFailed) {
           window.location.href = `/checkout?error=payment_failed&orderId=${merchantOrderId}&message=Payment was not successful`;
@@ -142,18 +132,15 @@ function OrderSuccessContent() {
         
         // For pending payments, don't redirect - let the retry logic handle it
         if (result.state === 'PENDING' || result.isPending) {
-          console.log('DEBUG: Payment still pending, continuing with order fetch retry logic');
           return;
         }
       }
       
       // Payment successful, update display with actual order details
-      console.log('DEBUG: Payment verified successfully');
       if (result.orderId) {
         setDisplayOrderNumber(result.orderId);
       }
     } catch (error) {
-      console.error('Payment verification failed:', error);
       // Only redirect on actual errors, not on successful pending payments
       window.location.href = `/checkout?error=verification_failed&orderId=${merchantOrderId}`;
     }
@@ -171,7 +158,6 @@ function OrderSuccessContent() {
         // Get order details from the database
         const orderResponse = await fetch(`/api/orders/${orderNumber}`);
         if (!orderResponse.ok) {
-          console.error('Failed to fetch order details');
           return;
         }
         
@@ -207,13 +193,10 @@ function OrderSuccessContent() {
         });
         
         if (slackResponse.ok) {
-          console.log('Slack notification sent successfully');
           setNotificationSent(true);
-        } else {
-          console.error('Failed to send Slack notification');
         }
       } catch (error) {
-        console.error('Error sending Slack notification:', error);
+        // Silently handle Slack notification errors
       }
     };
 
