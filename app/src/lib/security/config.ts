@@ -62,17 +62,19 @@ export const SECURITY_CONFIG = {
 };
 
 // Environment-specific security settings
-export const getSecurityHeaders = () => ({
-  "X-Frame-Options": "DENY",
-  "X-Content-Type-Options": "nosniff",
-  "X-XSS-Protection": "1; mode=block",
-  "Referrer-Policy": "strict-origin-when-cross-origin",
-  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
-  "Strict-Transport-Security":
-    process.env.NODE_ENV === "production"
-      ? "max-age=31536000; includeSubDomains"
-      : undefined,
-});
+export const getSecurityHeaders = () => {
+  return {
+    "Content-Security-Policy": "...",
+    "X-Frame-Options": "SAMEORIGIN",
+    "X-Content-Type-Options": "nosniff",
+    "X-XSS-Protection": "1; mode=block",
+    // ✅ required by PhonePe
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+  };
+};
+
 
 // Map config keys to valid CSP directives
 const CSP_DIRECTIVE_MAP: Record<string, string> = {

@@ -13,22 +13,41 @@ export async function POST(request: NextRequest) {
 
 // Handle both redirect callbacks (GET) and status checks
 async function handleCallback(request: NextRequest) {
+  console.log('🚀 CALLBACK DEBUG: PhonePe callback handler started');
+  
   const { searchParams } = new URL(request.url);
+  const code = searchParams.get('code');
+  const state = searchParams.get('state');
   const merchantOrderId = searchParams.get('merchantOrderId');
+  
+  console.log('🚀 CALLBACK DEBUG: Callback parameters:', { code, state, merchantOrderId });
+  console.log('🚀 CALLBACK DEBUG: Full URL:', request.url);
+  console.log('🚀 CALLBACK DEBUG: All search params:', Object.fromEntries(searchParams.entries()));
   
   safeLog('info', 'PhonePe callback received', {
        method: request.method,
        merchantOrderId,
+       code,
+       state,
        allParams: Object.fromEntries(searchParams.entries())
      });
   
   if (!merchantOrderId) {
+    console.error('❌ CALLBACK DEBUG: Missing merchantOrderId in callback');
     safeLogError('No merchantOrderId in callback', {});
     return NextResponse.redirect(new URL('/checkout?error=invalid_callback', request.url));
   }
   
-  // Check order status using PhonePe Order Status API
-  return checkOrderStatusAndRedirect(merchantOrderId, request);
+  try {
+    console.log('🔄 CALLBACK DEBUG: Calling checkOrderStatusAndRedirect...');
+    const result = await checkOrderStatusAndRedirect(merchantOrderId, request);
+    console.log('✅ CALLBACK DEBUG: checkOrderStatusAndRedirect completed successfully');
+    return result;
+  } catch (error) {
+    console.error('❌ CALLBACK DEBUG: Error in PhonePe callback:', error);
+    console.error('❌ CALLBACK DEBUG: Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    return NextResponse.redirect(new URL('/checkout?error=callback_error', request.url));
+  }
 }
 
 // Save order to database using data from PhonePe order status
@@ -45,19 +64,34 @@ async function saveOrderToDatabase({
   amount: number;
   paymentDetails: any;
 }) {
+  console.log('🔄 CALLBACK DEBUG: Starting saveOrderToDatabase');
+  console.log('🔄 CALLBACK DEBUG: Payment details received:', JSON.stringify(paymentDetails, null, 2));
+  
   try {
     // Extract customer info and cart from PhonePe metaInfo
     const metaInfo = paymentDetails.metaInfo || {};
+    console.log('🔄 CALLBACK DEBUG: MetaInfo extracted:', JSON.stringify(metaInfo, null, 2));
+    
     const customerName = metaInfo.udf1 || 'Unknown Customer';
     const customerEmail = metaInfo.udf2 || '';
     const customerPhone = metaInfo.udf3 || '';
     const cartItemsJson = metaInfo.udf4 || '[]';
     const itemsCount = metaInfo.udf5 || 'items:0';
     
+    console.log('🔄 CALLBACK DEBUG: Extracted fields:', {
+      customerName,
+      customerEmail,
+      customerPhone,
+      cartItemsJson,
+      itemsCount
+    });
+    
     let cartItems = [];
     try {
       cartItems = JSON.parse(cartItemsJson);
+      console.log('🔄 CALLBACK DEBUG: Parsed cart items:', JSON.stringify(cartItems, null, 2));
     } catch (e) {
+      console.error('❌ CALLBACK DEBUG: Failed to parse cart items:', e);
       safeLogError('Failed to parse cart items from metaInfo', { cartItemsJson, error: e });
     }
 
@@ -140,9 +174,10 @@ async function saveOrderToDatabase({
     };
 
     // Save order to database
-    console.log('DEBUG: About to save order with data:', JSON.stringify(orderData, null, 2));
+    console.log('🔄 CALLBACK DEBUG: Prepared order data for saving:', JSON.stringify(orderData, null, 2));
     const savedOrder = await saveOrder(orderData);
-    console.log('DEBUG: Order saved successfully:', savedOrder);
+    console.log('✅ CALLBACK DEBUG: Order saved successfully with ID:', savedOrder.id);
+    console.log('✅ CALLBACK DEBUG: Saved order details:', JSON.stringify(savedOrder, null, 2));
     
     safeLog('info', 'Order saved to database successfully', {
       orderId: savedOrder.id,
@@ -153,6 +188,8 @@ async function saveOrderToDatabase({
     
     return savedOrder;
   } catch (error) {
+    console.error('❌ CALLBACK DEBUG: Error saving order to database:', error);
+    console.error('❌ CALLBACK DEBUG: Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     safeLogError('Failed to save order to database', {
       error,
       merchantOrderId,
@@ -164,30 +201,38 @@ async function saveOrderToDatabase({
 }
 
 // Check order status via PhonePe Order Status API and redirect accordingly
-async function checkOrderStatusAndRedirect(merchantOrderId: string, request: NextRequest) {
-  // Get the correct base URL for redirects (use localhost instead of 0.0.0.0)
-  const baseUrl = process.env.NODE_ENV === 'production' 
+async function checkOrderStatusAndRedirect(merchantOrderId: string, request: NextRequest | string) {
+  console.log('🔍 CALLBACK DEBUG: Starting checkOrderStatusAndRedirect for order:', merchantOrderId);
+  
+  const baseUrl = typeof request === 'string' ? request : (process.env.NODE_ENV === 'production' 
     ? process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://bubblebeads.in'
-    : 'http://localhost:3000';
+    : 'http://localhost:3000');
+  console.log('🔍 CALLBACK DEBUG: Base URL:', baseUrl);
     
   try {
     // Initialize PhonePe OAuth client
+    console.log('🔍 CALLBACK DEBUG: Initializing PhonePe OAuth client...');
     let phonePeClient;
     try {
       phonePeClient = createPhonePeOAuthClient();
     } catch (error) {
+      console.error('❌ CALLBACK DEBUG: PhonePe OAuth client initialization failed:', error);
       safeLogError("PhonePe OAuth client initialization failed in callback", error);
       return NextResponse.redirect(new URL("/checkout?error=system_error", baseUrl));
     }
 
     // Check order status using OAuth API
+    console.log('🔍 CALLBACK DEBUG: Checking order status with PhonePe...');
     const orderStatus = await phonePeClient.getOrderStatus(merchantOrderId, true);
+    console.log('🔍 CALLBACK DEBUG: Order status response:', JSON.stringify(orderStatus, null, 2));
 
     const isPaymentSuccessful = orderStatus.state === 'COMPLETED';
     const isPaymentPending = orderStatus.state === 'PENDING';
     const isPaymentFailed = orderStatus.state === 'FAILED';
 
     if (isPaymentSuccessful) {
+      console.log('✅ CALLBACK DEBUG: Payment successful, processing order...');
+      
       // Extract transaction ID for successful payments
       const transactionId = phonePeClient.extractTransactionId(orderStatus) || `txn_${merchantOrderId}_${Date.now()}`;
       
@@ -200,7 +245,7 @@ async function checkOrderStatusAndRedirect(merchantOrderId: string, request: Nex
       });
 
       // Save order to database after successful payment
-      console.log('DEBUG: Payment successful, about to save order to database');
+      console.log('🔄 CALLBACK DEBUG: Attempting to save order to database...');
       try {
         await saveOrderToDatabase({
           merchantOrderId,
@@ -209,7 +254,10 @@ async function checkOrderStatusAndRedirect(merchantOrderId: string, request: Nex
           amount: orderStatus.amount,
           paymentDetails: orderStatus
         });
+        console.log('✅ CALLBACK DEBUG: Order saved successfully, redirecting to success page...');
       } catch (error) {
+        console.error('❌ CALLBACK DEBUG: Failed to save order, but payment was successful:', error);
+        console.error('❌ CALLBACK DEBUG: Save error stack:', error instanceof Error ? error.stack : 'No stack trace');
         safeLogError("Failed to save order to database", {
           error,
           merchantOrderId,
@@ -220,10 +268,11 @@ async function checkOrderStatusAndRedirect(merchantOrderId: string, request: Nex
       }
 
       // Redirect to success page with order details
-      return NextResponse.redirect(
-        new URL(`/order-success?order_id=${merchantOrderId}&transactionId=${transactionId}&phonePeOrderId=${orderStatus.orderId}`, baseUrl)
-      );
+      const successUrl = new URL(`/order-success?order_id=${merchantOrderId}&transactionId=${transactionId}&phonePeOrderId=${orderStatus.orderId}`, baseUrl);
+      console.log('✅ CALLBACK DEBUG: Redirecting to:', successUrl.toString());
+      return NextResponse.redirect(successUrl);
     } else if (isPaymentPending) {
+      console.log('⏳ CALLBACK DEBUG: Payment is still pending...');
       safeLog("info", "PhonePe OAuth payment pending", {
         merchantOrderId,
         phonePeOrderId: orderStatus.orderId,
@@ -235,6 +284,8 @@ async function checkOrderStatusAndRedirect(merchantOrderId: string, request: Nex
         new URL(`/checkout?status=pending&orderId=${merchantOrderId}&message=Payment is still pending. Please complete the payment.`, baseUrl)
       );
     } else {
+      console.log('❌ CALLBACK DEBUG: Payment failed or cancelled');
+      console.log('❌ CALLBACK DEBUG: Order status details:', JSON.stringify(orderStatus, null, 2));
       safeLogError("PhonePe OAuth payment failed", {
         merchantOrderId,
         phonePeOrderId: orderStatus.orderId,
@@ -249,6 +300,8 @@ async function checkOrderStatusAndRedirect(merchantOrderId: string, request: Nex
     }
 
   } catch (error) {
+    console.error('❌ CALLBACK DEBUG: Error checking order status:', error);
+    console.error('❌ CALLBACK DEBUG: Error stack:', error instanceof Error ? error.stack : 'No stack trace');
     safeLogError("PhonePe OAuth callback processing error", error);
     return NextResponse.redirect(new URL("/checkout?error=callback_error", baseUrl));
   }

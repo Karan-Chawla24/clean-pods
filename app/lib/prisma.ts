@@ -11,6 +11,13 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 const prismaClientSingleton = () => {
   return new PrismaClient({
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    // Disable prepared statements to avoid connection pooling issues
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL + (process.env.DATABASE_URL?.includes('?') ? '&' : '?') + 'pgbouncer=true&connection_limit=1',
+      },
+    },
+    errorFormat: 'minimal',
   });
 };
 

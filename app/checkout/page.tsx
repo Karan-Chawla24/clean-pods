@@ -200,35 +200,28 @@ export default function Checkout() {
         throw new Error(orderData.error || "Failed to create order");
       }
 
-      // Use PhonePe iframe mode (recommended)
-      if (orderData.paymentUrl) {
-        // Define callback function for payment completion
-        const callback = (response: string) => {
-          if (response === 'USER_CANCEL') {
-            toast.error('Payment was cancelled by user');
-            setIsProcessing(false);
-            return;
-          } else if (response === 'CONCLUDED') {
-            // Payment completed (success or failure), redirect to PhonePe callback for verification
-            window.location.href = `/api/phonepe/callback?merchantOrderId=${orderData.merchantOrderId}`;
-            return;
-          }
-        };
+      // Use direct redirection instead of iframe mode (PhonePe requirement)
+    // ✅ Replace this block in processPayment
+if (orderData.paymentUrl) {
+  // Store order data in sessionStorage for callback handling
+  const orderInfo = {
+    merchantOrderId: orderData.merchantOrderId,
+    amount: total,
+    customerInfo: requestBody.customerInfo,
+    cart: requestBody.cart,
+    timestamp: Date.now(),
+  };
 
-        // Use PhonePe checkout script with iframe mode
-        if (typeof window !== 'undefined' && (window as any).PhonePeCheckout) {
-          (window as any).PhonePeCheckout.transact({
-            tokenUrl: orderData.paymentUrl,
-            callback: callback,
-            type: "IFRAME"
-          });
-        } else {
-          // Fallback to redirect if script not loaded
-          window.location.href = orderData.paymentUrl;
-        }
-      } else {
-        throw new Error("Payment URL not received from server");
-      }
+  if (typeof window !== "undefined") {
+    sessionStorage.setItem("phonepe_order_info", JSON.stringify(orderInfo));
+  }
+
+  // ✅ Always redirect in SAME TAB (required by PhonePe)
+  window.location.href = orderData.paymentUrl;
+  return; // stop execution after redirect
+} else {
+  throw new Error("Payment URL not received from server");
+}
 
 
     } catch (error) {

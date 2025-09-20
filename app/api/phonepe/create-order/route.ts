@@ -106,9 +106,9 @@ export const POST = withUpstashRateLimit("moderate")(async (
       ? process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || 'https://bubblebeads.in'
       : 'http://localhost:3000';
     
-    // The redirectUrl is where users are redirected after payment (frontend page)
-    // This should be a user-facing page, not the API callback endpoint
-    const redirectUrl = `${baseUrl}/order-success?merchantOrderId=${merchantOrderId}`;
+    // The redirectUrl should go through the callback handler first to save the order
+    // The callback handler will verify payment status and then redirect to success page
+    const redirectUrl = `${baseUrl}/api/phonepe/callback?merchantOrderId=${merchantOrderId}`;
     
     const paymentRequest = {
       merchantOrderId,

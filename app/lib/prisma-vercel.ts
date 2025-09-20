@@ -17,7 +17,7 @@ if (process.env.VERCEL) {
   const databaseUrl = process.env.DATABASE_URL;
   const vercelDatabaseUrl = databaseUrl?.includes('pgbouncer=true') 
     ? databaseUrl 
-    : `${databaseUrl}${databaseUrl?.includes('?') ? '&' : '?'}pgbouncer=true`;
+    : `${databaseUrl}${databaseUrl?.includes('?') ? '&' : '?'}pgbouncer=true&connection_limit=1&pool_timeout=20&pool_mode=transaction`;
   
   prisma = new PrismaClient({
     datasources: {
