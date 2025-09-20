@@ -487,7 +487,7 @@ function LoadingFallback({ attempt = 1, maxRetries = 8 }: { attempt?: number; ma
           {attempt > 3 && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 max-w-md mx-auto">
               <p className="text-sm text-blue-700">
-                Your payment was successful and we're processing your order. 
+                Your payment was successful and we&apos;re processing your order. 
                 This usually takes just a few moments.
               </p>
             </div>
