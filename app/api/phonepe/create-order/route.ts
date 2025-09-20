@@ -181,9 +181,9 @@ export const POST = withUpstashRateLimit("moderate")(async (
         udf2: customerInfo.email,
         udf3: customerInfo.phone,
         udf4: JSON.stringify(cart.slice(0, 3)), // Store first 3 items
-        udf5: `items:${cart.length}`,
-        address: customerInfo.address,
-        userId: userId
+        udf5: customerInfo.address, // Store address in udf5
+        udf6: userId, // Store userId in udf6
+        udf7: `items:${cart.length}`, // Move items count to udf7
       },
       paymentFlow: {
         type: "PG_CHECKOUT" as const,

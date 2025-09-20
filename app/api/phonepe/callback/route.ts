@@ -134,13 +134,17 @@ async function saveOrderToDatabase({
     const customerEmail = metaInfo.udf2 || storedMetadata?.customerInfo?.email || '';
     const customerPhone = metaInfo.udf3 || storedMetadata?.customerInfo?.phone || '';
     const cartItemsJson = metaInfo.udf4 || (storedMetadata?.cart ? JSON.stringify(storedMetadata.cart.slice(0, 3)) : '[]');
-    const itemsCount = metaInfo.udf5 || (storedMetadata?.cart ? `items:${storedMetadata.cart.length}` : 'items:0');
+    const address = metaInfo.udf5 || storedMetadata?.customerInfo?.address || 'Address not provided'; // Address from udf5
+    const userId = metaInfo.udf6 || storedMetadata?.userId || null; // UserId from udf6
+    const itemsCount = metaInfo.udf7 || (storedMetadata?.cart ? `items:${storedMetadata.cart.length}` : 'items:0'); // Items count from udf7
     
     safeLog('info', 'Extracted order fields', {
       hasCustomerName: !!customerName,
       hasCustomerEmail: !!customerEmail,
       hasCustomerPhone: !!customerPhone,
       hasCartItems: !!cartItemsJson,
+      hasAddress: !!address,
+      hasUserId: !!userId,
       itemsCount,
       merchantOrderId
     });
@@ -160,8 +164,7 @@ async function saveOrderToDatabase({
       });
     }
 
-    // Get userId from metaInfo or stored metadata
-    const userId = metaInfo.userId || storedMetadata?.userId;
+    // userId is already extracted above from udf6
     safeLog('info', 'Processing order for user', { 
       hasUserId: !!userId,
       merchantOrderId 
@@ -234,7 +237,7 @@ async function saveOrderToDatabase({
       customerName,
       customerEmail,
       customerPhone,
-      address: metaInfo.address || storedMetadata?.customerInfo?.address || 'Address not provided', // Add address from metaInfo, stored metadata, or default
+      address: address, // Use address from udf5
       userId: validUserId, // Use the validated userId
       items: cartItems.length > 0 ? cartItems : [
         {
