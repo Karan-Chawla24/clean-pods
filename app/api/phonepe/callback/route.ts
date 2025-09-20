@@ -109,7 +109,9 @@ async function saveOrderToDatabase({
     safeLog('info', 'Processing payment callback', { 
       hasMetaInfo: !!metaInfo,
       hasUserId: !!metaInfo.userId,
-      hasAddress: !!metaInfo.address 
+      hasAddress: !!metaInfo.address,
+      metaInfoKeys: Object.keys(metaInfo),
+      metaInfoContent: metaInfo
     });
     
     // Try to get stored order metadata if metaInfo is incomplete
@@ -122,7 +124,8 @@ async function saveOrderToDatabase({
         hasUserId: !!storedMetadata.userId,
         hasCustomerInfo: !!storedMetadata.customerInfo,
         hasCart: !!storedMetadata.cart,
-        merchantOrderId
+        merchantOrderId,
+        storedMetadataContent: storedMetadata
       });
     }
     
@@ -246,7 +249,14 @@ async function saveOrderToDatabase({
     safeLog('info', 'Saving order to database', { 
       merchantOrderId,
       hasOrderData: !!orderData,
-      itemCount: orderData.items?.length || 0
+      itemCount: orderData.items?.length || 0,
+      orderDataContent: {
+        userId: orderData.userId,
+        address: orderData.address,
+        customerName: orderData.customerName,
+        customerEmail: orderData.customerEmail,
+        customerPhone: orderData.customerPhone
+      }
     });
     const savedOrder = await saveOrder(orderData);
     safeLog('info', 'Order saved successfully', { 

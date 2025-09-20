@@ -33,6 +33,14 @@ export async function saveOrder(orderData: {
   total: number;
 }) {
   // saveOrder invoked
+  const { safeLog } = await import("./security/logging");
+  safeLog('info', 'saveOrder function called with data', {
+    hasUserId: !!orderData.userId,
+    hasAddress: !!orderData.address,
+    userId: orderData.userId,
+    address: orderData.address,
+    merchantOrderId: orderData.merchantOrderId
+  });
 
   return retryDatabaseOperation(async () => {
     try {

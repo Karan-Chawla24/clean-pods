@@ -158,7 +158,8 @@ export const POST = withUpstashRateLimit("moderate")(async (
     safeLog('info', 'Stored order metadata', { 
       merchantOrderId,
       hasUserId: !!userId,
-      hasCartItems: !!cart?.length
+      hasCartItems: !!cart?.length,
+      storedMetadataContent: orderMetadata
     });
 
     // 🏦 Create PhonePe payment request
@@ -192,6 +193,12 @@ export const POST = withUpstashRateLimit("moderate")(async (
         }
       }
     };
+
+    safeLog('info', 'Sending payment request to PhonePe', {
+      merchantOrderId,
+      hasMetaInfo: !!paymentRequest.metaInfo,
+      metaInfoContent: paymentRequest.metaInfo
+    });
 
     try {
       const paymentResponse = await phonePeClient.createPayment(paymentRequest);
