@@ -52,9 +52,8 @@ export const POST = withUpstashRateLimit("moderate")(async (
     // 🔐 Authentication Check
     const { userId } = await auth();
     
-    // Debug authentication for production issues
-    console.log('🔐 CREATE-ORDER AUTH DEBUG:', {
-      userId: userId || 'null',
+    // Log authentication status for monitoring
+    safeLog('info', 'Authentication check in create-order', {
       hasUserId: !!userId,
       timestamp: new Date().toISOString(),
       origin: request.headers.get('origin'),
@@ -156,7 +155,11 @@ export const POST = withUpstashRateLimit("moderate")(async (
       }
     }
     
-    console.log('🔍 CREATE ORDER DEBUG: Stored order metadata for merchantOrderId:', merchantOrderId);
+    safeLog('info', 'Stored order metadata', { 
+      merchantOrderId,
+      hasUserId: !!userId,
+      hasCartItems: !!cart?.length
+    });
 
     // 🏦 Create PhonePe payment request
     // Get the correct base URL for redirects

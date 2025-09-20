@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { getOrder } from "../../../../lib/database";
 import { requireClerkAdminAuth } from "../../../../lib/clerk-admin";
 import { safeLogError } from "../../../../lib/security/logging";
+import { withUpstashRateLimit } from "../../../../lib/security/upstashRateLimit";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
+  const url = new URL(request.url);
+  const pathSegments = url.pathname.split('/');
+  const orderId = pathSegments[pathSegments.length - 1];
   try {
     // Check admin authorization using Clerk
     const authResult = await requireClerkAdminAuth(request);
@@ -15,8 +16,6 @@ export async function GET(
       // Authentication failed, return the error response
       return authResult;
     }
-
-    const { id: orderId } = await params;
 
     if (!orderId) {
       return NextResponse.json(
@@ -52,4 +51,4 @@ export async function GET(
       { status: 500 },
     );
   }
-}
+});

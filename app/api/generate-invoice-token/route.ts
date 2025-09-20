@@ -8,8 +8,9 @@ import {
   invoiceTokenSchema,
   sanitizeObject,
 } from "@/app/lib/security/validation";
+import { withUpstashRateLimit } from "../../lib/security/upstashRateLimit";
 
-export async function POST(request: NextRequest) {
+export const POST = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   try {
     // Verify user authentication
     const { userId } = await auth();
@@ -56,4 +57,4 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});

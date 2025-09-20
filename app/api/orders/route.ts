@@ -8,8 +8,9 @@ import {
   createOrderSchema,
   sanitizeObject,
 } from "@/app/lib/security/validation";
+import { withUpstashRateLimit } from "../../lib/security/upstashRateLimit";
 
-export async function GET() {
+export const GET = withUpstashRateLimit("moderate")(async () => {
   // This endpoint is now secured - only admin should access
   const headersList = await headers();
   const adminHeader = headersList.get("X-Admin-Key");
@@ -31,9 +32,9 @@ export async function GET() {
       { status: 500 },
     );
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   try {
     // Check authentication
     const { userId } = await auth();
@@ -100,4 +101,4 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});

@@ -3,6 +3,7 @@ import { IncomingWebhook } from "@slack/webhook";
 import { z } from "zod";
 import { validateRequest, sanitizeObject } from "@/app/lib/security/validation";
 import { safeLog, safeLogError } from "@/app/lib/security/logging";
+import { withUpstashRateLimit } from "@/app/lib/security/upstashRateLimit";
 
 // Slack webhook will be initialized in the function
 
@@ -97,7 +98,7 @@ interface OrderData {
   paymentId: string;
 }
 
-export async function POST(request: NextRequest) {
+export const POST = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   try {
     safeLog("info", "Slack notification API called");
 
@@ -304,4 +305,4 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});

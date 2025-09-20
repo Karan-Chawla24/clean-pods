@@ -12,6 +12,7 @@ import {
 } from "../../../lib/security/validation";
 import { safeLog, safeLogError } from "../../../lib/security/logging";
 import { assertSameOrigin } from "../../../lib/security/origin";
+import { withUpstashRateLimit } from "../../../lib/security/upstashRateLimit";
 
 // Create Clerk client instance
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
@@ -37,7 +38,7 @@ function logSecurityEvent(
  * Secured endpoint to grant admin role to a specified user
  * Requires existing admin authentication after bootstrap phase
  */
-export async function POST(request: NextRequest) {
+export const POST = withUpstashRateLimit("strict")(async (request: NextRequest) => {
   const userAgent = request.headers.get("user-agent") || "unknown";
   const ip =
     request.headers.get("x-forwarded-for") ||
@@ -177,11 +178,10 @@ export async function POST(request: NextRequest) {
       error: error instanceof Error ? error.message : "Unknown error",
       stack: error instanceof Error ? error.stack : undefined,
     });
-
     safeLogError("Grant admin role error", error, { userAgent, ip });
     return NextResponse.json(
       { success: false, error: "Failed to grant admin role" },
       { status: 500 },
     );
   }
-}
+});

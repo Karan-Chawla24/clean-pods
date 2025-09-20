@@ -1,14 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getProductById, getAllProducts } from "@/app/lib/products";
 import { safeLogError } from "@/app/lib/security/logging";
+import { sanitizeString } from "@/app/lib/security/validation";
+import { withUpstashRateLimit } from "@/app/lib/security/upstashRateLimit";
 
-export async function GET(request: NextRequest) {
+export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
-    const productId = searchParams.get("id");
+    const rawProductId = searchParams.get("id");
 
     // If specific product requested
-    if (productId) {
+    if (rawProductId) {
+      // Validate and sanitize product ID
+      const productId = sanitizeString(rawProductId);
+      
+      // Additional validation for product ID format
+      if (!/^[a-zA-Z0-9_-]+$/.test(productId)) {
+        return NextResponse.json(
+          { error: "Invalid product ID format" },
+          { status: 400 },
+        );
+      }
+
       const product = getProductById(productId);
       if (!product) {
         return NextResponse.json(
@@ -28,4 +41,4 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});

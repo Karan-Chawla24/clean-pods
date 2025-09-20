@@ -3,6 +3,7 @@ import { auth, createClerkClient } from "@clerk/nextjs/server";
 import { grantAdminRole, hasAdminUsers } from "../../../lib/clerk-admin";
 import { safeLog, safeLogError } from "../../../lib/security/logging";
 import { assertSameOrigin } from "../../../lib/security/origin";
+import { withUpstashRateLimit } from "../../../lib/security/upstashRateLimit";
 
 // Create Clerk client instance
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
@@ -31,7 +32,7 @@ function logSecurityEvent(
  * Secure bootstrap endpoint for creating the first admin user
  * This endpoint only works when no admin users exist in the system
  */
-export async function POST(request: NextRequest) {
+export const POST = withUpstashRateLimit("strict")(async (request: NextRequest) => {
   const userAgent = request.headers.get("user-agent") || "unknown";
   const ip =
     request.headers.get("x-forwarded-for") ||
@@ -135,13 +136,13 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});
 
 /**
  * Check bootstrap availability
  * Returns whether bootstrap is still available (no admins exist)
  */
-export async function GET(request: NextRequest) {
+export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   try {
     const adminExists = await hasAdminUsers();
 
@@ -159,4 +160,4 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});

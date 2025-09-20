@@ -3,13 +3,13 @@ import { getOrder } from "../../../lib/database";
 import { verifyInvoiceToken } from "../../../lib/jwt-utils";
 import { auth } from "@clerk/nextjs/server";
 import { safeLogError } from "../../../lib/security/logging";
+import { withUpstashRateLimit } from "../../../lib/security/upstashRateLimit";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   try {
-    const { id: orderId } = await params;
+    const url = new URL(request.url);
+    const pathSegments = url.pathname.split('/');
+    const orderId = pathSegments[pathSegments.length - 1];
     const { searchParams } = new URL(request.url);
     const token = searchParams.get("token");
 
@@ -87,7 +87,7 @@ export async function GET(
       { status: 500 },
     );
   }
-}
+});
 
 function generateInvoiceHtml(order: any): string {
   const formatPrice = (price: number) => {

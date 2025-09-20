@@ -101,7 +101,7 @@ export default function Orders() {
   const { orders: storeOrders, clearCart } = useAppStore();
 
   useEffect(() => {
-    console.log('Client auth status:', { isLoaded, userId: user?.id });
+    console.log('Client auth status:', { isLoaded, hasUser: !!user });
     
     if (!isLoaded || !user) {
       if (isLoaded && !user) {
