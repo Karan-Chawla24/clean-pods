@@ -33,7 +33,25 @@ export const POST = withUpstashRateLimit("moderate")(async (
   try {
     // 🔐 Authentication Check
     const { userId } = await auth();
+    
+    // Debug authentication for production issues
+    console.log('🔐 CREATE-ORDER AUTH DEBUG:', {
+      userId: userId || 'null',
+      hasUserId: !!userId,
+      timestamp: new Date().toISOString(),
+      origin: request.headers.get('origin'),
+      userAgent: request.headers.get('user-agent')?.substring(0, 50),
+      hasCookie: !!request.headers.get('cookie'),
+    });
+    
     if (!userId) {
+      safeLogError('Authentication failed in create-order', {
+        headers: {
+          origin: request.headers.get('origin'),
+          referer: request.headers.get('referer'),
+          userAgent: request.headers.get('user-agent')?.substring(0, 100),
+        }
+      });
       return NextResponse.json(
         { success: false, error: "Authentication required" },
         { status: 401 }
