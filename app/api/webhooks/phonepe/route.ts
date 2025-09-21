@@ -10,10 +10,38 @@ export async function POST(request: NextRequest) {
     // Get the raw body for verification
     const body = await request.text();
     
+    // Log all headers for debugging (in production, be careful with sensitive data)
+    const allHeaders: Record<string, string> = {};
+    request.headers.forEach((value, key) => {
+      allHeaders[key] = value;
+    });
+    
+    safeLog("info", "PhonePe webhook received", {
+      method: request.method,
+      url: request.url,
+      headers: allHeaders,
+      bodyLength: body.length,
+      bodyPreview: body.substring(0, 200) + (body.length > 200 ? "..." : "")
+    });
+    
     // Verify webhook authorization using PhonePe's method
-    const authHeader = request.headers.get('authorization');
+    // Try different possible header names that PhonePe might use
+    let authHeader = request.headers.get('authorization') || 
+                     request.headers.get('Authorization') ||
+                     request.headers.get('x-authorization') ||
+                     request.headers.get('X-Authorization') ||
+                     request.headers.get('x-phonepe-auth') ||
+                     request.headers.get('X-PhonePe-Auth');
+    
     const webhookUsername = process.env.PHONEPE_WEBHOOK_USERNAME;
     const webhookPassword = process.env.PHONEPE_WEBHOOK_PASSWORD;
+    
+    safeLog("info", "PhonePe webhook auth check", {
+      hasAuthHeader: !!authHeader,
+      authHeaderValue: authHeader ? authHeader.substring(0, 20) + "..." : null,
+      hasUsername: !!webhookUsername,
+      hasPassword: !!webhookPassword
+    });
     
     if (webhookUsername && webhookPassword && authHeader) {
       // PhonePe sends Authorization header as SHA256(username:password)
@@ -22,26 +50,54 @@ export async function POST(request: NextRequest) {
         .update(`${webhookUsername}:${webhookPassword}`)
         .digest('hex');
       
-      // Extract the hash from the Authorization header (remove "SHA256 " prefix if present)
-      const receivedAuth = authHeader.replace(/^SHA256\s+/i, '');
+      // Handle different possible authorization header formats
+      let receivedAuth = authHeader.trim();
       
-      if (receivedAuth !== expectedAuth) {
+      // Remove common prefixes that PhonePe might use
+      receivedAuth = receivedAuth.replace(/^(SHA256|sha256)\s*/i, '');
+      receivedAuth = receivedAuth.replace(/^(Bearer|Basic)\s*/i, '');
+      
+      // Convert to lowercase for comparison (PhonePe might send uppercase)
+      const expectedAuthLower = expectedAuth.toLowerCase();
+      const receivedAuthLower = receivedAuth.toLowerCase();
+      
+      safeLog("info", "PhonePe webhook auth comparison", {
+        expectedAuthPreview: expectedAuthLower.substring(0, 10) + "...",
+        receivedAuthPreview: receivedAuthLower.substring(0, 10) + "...",
+        expectedLength: expectedAuthLower.length,
+        receivedLength: receivedAuthLower.length
+      });
+      
+      if (receivedAuthLower !== expectedAuthLower) {
         safeLogError("PhonePe webhook authorization verification failed", {
-          receivedAuth: receivedAuth.substring(0, 10) + "...", // Log only first 10 chars for security
-          expectedAuth: expectedAuth.substring(0, 10) + "..."
+          receivedAuthPreview: receivedAuthLower.substring(0, 10) + "...",
+          expectedAuthPreview: expectedAuthLower.substring(0, 10) + "...",
+          originalHeader: authHeader.substring(0, 30) + "..."
         });
         return NextResponse.json(
           { error: "Unauthorized" },
           { status: 401 }
         );
       }
+      
+      safeLog("info", "PhonePe webhook authorization successful");
     } else if (webhookUsername && webhookPassword) {
       // If credentials are configured but no auth header received
-      safeLogError("PhonePe webhook missing authorization header");
+      safeLogError("PhonePe webhook missing authorization header", {
+        hasUsername: !!webhookUsername,
+        hasPassword: !!webhookPassword,
+        authHeaderReceived: authHeader
+      });
       return NextResponse.json(
         { error: "Missing authorization header" },
         { status: 401 }
       );
+    } else {
+      // No webhook credentials configured - log this for debugging
+      safeLog("info", "PhonePe webhook credentials not configured, skipping auth check", {
+        hasUsername: !!webhookUsername,
+        hasPassword: !!webhookPassword
+      });
     }
     
     // Parse the webhook payload
