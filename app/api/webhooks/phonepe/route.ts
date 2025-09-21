@@ -402,13 +402,24 @@ if (paymentDetailsArray.length > 0) {
         paymentTimestamp
       });
       
-      safeLog("info", "Order payment details updated successfully", {
-        merchantOrderId: payload.merchantOrderId,
-        updateResult: updateResult ? 'success' : 'no result',
-        paymentMode,
-        paymentTransactionId,
-        bankName
-      });
+      if (updateResult) {
+        safeLog("info", "Order payment details updated successfully", {
+          merchantOrderId: payload.merchantOrderId,
+          updateResult: 'success',
+          paymentMode,
+          paymentTransactionId,
+          bankName
+        });
+      } else {
+        safeLog("warn", "Order payment details update returned null - race condition detected", {
+          merchantOrderId: payload.merchantOrderId,
+          updateResult: 'null - order not found',
+          paymentMode,
+          paymentTransactionId,
+          bankName,
+          note: 'PhonePe will retry this webhook automatically'
+        });
+      }
     } catch (dbError) {
       safeLogError("Failed to update order payment details", {
         error: dbError,

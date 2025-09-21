@@ -207,6 +207,40 @@ export async function updateOrderPaymentDetails(merchantOrderId: string, payment
       paymentTransactionId: paymentDetails.paymentTransactionId
     });
 
+    // First, try to find the order to see if it exists
+    const existingOrder = await db.order.findUnique({
+      where: { merchantOrderId },
+      include: { items: true }
+    });
+
+    if (!existingOrder) {
+      // Order doesn't exist yet - this is a race condition
+      // Wait a bit and try again (webhook arrived before order was saved)
+      safeLog('warn', 'Order not found for webhook update, retrying...', {
+        merchantOrderId,
+        retryReason: 'Race condition - webhook arrived before order creation'
+      });
+      
+      // Wait 2 seconds and try again
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const retryOrder = await db.order.findUnique({
+        where: { merchantOrderId },
+        include: { items: true }
+      });
+      
+      if (!retryOrder) {
+        // Still not found - log error but don't throw (webhook will retry)
+        safeLogError('Order still not found after retry', {
+          merchantOrderId,
+          paymentDetails,
+          suggestion: 'Order may not have been created yet or merchantOrderId mismatch'
+        });
+        return null;
+      }
+    }
+
+    // Order exists, proceed with update
     return await db.order.update({
       where: { merchantOrderId },
       data: {
