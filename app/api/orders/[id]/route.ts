@@ -35,6 +35,16 @@ export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest)
       payment_status: "paid", // Default payment status since not in database
       payment_id: order.transactionId || order.paymentId, // Use transactionId if available, fallback to paymentId
       created_at: order.orderDate.toISOString(),
+      // Enhanced payment details
+      payment_mode: order.paymentMode || null,
+      payment_transaction_id: order.paymentTransactionId || null,
+      utr: order.utr || null,
+      bank_name: order.bankName || null,
+      account_type: order.accountType || null,
+      card_last_4: order.cardLast4 || null,
+      payable_amount: order.payableAmount || null,
+      payment_state: order.paymentState || null,
+      payment_timestamp: order.paymentTimestamp?.toISOString() || null,
       items: order.items.map(item => ({
         id: item.id,
         order_id: order.id,

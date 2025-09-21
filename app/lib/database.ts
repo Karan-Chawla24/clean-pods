@@ -31,6 +31,17 @@ export async function saveOrder(orderData: {
     quantity: number;
   }>;
   total: number;
+  // Enhanced payment details for all payment methods
+  paymentMode?: string; // UPI_QR, CARD, WALLET, NET_BANKING, etc.
+  paymentTransactionId?: string; // UPI Transaction ID, Card Transaction ID, Wallet Transaction ID, etc.
+  utr?: string; // Unique Transaction Reference (for UPI/Bank transfers)
+  feeAmount?: number; // Transaction fee charged
+  payableAmount?: number; // Amount actually paid (may differ from total due to offers)
+  bankName?: string; // Bank name for UPI/Card payments
+  accountType?: string; // SAVINGS, CURRENT, CREDIT_CARD, etc.
+  cardLast4?: string; // Last 4 digits of card (for card payments)
+  paymentState?: string; // COMPLETED, PENDING, FAILED
+  paymentTimestamp?: Date; // When payment was actually processed
 }) {
   // saveOrder invoked
   const { safeLog } = await import("./security/logging");
@@ -88,6 +99,17 @@ export async function saveOrder(orderData: {
           address,
           total: orderData.total,
           userId: validUserId, // Only associate if user exists
+          // Enhanced payment details
+          paymentMode: orderData.paymentMode,
+          paymentTransactionId: orderData.paymentTransactionId,
+          utr: orderData.utr,
+          feeAmount: orderData.feeAmount,
+          payableAmount: orderData.payableAmount,
+          bankName: orderData.bankName,
+          accountType: orderData.accountType,
+          cardLast4: orderData.cardLast4,
+          paymentState: orderData.paymentState || 'COMPLETED',
+          paymentTimestamp: orderData.paymentTimestamp,
           items: {
             create: orderData.items.map((item) => ({
               name: item.name,
@@ -158,9 +180,48 @@ export async function getOrder(orderId: string) {
 
 export async function getAllOrders() {
   return retryDatabaseOperation(async () => {
-    return db.order.findMany({
+    return await db.order.findMany({
       include: { items: true },
       orderBy: { orderDate: "desc" },
+    });
+  });
+}
+
+export async function updateOrderPaymentDetails(merchantOrderId: string, paymentDetails: {
+  paymentMode?: string;
+  paymentTransactionId?: string;
+  utr?: string;
+  feeAmount?: number;
+  payableAmount?: number;
+  bankName?: string;
+  accountType?: string;
+  cardLast4?: string;
+  paymentState?: string;
+  paymentTimestamp?: Date;
+}) {
+  return retryDatabaseOperation(async () => {
+    const { safeLog } = await import("./security/logging");
+    safeLog('info', 'updateOrderPaymentDetails function called', {
+      merchantOrderId,
+      paymentMode: paymentDetails.paymentMode,
+      paymentTransactionId: paymentDetails.paymentTransactionId
+    });
+
+    return await db.order.update({
+      where: { merchantOrderId },
+      data: {
+        paymentMode: paymentDetails.paymentMode,
+        paymentTransactionId: paymentDetails.paymentTransactionId,
+        utr: paymentDetails.utr,
+        feeAmount: paymentDetails.feeAmount,
+        payableAmount: paymentDetails.payableAmount,
+        bankName: paymentDetails.bankName,
+        accountType: paymentDetails.accountType,
+        cardLast4: paymentDetails.cardLast4,
+        paymentState: paymentDetails.paymentState,
+        paymentTimestamp: paymentDetails.paymentTimestamp,
+      },
+      include: { items: true },
     });
   });
 }

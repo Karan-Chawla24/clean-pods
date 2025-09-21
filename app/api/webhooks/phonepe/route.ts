@@ -125,6 +125,8 @@ async function handleOrderCompleted(payload: any) {
       paymentDetails: payload.paymentDetails
     });
     
+    console.log('Webhook payload:', JSON.stringify(payload, null, 2));
+    
     // Verify the state is COMPLETED as per PhonePe documentation
     if (payload.state !== 'COMPLETED') {
       safeLogError("Order completed webhook received but state is not COMPLETED", {
@@ -134,7 +136,288 @@ async function handleOrderCompleted(payload: any) {
       return;
     }
     
-    // TODO: Update order status in database to COMPLETED
+    console.log('Payment details array:', JSON.stringify(payload.paymentDetails, null, 2));
+     
+     // Get detailed payment information from PhonePe Order Status API
+    // Webhooks often contain limited information, so we fetch complete details
+    let orderStatusResponse = null;
+    let paymentMode = 'UPI'; // Default fallback
+    let paymentTransactionId = null;
+    let utr = null;
+    let bankName = null;
+    let accountType = null;
+    let cardLast4 = null;
+    let feeAmount = 0;
+     let payableAmount = payload.amount;
+     let paymentTimestamp = new Date();
+    
+    try {
+      // Import and create PhonePe OAuth client to get detailed payment info
+      const { createPhonePeOAuthClient } = await import("@/app/lib/phonepe-oauth");
+      const phonePeClient = createPhonePeOAuthClient();
+      
+      // Call Order Status API to get complete payment details
+      // Call Order Status API with details=true to get full info
+orderStatusResponse = await phonePeClient.getOrderStatus(
+  payload.merchantOrderId,
+  true // request details
+);
+
+console.log('Order Status API response:', JSON.stringify(orderStatusResponse, null, 2));
+      
+      // Extract the response data (Order Status API returns data directly)
+      const responseData = orderStatusResponse;
+      
+      // Log the structure for debugging
+      if (responseData.paymentDetails && responseData.paymentDetails.length > 0) {
+        console.log('Payment details structure:', {
+          paymentDetailsCount: responseData.paymentDetails.length,
+          firstPayment: responseData.paymentDetails[0],
+          hasSplitInstruments: !!(responseData.paymentDetails[0] as any)?.splitInstruments,
+          splitInstrumentsCount: (responseData.paymentDetails[0] as any)?.splitInstruments?.length || 0
+        });
+      }
+
+const paymentDetailsArray = responseData?.paymentDetails ?? [];
+let latestPayment: any = null;
+let primaryInstrument: any = null;
+let primaryRail: any = null;
+
+if (paymentDetailsArray.length > 0) {
+  const completedPayments = paymentDetailsArray.filter((p: any) => p.state === "COMPLETED");
+
+  if (completedPayments.length > 0) {
+    latestPayment = completedPayments.sort((a: any, b: any) => b.timestamp - a.timestamp)[0];
+  } else {
+    latestPayment = paymentDetailsArray.sort((a: any, b: any) => b.timestamp - a.timestamp)[0];
+  }
+
+  if (latestPayment) {
+    paymentMode = latestPayment.paymentMode || 'UPI';
+    
+    // Extract UPI Transaction ID (prioritize upiTransactionId over utr)
+    const upiTransactionId = latestPayment.splitInstruments?.[0]?.rail?.upiTransactionId || 
+                             latestPayment.rail?.upiTransactionId ||
+                             latestPayment.splitInstruments?.[0]?.rail?.utr || 
+                             latestPayment.rail?.utr || null;
+    
+    // Set paymentTransactionId to the UPI transaction ID (not PhonePe Order ID)
+    paymentTransactionId = upiTransactionId;
+    
+    // Extract UTR (keep separate for UTR field)
+    utr = latestPayment.splitInstruments?.[0]?.rail?.utr
+       || latestPayment.rail?.utr
+       || latestPayment.rail?.upiTransactionId
+       || latestPayment.splitInstruments?.[0]?.rail?.upiTransactionId
+       || undefined;
+
+    feeAmount = latestPayment.feeAmount
+             ?? responseData.feeAmount
+             ?? 0;
+
+    payableAmount = latestPayment.payableAmount
+                 ?? latestPayment.amount
+                 ?? responseData.payableAmount
+                 ?? payload.amount;
+
+    if (latestPayment.timestamp) {
+      paymentTimestamp = new Date(latestPayment.timestamp);
+    }
+
+    // Extract bank details - prioritize splitInstruments[0] then fallback to main instrument
+    primaryInstrument = latestPayment.splitInstruments?.[0]?.instrument || latestPayment.instrument;
+    primaryRail = latestPayment.splitInstruments?.[0]?.rail || latestPayment.rail;
+    
+    if (primaryInstrument) {
+      // Extract bank name from available fields
+      bankName = primaryInstrument.accountHolderName
+              ?? (primaryRail?.vpa ? primaryRail.vpa.split('@')[1] : undefined)
+              ?? undefined;
+      
+      accountType = primaryInstrument.accountType ?? undefined;
+
+      if (primaryInstrument.maskedAccountNumber) {
+        cardLast4 = primaryInstrument.maskedAccountNumber.slice(-4);
+      }
+    }
+
+    // Additional fallback for split payments - find any instrument with account details
+    if (!bankName && latestPayment.splitInstruments && latestPayment.splitInstruments.length > 0) {
+      const instrumentWithDetails = latestPayment.splitInstruments.find((split: any) => 
+        split.instrument?.accountHolderName || split.rail?.vpa
+      );
+      
+      if (instrumentWithDetails) {
+        bankName = instrumentWithDetails.instrument?.accountHolderName
+                ?? (instrumentWithDetails.rail?.vpa ? instrumentWithDetails.rail.vpa.split('@')[1] : undefined)
+                ?? bankName;
+        
+        if (!accountType) {
+          accountType = instrumentWithDetails.instrument?.accountType ?? undefined;
+        }
+        
+        if (!cardLast4 && instrumentWithDetails.instrument?.maskedAccountNumber) {
+          cardLast4 = instrumentWithDetails.instrument.maskedAccountNumber.slice(-4);
+        }
+      }
+    }
+
+    // Debug: Log extracted field values
+    console.log("=== FIELD EXTRACTION DEBUG ===");
+    console.log("UTR:", utr);
+    console.log("Bank Name:", bankName);
+    console.log("Account Type:", accountType);
+    console.log("Card Last 4:", cardLast4);
+    console.log("Payment Mode:", paymentMode);
+    console.log("Payment Transaction ID:", paymentTransactionId);
+    console.log("Fee Amount:", feeAmount);
+    console.log("Payable Amount:", payableAmount);
+    console.log("Payment Timestamp:", paymentTimestamp);
+    console.log("Primary Instrument:", primaryInstrument);
+    console.log("Primary Rail:", primaryRail);
+    console.log("Latest Payment splitInstruments:", latestPayment?.splitInstruments);
+    console.log("===============================");
+  }
+
+    // Enhanced debugging for field extraction
+    console.log('Field extraction debug info:', {
+      hasLatestPayment: !!latestPayment,
+      hasSplitInstruments: !!(latestPayment?.splitInstruments?.length),
+      splitInstrumentsCount: latestPayment?.splitInstruments?.length || 0,
+      primaryInstrumentType: primaryInstrument?.type,
+      primaryRailType: primaryRail?.type,
+      utrSources: {
+        fromSplitRail: latestPayment?.splitInstruments?.[0]?.rail?.utr,
+        fromMainRail: latestPayment?.rail?.utr,
+        fromSplitUpiId: latestPayment?.splitInstruments?.[0]?.rail?.upiTransactionId,
+        fromMainUpiId: latestPayment?.rail?.upiTransactionId,
+        finalUtr: utr
+      },
+      bankNameSources: {
+        fromAccountHolder: primaryInstrument?.accountHolderName,
+        fromVpa: primaryRail?.vpa,
+        finalBankName: bankName
+      }
+    });
+  }
+
+    } catch (apiError) {
+      console.error('Failed to fetch order status from PhonePe API:', apiError);
+      console.log('Using webhook payload data as fallback...');
+      
+      // Extract payment details from webhook payload as fallback
+      if (payload.paymentDetails && payload.paymentDetails.length > 0) {
+        console.log('Found paymentDetails in webhook payload');
+        const webhookPayment = payload.paymentDetails[0]; // Use first payment
+        
+        paymentMode = webhookPayment.paymentMode || 'UPI';
+        paymentTransactionId = webhookPayment.transactionId || payload.transactionId || null;
+        feeAmount = webhookPayment.feeAmount || 0;
+        payableAmount = webhookPayment.amount || payload.amount;
+        
+        if (webhookPayment.timestamp) {
+          paymentTimestamp = new Date(webhookPayment.timestamp);
+        }
+        
+        // Extract from splitInstruments if available
+        if (webhookPayment.splitInstruments && webhookPayment.splitInstruments.length > 0) {
+          const split = webhookPayment.splitInstruments[0];
+          
+          if (split.rail) {
+            utr = split.rail.utr || split.rail.upiTransactionId || null;
+            if (!paymentTransactionId) {
+              paymentTransactionId = split.rail.upiTransactionId || split.rail.utr || null;
+            }
+          }
+          
+          if (split.instrument) {
+            bankName = split.instrument.accountHolderName || null;
+            accountType = split.instrument.accountType || null;
+            if (split.instrument.maskedAccountNumber) {
+              cardLast4 = split.instrument.maskedAccountNumber.slice(-4);
+            }
+          }
+        }
+        
+        console.log('Extracted from webhook payload:', {
+          paymentMode,
+          paymentTransactionId,
+          utr,
+          bankName,
+          accountType,
+          cardLast4,
+          feeAmount,
+          payableAmount
+        });
+      } else {
+        console.log('No paymentDetails in webhook payload, using basic fallback');
+        // Use basic webhook data as last resort
+        paymentTransactionId = payload.transactionId || null;
+        payableAmount = payload.amount;
+      }
+    }
+
+    console.log('Extracted payment details:', {
+       paymentMode,
+       paymentTransactionId,
+       utr,
+       feeAmount,
+       payableAmount,
+       bankName,
+       accountType,
+       cardLast4,
+       paymentState: 'COMPLETED',
+       paymentTimestamp
+     });
+
+    // Update order in database with payment details
+    try {
+      safeLog("info", "About to update order payment details", {
+        merchantOrderId: payload.merchantOrderId,
+        paymentData: {
+          paymentMode,
+          paymentTransactionId,
+          utr,
+          feeAmount,
+          payableAmount,
+          bankName,
+          accountType,
+          cardLast4,
+          paymentState: 'COMPLETED',
+          paymentTimestamp
+        }
+      });
+      
+      const { updateOrderPaymentDetails } = await import("@/app/lib/database");
+      const updateResult = await updateOrderPaymentDetails(payload.merchantOrderId, {
+        paymentMode,
+        paymentTransactionId,
+        utr,
+        feeAmount,
+        payableAmount,
+        bankName,
+        accountType,
+        cardLast4,
+        paymentState: 'COMPLETED',
+        paymentTimestamp
+      });
+      
+      safeLog("info", "Order payment details updated successfully", {
+        merchantOrderId: payload.merchantOrderId,
+        updateResult: updateResult ? 'success' : 'no result',
+        paymentMode,
+        paymentTransactionId,
+        bankName
+      });
+    } catch (dbError) {
+      safeLogError("Failed to update order payment details", {
+        error: dbError,
+        merchantOrderId: payload.merchantOrderId,
+        errorMessage: dbError instanceof Error ? dbError.message : 'Unknown error',
+        errorStack: dbError instanceof Error ? dbError.stack : 'No stack trace'
+      });
+    }
+    
     // TODO: Send confirmation email to customer
     // TODO: Trigger any post-payment workflows
     // TODO: Update inventory if needed

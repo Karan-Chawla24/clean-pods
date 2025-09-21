@@ -34,6 +34,17 @@ interface Order {
   total: number;
   orderDate: string;
   items: OrderItem[];
+  // Enhanced payment details
+  paymentMode?: string;
+  paymentTransactionId?: string;
+  utr?: string;
+  feeAmount?: number;
+  payableAmount?: number;
+  bankName?: string;
+  accountType?: string;
+  cardLast4?: string;
+  paymentState?: string;
+  paymentTimestamp?: string;
 }
 
 export default function AdminOrderDetails() {
@@ -259,22 +270,99 @@ export default function AdminOrderDetails() {
               <div className="space-y-3">
                 <div className="flex justify-between">
                   <span className="text-gray-600 font-medium">Status:</span>
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                    Paid
+                  <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    order.paymentState === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+                    order.paymentState === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                    order.paymentState === 'FAILED' ? 'bg-red-100 text-red-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {order.paymentState || 'Paid'}
                   </span>
                 </div>
+                {order.paymentMode && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-medium">Payment Mode:</span>
+                    <span className="text-gray-900 font-medium">
+                      {order.paymentMode.replace('_', ' ')}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-600 font-medium">Transaction ID:</span>
                   <span className="text-gray-900 font-mono text-sm">
                     {safeDisplayOrderId(order.paymentId)}
                   </span>
                 </div>
+                {order.paymentTransactionId && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-medium">Payment Txn ID:</span>
+                    <span className="text-gray-900 font-mono text-sm">
+                      {safeDisplayOrderId(order.paymentTransactionId)}
+                    </span>
+                  </div>
+                )}
+                {order.utr && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-medium">UTR:</span>
+                    <span className="text-gray-900 font-mono text-sm">
+                      {safeDisplayOrderId(order.utr)}
+                    </span>
+                  </div>
+                )}
+                {order.bankName && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-medium">Bank:</span>
+                    <span className="text-gray-900">
+                      {order.bankName}
+                    </span>
+                  </div>
+                )}
+                {order.accountType && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-medium">Account Type:</span>
+                    <span className="text-gray-900">
+                      {order.accountType.replace('_', ' ')}
+                    </span>
+                  </div>
+                )}
+                {order.cardLast4 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-medium">Card:</span>
+                    <span className="text-gray-900 font-mono">
+                      **** **** **** {order.cardLast4}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-gray-600 font-medium">Total:</span>
                   <span className="text-gray-900 font-semibold">
                     {formatPrice(order.total)}
                   </span>
                 </div>
+                {order.payableAmount && order.payableAmount !== order.total && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-medium">Amount Paid:</span>
+                    <span className="text-gray-900 font-semibold">
+                      {formatPrice(order.payableAmount)}
+                    </span>
+                  </div>
+                )}
+                {order.feeAmount && order.feeAmount > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-medium">Transaction Fee:</span>
+                    <span className="text-gray-900">
+                      {formatPrice(order.feeAmount)}
+                    </span>
+                  </div>
+                )}
+                {order.paymentTimestamp && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600 font-medium">Payment Time:</span>
+                    <span className="text-gray-900 text-sm">
+                      {formatDate(order.paymentTimestamp)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

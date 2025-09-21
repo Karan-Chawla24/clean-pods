@@ -27,6 +27,17 @@ interface Order {
   total: number;
   orderDate: string;
   items: OrderItem[];
+  // Enhanced payment details
+  paymentMode?: string;
+  paymentTransactionId?: string;
+  utr?: string;
+  feeAmount?: number;
+  payableAmount?: number;
+  bankName?: string;
+  accountType?: string;
+  cardLast4?: string;
+  paymentState?: string;
+  paymentTimestamp?: string;
 }
 
 export default function AdminDashboard() {
@@ -288,6 +299,9 @@ export default function AdminDashboard() {
                       Total
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Payment Mode
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Transaction ID
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -330,8 +344,21 @@ export default function AdminDashboard() {
                         {formatPrice(order.total)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="flex items-center">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            order.paymentMode === 'UPI' ? 'bg-green-100 text-green-800' :
+                            order.paymentMode === 'CARD' ? 'bg-blue-100 text-blue-800' :
+                            order.paymentMode === 'WALLET' ? 'bg-purple-100 text-purple-800' :
+                            order.paymentMode === 'NET_BANKING' ? 'bg-orange-100 text-orange-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {order.paymentMode || 'UPI'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="text-xs font-mono">
-                          {order.paymentId}
+                          {order.paymentTransactionId || order.paymentId}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

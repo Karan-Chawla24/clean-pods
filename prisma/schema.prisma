@@ -40,6 +40,23 @@ model Order {
   customerEmail   String      @map("customer_email")
   customerPhone   String      @map("customer_phone")
   address         String
+  
+  // Enhanced payment details for all payment methods
+  paymentMode     String?     // UPI_QR, CARD, WALLET, NET_BANKING, etc.
+  paymentTransactionId String? // UPI Transaction ID, Card Transaction ID, Wallet Transaction ID, etc.
+  utr             String?     // Unique Transaction Reference (for UPI/Bank transfers)
+  feeAmount       Float?      @default(0) // Transaction fee charged
+  payableAmount   Float?      // Amount actually paid (may differ from total due to offers)
+  
+  // Bank/Card details (when applicable)
+  bankName        String?     // Bank name for UPI/Card payments
+  accountType     String?     // SAVINGS, CURRENT, CREDIT_CARD, etc.
+  cardLast4       String?     // Last 4 digits of card (for card payments)
+  
+  // Additional payment metadata
+  paymentState    String?     @default("COMPLETED") // COMPLETED, PENDING, FAILED
+  paymentTimestamp DateTime?  // When payment was actually processed
+  
   items           OrderItem[]
   user            User?       @relation(fields: [userId], references: [id])
 
