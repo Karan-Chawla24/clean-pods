@@ -221,8 +221,8 @@ export async function updateOrderPaymentDetails(merchantOrderId: string, payment
         retryReason: 'Race condition - webhook arrived before order creation'
       });
       
-      // Wait 2 seconds and try again
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Wait 5 seconds and try again (race condition: webhook arrives before callback saves order)
+      await new Promise(resolve => setTimeout(resolve, 5000));
       
       const retryOrder = await db.order.findUnique({
         where: { merchantOrderId },
@@ -230,14 +230,32 @@ export async function updateOrderPaymentDetails(merchantOrderId: string, payment
       });
       
       if (!retryOrder) {
-        // Still not found - log error but don't throw (webhook will retry)
-        safeLogError('Order still not found after retry', {
+        // Second retry with longer wait (extreme race condition)
+        safeLogError('Order still not found after first retry, trying again with longer wait', {
           merchantOrderId,
-          paymentDetails,
-          suggestion: 'Order may not have been created yet or merchantOrderId mismatch'
+          retryReason: 'Extreme race condition - extending wait time'
         });
-        return null;
-      }
+        
+        // Wait 8 more seconds and try one final time
+        await new Promise(resolve => setTimeout(resolve, 8000));
+        
+        const finalRetryOrder = await db.order.findUnique({
+          where: { merchantOrderId },
+          include: { items: true }
+        });
+        
+        if (!finalRetryOrder) {
+          // Still not found after 13 seconds total - log error but don't throw (webhook will retry)
+          safeLogError('Order still not found after final retry', {
+            merchantOrderId,
+            paymentDetails,
+            totalWaitTime: '13 seconds',
+            suggestion: 'Order may not have been created yet or merchantOrderId mismatch'
+          });
+          return null;
+        }
+        
+        }
     }
 
     // Order exists, proceed with update
