@@ -7,30 +7,41 @@ import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
   try {
-    // Get the raw body for signature verification
+    // Get the raw body for verification
     const body = await request.text();
-    const signature = request.headers.get('x-phonepe-signature');
     
-    // Verify webhook signature (if PhonePe provides one)
-    // Note: PhonePe webhook signature verification may vary based on their implementation
-    const webhookSecret = process.env.PHONEPE_WEBHOOK_SECRET;
+    // Verify webhook authorization using PhonePe's method
+    const authHeader = request.headers.get('authorization');
+    const webhookUsername = process.env.PHONEPE_WEBHOOK_USERNAME;
+    const webhookPassword = process.env.PHONEPE_WEBHOOK_PASSWORD;
     
-    if (webhookSecret && signature) {
-      const expectedSignature = crypto
-        .createHmac('sha256', webhookSecret)
-        .update(body)
+    if (webhookUsername && webhookPassword && authHeader) {
+      // PhonePe sends Authorization header as SHA256(username:password)
+      const expectedAuth = crypto
+        .createHash('sha256')
+        .update(`${webhookUsername}:${webhookPassword}`)
         .digest('hex');
       
-      if (signature !== expectedSignature) {
-        safeLogError("PhonePe webhook signature verification failed", {
-          receivedSignature: signature,
-          expectedSignature
+      // Extract the hash from the Authorization header (remove "SHA256 " prefix if present)
+      const receivedAuth = authHeader.replace(/^SHA256\s+/i, '');
+      
+      if (receivedAuth !== expectedAuth) {
+        safeLogError("PhonePe webhook authorization verification failed", {
+          receivedAuth: receivedAuth.substring(0, 10) + "...", // Log only first 10 chars for security
+          expectedAuth: expectedAuth.substring(0, 10) + "..."
         });
         return NextResponse.json(
-          { error: "Invalid signature" },
+          { error: "Unauthorized" },
           { status: 401 }
         );
       }
+    } else if (webhookUsername && webhookPassword) {
+      // If credentials are configured but no auth header received
+      safeLogError("PhonePe webhook missing authorization header");
+      return NextResponse.json(
+        { error: "Missing authorization header" },
+        { status: 401 }
+      );
     }
     
     // Parse the webhook payload
@@ -48,21 +59,24 @@ export async function POST(request: NextRequest) {
     // Log the webhook event
     safeLog("info", "PhonePe webhook received", {
       event: webhookData.event || 'unknown',
-      merchantOrderId: webhookData.merchantOrderId,
-      transactionId: webhookData.transactionId,
-      status: webhookData.status
+      merchantOrderId: webhookData.payload?.merchantOrderId,
+      orderId: webhookData.payload?.orderId,
+      state: webhookData.payload?.state
     });
     
-    // Process different webhook events
+    // Process different webhook events according to PhonePe documentation
     switch (webhookData.event) {
-      case 'PAYMENT_SUCCESS':
-        await handlePaymentSuccess(webhookData);
+      case 'checkout.order.completed':
+        await handleOrderCompleted(webhookData.payload);
         break;
-      case 'PAYMENT_FAILED':
-        await handlePaymentFailed(webhookData);
+      case 'checkout.order.failed':
+        await handleOrderFailed(webhookData.payload);
         break;
-      case 'PAYMENT_PENDING':
-        await handlePaymentPending(webhookData);
+      case 'pg.refund.completed':
+        await handleRefundCompleted(webhookData.payload);
+        break;
+      case 'pg.refund.failed':
+        await handleRefundFailed(webhookData.payload);
         break;
       default:
         safeLog("warn", "Unhandled PhonePe webhook event", {
@@ -82,52 +96,110 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Handle successful payment webhook
-async function handlePaymentSuccess(data: any) {
+// Handle completed order webhook (checkout.order.completed)
+async function handleOrderCompleted(payload: any) {
   try {
-    safeLog("info", "Processing payment success webhook", {
-      merchantOrderId: data.merchantOrderId,
-      transactionId: data.transactionId
+    safeLog("info", "Processing order completed webhook", {
+      merchantOrderId: payload.merchantOrderId,
+      orderId: payload.orderId,
+      state: payload.state,
+      amount: payload.amount,
+      paymentDetails: payload.paymentDetails
     });
     
-    // TODO: Update order status in database
+    // Verify the state is COMPLETED as per PhonePe documentation
+    if (payload.state !== 'COMPLETED') {
+      safeLogError("Order completed webhook received but state is not COMPLETED", {
+        state: payload.state,
+        merchantOrderId: payload.merchantOrderId
+      });
+      return;
+    }
+    
+    // TODO: Update order status in database to COMPLETED
     // TODO: Send confirmation email to customer
     // TODO: Trigger any post-payment workflows
+    // TODO: Update inventory if needed
     
   } catch (error) {
-    safeLogError("Error handling payment success webhook", error);
+    safeLogError("Error handling order completed webhook", error);
   }
 }
 
-// Handle failed payment webhook
-async function handlePaymentFailed(data: any) {
+// Handle failed order webhook (checkout.order.failed)
+async function handleOrderFailed(payload: any) {
   try {
-    safeLog("info", "Processing payment failed webhook", {
-      merchantOrderId: data.merchantOrderId,
-      transactionId: data.transactionId,
-      reason: data.reason
+    safeLog("info", "Processing order failed webhook", {
+      merchantOrderId: payload.merchantOrderId,
+      orderId: payload.orderId,
+      state: payload.state,
+      amount: payload.amount,
+      paymentDetails: payload.paymentDetails
     });
     
-    // TODO: Update order status in database
+    // Verify the state is FAILED as per PhonePe documentation
+    if (payload.state !== 'FAILED') {
+      safeLogError("Order failed webhook received but state is not FAILED", {
+        state: payload.state,
+        merchantOrderId: payload.merchantOrderId
+      });
+      return;
+    }
+    
+    // TODO: Update order status in database to FAILED
     // TODO: Send failure notification if needed
+    // TODO: Release any reserved inventory
     
   } catch (error) {
-    safeLogError("Error handling payment failed webhook", error);
+    safeLogError("Error handling order failed webhook", error);
   }
 }
 
-// Handle pending payment webhook
-async function handlePaymentPending(data: any) {
+// Handle completed refund webhook (pg.refund.completed)
+async function handleRefundCompleted(payload: any) {
   try {
-    safeLog("info", "Processing payment pending webhook", {
-      merchantOrderId: data.merchantOrderId,
-      transactionId: data.transactionId
+    safeLog("info", "Processing refund completed webhook", {
+      originalMerchantOrderId: payload.originalMerchantOrderId,
+      refundId: payload.refundId,
+      amount: payload.amount,
+      state: payload.state
     });
     
-    // TODO: Update order status in database if needed
+    // Verify the state is COMPLETED as per PhonePe documentation
+    if (payload.state !== 'COMPLETED') {
+      safeLogError("Refund completed webhook received but state is not COMPLETED", {
+        state: payload.state,
+        refundId: payload.refundId
+      });
+      return;
+    }
+    
+    // TODO: Update refund status in database to COMPLETED
+    // TODO: Send refund confirmation email to customer
+    // TODO: Update order status if fully refunded
     
   } catch (error) {
-    safeLogError("Error handling payment pending webhook", error);
+    safeLogError("Error handling refund completed webhook", error);
+  }
+}
+
+// Handle failed refund webhook (pg.refund.failed)
+async function handleRefundFailed(payload: any) {
+  try {
+    safeLog("info", "Processing refund failed webhook", {
+      originalMerchantOrderId: payload.originalMerchantOrderId,
+      refundId: payload.refundId,
+      amount: payload.amount,
+      state: payload.state,
+      errorCode: payload.errorCode
+    });
+    
+    // TODO: Update refund status in database to FAILED
+    // TODO: Handle refund failure appropriately
+    // TODO: Notify relevant stakeholders
+    
+  } catch (error) {
+    safeLogError("Error handling refund failed webhook", error);
   }
 }
 
