@@ -26,12 +26,12 @@ export async function POST(request: NextRequest) {
     
     // Verify webhook authorization using PhonePe's method
     // Try different possible header names that PhonePe might use
-    let authHeader = request.headers.get('authorization') || 
-                     request.headers.get('Authorization') ||
-                     request.headers.get('x-authorization') ||
-                     request.headers.get('X-Authorization') ||
-                     request.headers.get('x-phonepe-auth') ||
-                     request.headers.get('X-PhonePe-Auth');
+    const authHeader = request.headers.get('authorization') || 
+                       request.headers.get('Authorization') ||
+                       request.headers.get('x-authorization') ||
+                       request.headers.get('X-Authorization') ||
+                       request.headers.get('x-phonepe-auth') ||
+                       request.headers.get('X-PhonePe-Auth');
     
     const webhookUsername = process.env.PHONEPE_WEBHOOK_USERNAME;
     const webhookPassword = process.env.PHONEPE_WEBHOOK_PASSWORD;
