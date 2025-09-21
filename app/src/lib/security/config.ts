@@ -40,24 +40,63 @@ export const SECURITY_CONFIG = {
     DEFAULT_SRC: ["'self'"],
     SCRIPT_SRC: [
       "'self'",
-      "'unsafe-eval'",
-      "'unsafe-inline'",
+      ...(process.env.NODE_ENV === "production" ? [] : ["'unsafe-eval'", "'unsafe-inline'"]),
       "https://js.stripe.com",
-  
+      "https://*.clerk.accounts.dev",
+      "https://*.clerk.com",
+      "https://*.phonepe.com",
+      "https://mercury-uat.phonepe.com",
+      "https://mercury-t2-uat.phonepe.com",
+      "https://mercurystatic.phonepe.com",
+      "https://linchpin.phonepe.com",
+      "https://www.google-analytics.com",
+      "https://dgq88cldibal5.cloudfront.net",
     ],
-    STYLE_SRC: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+    STYLE_SRC: [
+      "'self'", 
+      ...(process.env.NODE_ENV === "production" ? [] : ["'unsafe-inline'"]),
+      "https://fonts.googleapis.com"
+    ],
     FONT_SRC: ["'self'", "https://fonts.gstatic.com"],
     IMG_SRC: ["'self'", "data:", "https:", "blob:"],
     CONNECT_SRC: [
       "'self'",
-  
       "https://hooks.slack.com",
+      "https://*.clerk.accounts.dev",
+      "https://*.clerk.com",
+      "https://api.clerk.com",
+      "https://api-preprod.phonepe.com",
+      "https://mercury-uat.phonepe.com",
+      "https://mercury-t2-uat.phonepe.com",
+      "https://mercurystatic.phonepe.com",
+      "https://linchpin.phonepe.com",
+      "https://www.google-analytics.com",
     ],
-    FRAME_SRC: ["'self'"],
+    FRAME_SRC: [
+      "'self'",
+      "https://*.clerk.accounts.dev",
+      "https://*.clerk.com",
+      "https://*.phonepe.com",
+      "https://mercury-uat.phonepe.com",
+      "https://mercury-t2-uat.phonepe.com",
+    ],
     OBJECT_SRC: ["'none'"],
     BASE_URI: ["'self'"],
     FORM_ACTION: ["'self'"],
     FRAME_ANCESTORS: ["'none'"],
+    WORKER_SRC: [
+      "'self'",
+      "blob:",
+      ...(process.env.NODE_ENV === "production" ? [] : ["'unsafe-inline'"]),
+      "https://mercury-uat.phonepe.com",
+      "https://mercury-t2-uat.phonepe.com",
+    ],
+    PREFETCH_SRC: [
+      "'self'",
+      "https://*.phonepe.com",
+      "https://mercury-uat.phonepe.com",
+      "https://mercury-t2-uat.phonepe.com",
+    ],
   },
 };
 
@@ -89,6 +128,8 @@ const CSP_DIRECTIVE_MAP: Record<string, string> = {
   BASE_URI: "base-uri",
   FORM_ACTION: "form-action",
   FRAME_ANCESTORS: "frame-ancestors",
+  WORKER_SRC: "worker-src",
+  PREFETCH_SRC: "prefetch-src",
 };
 
 // Helper function to build CSP string
