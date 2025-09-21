@@ -25,6 +25,7 @@ export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest)
     // Transform database order to match frontend interface
     const transformedOrder = {
       id: order.id,
+      merchant_order_id: order.merchantOrderId,
       customer_email: order.customerEmail,
       customer_name: order.customerName,
       customer_phone: order.customerPhone,
@@ -32,7 +33,7 @@ export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest)
       total_amount: order.total,
       status: "completed", // Default status since not in database
       payment_status: "paid", // Default payment status since not in database
-      payment_id: order.paymentId,
+      payment_id: order.transactionId || order.paymentId, // Use transactionId if available, fallback to paymentId
       created_at: order.orderDate.toISOString(),
       items: order.items.map(item => ({
         id: item.id,

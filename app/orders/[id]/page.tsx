@@ -26,6 +26,7 @@ interface OrderItem {
 
 interface Order {
   id: string;
+  merchant_order_id: string;
   customer_email: string;
   customer_name: string;
   customer_phone: string;
@@ -120,7 +121,7 @@ export default function OrderDetails() {
           </Link>
           <i className="ri-arrow-right-s-line w-4 h-4"></i>
           <span className="text-gray-900 font-medium">
-            Order #{safeDisplayOrderId(order.id)}
+            Order #{safeDisplayOrderId(order.merchant_order_id)}
           </span>
         </div>
 
@@ -129,7 +130,7 @@ export default function OrderDetails() {
           <div className="flex justify-between items-start mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Order #{safeDisplayOrderId(order.id)}
+                Order #{safeDisplayOrderId(order.merchant_order_id)}
               </h1>
               <p className="text-gray-600">
                 Placed on {new Date(order.created_at).toLocaleDateString()}

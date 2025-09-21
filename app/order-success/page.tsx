@@ -11,6 +11,7 @@ function OrderSuccessContent() {
   const { clearCart } = useAppStore();
   const [orderNumber, setOrderNumber] = useState("");
   const [displayOrderNumber, setDisplayOrderNumber] = useState("");
+  const [transactionId, setTransactionId] = useState("");
   const [notificationSent, setNotificationSent] = useState(false);
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const [isLoadingOrder, setIsLoadingOrder] = useState(false);
@@ -32,6 +33,12 @@ function OrderSuccessContent() {
         if (response.ok) {
           const orderData = await response.json();
           setOrderDetails(orderData);
+          
+          // Set transaction ID from order details if not already set from URL
+          if (orderData.payment_id && !transactionId) {
+            setTransactionId(orderData.payment_id);
+          }
+          
           setIsLoadingOrder(false);
           return orderData;
         } else if (response.status === 404 && attempt < maxRetries) {
@@ -73,21 +80,27 @@ function OrderSuccessContent() {
   }, [clearCart]);
 
   useEffect(() => {
-    // Get order ID from URL params or generate one
+    // Get order ID from URL params - prioritize order_id (which should be merchantOrderId)
     const urlOrderId = searchParams.get("order_id");
     const merchantOrderId = searchParams.get("merchantOrderId");
-    const phonePeOrderId = searchParams.get("phonePeOrderId");
+    const urlTransactionId = searchParams.get("transactionId");
+    
+    // Store transaction ID if available
+    if (urlTransactionId) {
+      setTransactionId(urlTransactionId);
+    }
     
     // Priority: order_id > merchantOrderId > generate random
+    // Note: order_id should contain the merchantOrderId (customer-facing order number)
     if (urlOrderId) {
       setOrderNumber(urlOrderId);
-      setDisplayOrderNumber(phonePeOrderId || urlOrderId);
+      setDisplayOrderNumber(urlOrderId); // Always show merchantOrderId as order number
       
       // Fetch order details with retry logic
       fetchOrderWithRetry(urlOrderId);
     } else if (merchantOrderId) {
       setOrderNumber(merchantOrderId);
-      setDisplayOrderNumber(phonePeOrderId || merchantOrderId);
+      setDisplayOrderNumber(merchantOrderId); // Always show merchantOrderId as order number
       
       // Verify payment status for merchantOrderId
       verifyPaymentStatus(merchantOrderId);
@@ -137,8 +150,12 @@ function OrderSuccessContent() {
       }
       
       // Payment successful, update display with actual order details
-      if (result.orderId) {
-        setDisplayOrderNumber(result.orderId);
+      // Note: Don't update displayOrderNumber with result.orderId as that's the phonePeOrderId
+      // Keep displaying the merchantOrderId as the order number
+      
+      // Capture transaction ID if available
+      if (result.transactionId) {
+        setTransactionId(result.transactionId);
       }
     } catch (error) {
       // Only redirect on actual errors, not on successful pending payments
@@ -282,6 +299,12 @@ function OrderSuccessContent() {
                       <strong>Order Number:</strong>{" "}
                       {safeDisplayOrderId(displayOrderNumber)}
                     </p>
+                    {(transactionId || orderDetails?.payment_id) && (
+                      <p>
+                        <strong>Transaction ID:</strong>{" "}
+                        {safeDisplayOrderId(transactionId || orderDetails?.payment_id)}
+                      </p>
+                    )}
                     <p>
                       <strong>Order Date:</strong>{" "}
                       {orderDetails?.created_at 
@@ -402,12 +425,12 @@ function OrderSuccessContent() {
             >
               Continue Shopping
             </Link>
-            <button
+            {/* <button
               onClick={() => window.print()}
               className="bg-gray-200 text-gray-800 px-8 py-3 rounded-lg hover:bg-gray-300 transition-colors cursor-pointer whitespace-nowrap"
             >
               Print Order Details
-            </button>
+            </button> */}
           </div>
 
           {/* Customer Support */}

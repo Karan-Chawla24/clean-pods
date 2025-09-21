@@ -271,14 +271,40 @@ class PhonePeOAuthClient {
    * Extract transaction ID from order status response
    */
   extractTransactionId(orderStatus: PhonePeOrderStatusResponse): string | null {
+    console.log('Extracting transaction ID from order status:', {
+      hasPaymentDetails: !!orderStatus.paymentDetails,
+      paymentDetailsLength: orderStatus.paymentDetails?.length || 0,
+      orderId: orderStatus.orderId,
+      state: orderStatus.state
+    });
+
     if (orderStatus.paymentDetails && orderStatus.paymentDetails.length > 0) {
-      // Get the latest completed payment
-      const completedPayment = orderStatus.paymentDetails
-        .filter(payment => payment.state === "COMPLETED")
-        .sort((a, b) => b.timestamp - a.timestamp)[0];
+      console.log('Payment details found:', orderStatus.paymentDetails.map(p => ({
+        transactionId: p.transactionId,
+        state: p.state,
+        timestamp: p.timestamp,
+        paymentMode: p.paymentMode
+      })));
+
+      // First try to get any completed payment
+      const completedPayments = orderStatus.paymentDetails.filter(payment => payment.state === "COMPLETED");
       
-      return completedPayment?.transactionId || null;
+      if (completedPayments.length > 0) {
+        // Get the latest completed payment
+        const latestCompletedPayment = completedPayments.sort((a, b) => b.timestamp - a.timestamp)[0];
+        console.log('Found completed payment with transaction ID:', latestCompletedPayment.transactionId);
+        return latestCompletedPayment.transactionId;
+      }
+
+      // If no completed payments, try to get the latest payment regardless of state
+      const latestPayment = orderStatus.paymentDetails.sort((a, b) => b.timestamp - a.timestamp)[0];
+      if (latestPayment?.transactionId) {
+        console.log('No completed payments, using latest payment transaction ID:', latestPayment.transactionId);
+        return latestPayment.transactionId;
+      }
     }
+
+    console.log('No transaction ID found in payment details');
     return null;
   }
 }

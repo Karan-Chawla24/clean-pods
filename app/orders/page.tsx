@@ -22,6 +22,7 @@ interface Order {
   merchantOrderId: string;
   phonePeOrderId: string;
   paymentId: string;
+  transactionId?: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
@@ -316,13 +317,13 @@ export default function Orders() {
                   )}
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Order #{order.id}
+                    Order #{order.merchantOrderId}
                   </h3>
                   <p className="text-gray-600">
                     Placed on {formatDate(order.orderDate)}
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
-                    Transaction ID: {order.paymentId}
+                    Transaction ID: {order.transactionId || order.paymentId}
                   </p>
                 </div>
 
@@ -373,7 +374,7 @@ export default function Orders() {
                     </div>
                     <div className="flex space-x-3">
                       <Link
-                        href={`/orders/${order.id}`}
+                        href={`/orders/${order.merchantOrderId}`}
                         className="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 cursor-pointer flex items-center space-x-2"
                       >
                         <i className="ri-eye-line w-4 h-4"></i>
@@ -386,13 +387,13 @@ export default function Orders() {
                         <i className="ri-mail-line w-4 h-4"></i>
                         <span>Email Invoice</span>
                       </button>
-                      <button
+                      {/* <button
                         onClick={() => handleDownloadInvoice(order.id)}
                         className="px-4 py-2 bg-gradient-to-r from-orange-400 to-amber-400 text-white rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer flex items-center space-x-2"
                       >
                         <i className="ri-download-line w-4 h-4"></i>
                         <span>Download Invoice</span>
-                      </button>
+                      </button> */}
                     </div>
                   </div>
                 </div>

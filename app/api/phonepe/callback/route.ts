@@ -231,8 +231,8 @@ async function saveOrderToDatabase({
     const orderData = {
       merchantOrderId,
       phonePeOrderId,
-      transactionId,
-      paymentId: transactionId, // Use transactionId as paymentId for compatibility
+      transactionId, // Store actual PhonePe transaction ID
+      paymentId: transactionId, // Keep for backward compatibility with existing display logic
       total: amount / 100, // Convert from paise to rupees
       customerName,
       customerEmail,
@@ -327,14 +327,19 @@ async function checkOrderStatusAndRedirect(merchantOrderId: string, request: Nex
       safeLog('info', 'Payment successful, processing order', { merchantOrderId });
       
       // Extract transaction ID for successful payments
-      const transactionId = phonePeClient.extractTransactionId(orderStatus) || `txn_${merchantOrderId}_${Date.now()}`;
+      const extractedTransactionId = phonePeClient.extractTransactionId(orderStatus);
+      const transactionId = extractedTransactionId || `txn_${merchantOrderId}_${Date.now()}`;
       
       safeLog("info", "PhonePe OAuth payment successful", {
         merchantOrderId,
         phonePeOrderId: orderStatus.orderId,
-        transactionId,
+        extractedTransactionId,
+        finalTransactionId: transactionId,
+        usedFallback: !extractedTransactionId,
         state: orderStatus.state,
-        amount: orderStatus.amount
+        amount: orderStatus.amount,
+        hasPaymentDetails: !!orderStatus.paymentDetails,
+        paymentDetailsCount: orderStatus.paymentDetails?.length || 0
       });
 
       // Save order to database after successful payment
@@ -342,8 +347,8 @@ async function checkOrderStatusAndRedirect(merchantOrderId: string, request: Nex
       try {
         await saveOrderToDatabase({
           merchantOrderId,
-          phonePeOrderId: orderStatus.orderId,
-          transactionId,
+          phonePeOrderId: transactionId,         // Internal payment transaction ID (like OM2509211510025010782857)
+          transactionId: orderStatus.orderId,   // PhonePe Order ID that user sees (like OMO2509211510025010782264)
           amount: orderStatus.amount,
           paymentDetails: orderStatus
         });
@@ -364,12 +369,13 @@ async function checkOrderStatusAndRedirect(merchantOrderId: string, request: Nex
         // Continue with redirect even if database save fails
       }
 
-      // Redirect to success page with order details
-      const successUrl = new URL(`/order-success?order_id=${merchantOrderId}&transactionId=${transactionId}&phonePeOrderId=${orderStatus.orderId}`, baseUrl);
+      // Redirect to success page with minimal parameters (industry standard)
+      // Only include merchantOrderId - order details will be fetched securely from backend
+      const successUrl = new URL(`/order-success?order_id=${merchantOrderId}`, baseUrl);
       safeLog('info', 'Redirecting to success page', { 
         merchantOrderId,
-        hasTransactionId: !!transactionId,
-        hasPhonePeOrderId: !!orderStatus.orderId
+        transactionId: transactionId || 'N/A',
+        phonePeOrderId: orderStatus.orderId || 'N/A'
       });
       return NextResponse.redirect(successUrl);
     } else if (isPaymentPending) {
