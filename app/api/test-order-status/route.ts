@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { withUpstashRateLimit } from "@/app/lib/security/upstashRateLimit";
+import { safeLog, safeLogError } from "@/app/lib/security/logging";
 
-export async function GET(request: NextRequest) {
+export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   try {
-    console.log('Testing PhonePe Order Status API...');
+    safeLog('info', 'Testing PhonePe Order Status API', {});
     
     // Import the PhonePe OAuth client
     const { createPhonePeOAuthClient } = await import("@/app/lib/phonepe-oauth");
@@ -10,7 +12,7 @@ export async function GET(request: NextRequest) {
     
     const merchantOrderId = 'CP5NJUUVMFB';
     
-    console.log(`Testing Order Status for Merchant Order ID: ${merchantOrderId}`);
+    safeLog('info', 'Testing Order Status for Merchant Order ID', { merchantOrderId });
     
     const results: any = {
       merchantOrderId,
@@ -18,31 +20,31 @@ export async function GET(request: NextRequest) {
     };
     
     // Test without details parameter
-    console.log('1. Testing without details parameter:');
+    safeLog('info', 'Testing without details parameter', {});
     try {
       const responseWithoutDetails = await phonePeClient.getOrderStatus(merchantOrderId, false);
       results.tests.withoutDetails = {
         success: true,
         response: responseWithoutDetails
       };
-      console.log('Response without details:', JSON.stringify(responseWithoutDetails, null, 2));
+      safeLog('info', 'Response without details received', { hasResponse: !!responseWithoutDetails });
     } catch (error: any) {
       results.tests.withoutDetails = {
         success: false,
         error: error.message
       };
-      console.error('Error without details:', error.message);
+      safeLogError('Error without details', error);
     }
     
     // Test with details parameter
-    console.log('2. Testing with details=true parameter:');
+    safeLog('info', 'Testing with details=true parameter', {});
     try {
       const responseWithDetails = await phonePeClient.getOrderStatus(merchantOrderId, true);
       results.tests.withDetails = {
         success: true,
         response: responseWithDetails
       };
-      console.log('Response with details:', JSON.stringify(responseWithDetails, null, 2));
+      safeLog('info', 'Response with details received', { hasResponse: !!responseWithDetails });
       
       // Analyze the structure
       if (responseWithDetails?.paymentDetails) {
@@ -116,18 +118,17 @@ export async function GET(request: NextRequest) {
         error: error.message,
         fullError: error.toString()
       };
-      console.error('Error with details:', error.message);
-      console.error('Full error:', error);
+      safeLogError('Error with details', error);
     }
     
     return NextResponse.json(results, { status: 200 });
     
   } catch (error: any) {
-    console.error('Test failed:', error);
+    safeLogError('Test failed', error);
     return NextResponse.json({ 
       error: 'Test failed', 
       message: error.message,
       stack: error.stack 
     }, { status: 500 });
   }
-}
+});

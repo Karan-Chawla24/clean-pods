@@ -9,6 +9,7 @@ import {
   safeDisplayText,
   safeDisplayError,
 } from "../../lib/security/ui-escaping";
+import { safeLogError } from "../../lib/security/logging";
 import Header from "../../components/Header";
 import toast from "react-hot-toast";
 import Image from "next/image";
@@ -35,7 +36,7 @@ async function fetchProduct(id: string): Promise<Product | null> {
     const data = await response.json();
     return data.product;
   } catch (error) {
-    console.error("Error fetching product:", error);
+    safeLogError("Error fetching product", error);
     return null;
   }
 }
@@ -118,7 +119,7 @@ export default function ProductDetail({ productId }: { productId: string }) {
         toast.error("Failed to add item to cart");
       }
     } catch (error) {
-      console.error("Error adding to cart:", error);
+      safeLogError("Error adding to cart", error);
       toast.error("Failed to add item to cart");
     }
   };

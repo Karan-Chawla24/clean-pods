@@ -10,7 +10,7 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 // Create a new PrismaClient instance with specific options based on environment
 const prismaClientSingleton = () => {
   return new PrismaClient({
-    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+    log: ['error'], // Only log errors to prevent sensitive data exposure
     // Disable prepared statements to avoid connection pooling issues
     datasources: {
       db: {

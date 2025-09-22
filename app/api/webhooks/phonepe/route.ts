@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { safeLog, safeLogError } from "@/app/lib/security/logging";
+import { 
+  verifyPhonePeSignature, 
+  validatePhonePeWebhookOrigin, 
+  extractPhonePeSignature,
+  validatePhonePeWebhookPayload,
+  sanitizePhonePePayload 
+} from "@/app/lib/security/phonepe";
+import { 
+  generateRequestId, 
+  protectAgainstReplay 
+} from "@/app/lib/security/replay-protection";
 import crypto from "crypto";
 
 // PhonePe webhook endpoint for payment status updates
@@ -10,7 +21,7 @@ export async function POST(request: NextRequest) {
     // Get the raw body for verification
     const body = await request.text();
     
-    // Log all headers for debugging (in production, be careful with sensitive data)
+    // Extract headers for validation
     const allHeaders: Record<string, string> = {};
     request.headers.forEach((value, key) => {
       allHeaders[key] = value;
@@ -19,50 +30,20 @@ export async function POST(request: NextRequest) {
     safeLog("info", "PhonePe webhook received", {
       method: request.method,
       url: request.url,
-      headers: allHeaders,
       bodyLength: body.length,
-      bodyPreview: body.substring(0, 200) + (body.length > 200 ? "..." : "")
-    });
-    
-    // PhonePe webhook validation
-    // Note: PhonePe webhooks don't send Authorization headers in production
-    // They configure webhooks server-to-server on their backend
-    
-    // Validate request origin - PhonePe webhooks come from specific IP ranges
-    const forwardedFor = request.headers.get('x-forwarded-for');
-    const realIp = request.headers.get('x-real-ip');
-    const userAgent = request.headers.get('user-agent');
-    
-    safeLog("info", "PhonePe webhook validation", {
-      forwardedFor,
-      realIp,
-      userAgent,
-      hasPhonePeUserAgent: userAgent?.includes('okhttp') || userAgent?.includes('PPE'),
+      hasSignature: !!extractPhonePeSignature(request),
       contentType: request.headers.get('content-type')
     });
-    
-    // Basic validation: Check if request looks like it's from PhonePe
-    const isValidPhonePeRequest = (
-      userAgent?.includes('okhttp') && userAgent?.includes('PPE')
-    ) || (
-      userAgent?.includes('hermes')
-    );
-    
-    if (!isValidPhonePeRequest) {
-      safeLogError("PhonePe webhook invalid user agent", {
-        userAgent,
-        forwardedFor,
-        realIp
-      });
+
+    // Step 1: Validate request origin and headers
+    if (!validatePhonePeWebhookOrigin(request)) {
       return NextResponse.json(
         { error: "Invalid request source" },
         { status: 403 }
       );
     }
-    
-    safeLog("info", "PhonePe webhook validation passed");
-    
-    // Parse the webhook payload
+
+    // Step 2: Parse the webhook payload
     let webhookData;
     try {
       webhookData = JSON.parse(body);
@@ -73,14 +54,68 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-    
-    // Log the webhook event
-    safeLog("info", "PhonePe webhook received", {
-      event: webhookData.event || 'unknown',
-      merchantOrderId: webhookData.payload?.merchantOrderId,
-      orderId: webhookData.payload?.orderId,
-      state: webhookData.payload?.state
-    });
+
+    // Step 3: Validate payload structure
+    if (!validatePhonePeWebhookPayload(webhookData)) {
+      return NextResponse.json(
+        { error: "Invalid webhook payload structure" },
+        { status: 400 }
+      );
+    }
+
+    // Step 4: Signature verification (if webhook secret is configured)
+    const webhookSecret = process.env.PHONEPE_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      const signature = extractPhonePeSignature(request);
+      
+      if (!signature) {
+        safeLogError("PhonePe webhook signature missing");
+        return NextResponse.json(
+          { error: "Webhook signature required" },
+          { status: 401 }
+        );
+      }
+
+      if (!verifyPhonePeSignature(body, signature, webhookSecret)) {
+        safeLogError("PhonePe webhook signature verification failed");
+        return NextResponse.json(
+          { error: "Invalid webhook signature" },
+          { status: 401 }
+        );
+      }
+
+      safeLog("info", "PhonePe webhook signature verified successfully");
+    } else {
+      safeLog("warn", "PhonePe webhook secret not configured - skipping signature verification");
+    }
+
+    // Step 5: Replay attack protection
+    const requestId = generateRequestId(webhookData, allHeaders);
+    const replayCheck = protectAgainstReplay(
+      requestId, 
+      sanitizePhonePePayload(webhookData),
+      webhookData.timestamp
+    );
+
+    if (!replayCheck.isValid) {
+      safeLogError("PhonePe webhook replay attack detected", {
+        requestId,
+        error: replayCheck.error
+      });
+      return NextResponse.json(
+        { error: replayCheck.error },
+        { status: 409 } // Conflict status for duplicate requests
+      );
+    }
+
+    // Log the webhook event (with sanitized data)
+     safeLog("info", "PhonePe webhook processing", {
+       requestId,
+       event: webhookData.event,
+       merchantOrderId: webhookData.payload?.merchantOrderId,
+       orderId: webhookData.payload?.orderId,
+       state: webhookData.payload?.state
+     });
     
     // Process different webhook events according to PhonePe documentation
     switch (webhookData.event) {
@@ -125,7 +160,12 @@ async function handleOrderCompleted(payload: any) {
       paymentDetails: payload.paymentDetails
     });
     
-    console.log('Webhook payload:', JSON.stringify(payload, null, 2));
+    // Log webhook received without sensitive data
+    safeLog('info', 'PhonePe webhook received', {
+      state: payload.state,
+      merchantOrderId: payload.merchantOrderId,
+      hasPaymentDetails: !!payload.paymentDetails?.length
+    });
     
     // Verify the state is COMPLETED as per PhonePe documentation
     if (payload.state !== 'COMPLETED') {
@@ -135,8 +175,6 @@ async function handleOrderCompleted(payload: any) {
       });
       return;
     }
-    
-    console.log('Payment details array:', JSON.stringify(payload.paymentDetails, null, 2));
      
      // Get detailed payment information from PhonePe Order Status API
     // Webhooks often contain limited information, so we fetch complete details
@@ -163,16 +201,15 @@ orderStatusResponse = await phonePeClient.getOrderStatus(
   true // request details
 );
 
-console.log('Order Status API response:', JSON.stringify(orderStatusResponse, null, 2));
+safeLog('info', 'Order Status API response received', { hasResponse: !!orderStatusResponse });
       
       // Extract the response data (Order Status API returns data directly)
       const responseData = orderStatusResponse;
       
       // Log the structure for debugging
       if (responseData.paymentDetails && responseData.paymentDetails.length > 0) {
-        console.log('Payment details structure:', {
+        safeLog('info', 'Payment details structure', {
           paymentDetailsCount: responseData.paymentDetails.length,
-          firstPayment: responseData.paymentDetails[0],
           hasSplitInstruments: !!(responseData.paymentDetails[0] as any)?.splitInstruments,
           splitInstrumentsCount: (responseData.paymentDetails[0] as any)?.splitInstruments?.length || 0
         });
@@ -262,52 +299,35 @@ if (paymentDetailsArray.length > 0) {
       }
     }
 
-    // Debug: Log extracted field values
-    console.log("=== FIELD EXTRACTION DEBUG ===");
-    console.log("UTR:", utr);
-    console.log("Bank Name:", bankName);
-    console.log("Account Type:", accountType);
-    console.log("Card Last 4:", cardLast4);
-    console.log("Payment Mode:", paymentMode);
-    console.log("Payment Transaction ID:", paymentTransactionId);
-    console.log("Fee Amount:", feeAmount);
-    console.log("Payable Amount:", payableAmount);
-    console.log("Payment Timestamp:", paymentTimestamp);
-    console.log("Primary Instrument:", primaryInstrument);
-    console.log("Primary Rail:", primaryRail);
-    console.log("Latest Payment splitInstruments:", latestPayment?.splitInstruments);
-    console.log("===============================");
+    // Log successful field extraction without sensitive data
+    safeLog('info', 'Payment fields extracted successfully', {
+      hasUtr: !!utr,
+      hasBankName: !!bankName,
+      hasPaymentMode: !!paymentMode,
+      hasPaymentTransactionId: !!paymentTransactionId,
+      paymentTimestamp: paymentTimestamp
+    });
   }
 
     // Enhanced debugging for field extraction
-    console.log('Field extraction debug info:', {
+    safeLog('info', 'Field extraction debug info', {
       hasLatestPayment: !!latestPayment,
       hasSplitInstruments: !!(latestPayment?.splitInstruments?.length),
       splitInstrumentsCount: latestPayment?.splitInstruments?.length || 0,
       primaryInstrumentType: primaryInstrument?.type,
       primaryRailType: primaryRail?.type,
-      utrSources: {
-        fromSplitRail: latestPayment?.splitInstruments?.[0]?.rail?.utr,
-        fromMainRail: latestPayment?.rail?.utr,
-        fromSplitUpiId: latestPayment?.splitInstruments?.[0]?.rail?.upiTransactionId,
-        fromMainUpiId: latestPayment?.rail?.upiTransactionId,
-        finalUtr: utr
-      },
-      bankNameSources: {
-        fromAccountHolder: primaryInstrument?.accountHolderName,
-        fromVpa: primaryRail?.vpa,
-        finalBankName: bankName
-      }
+      hasUtr: !!utr,
+      hasBankName: !!bankName
     });
   }
 
     } catch (apiError) {
-      console.error('Failed to fetch order status from PhonePe API:', apiError);
-      console.log('Using webhook payload data as fallback...');
+      safeLogError('Failed to fetch order status from PhonePe API', apiError);
+      safeLog('info', 'Using webhook payload data as fallback', {});
       
       // Extract payment details from webhook payload as fallback
       if (payload.paymentDetails && payload.paymentDetails.length > 0) {
-        console.log('Found paymentDetails in webhook payload');
+        safeLog('info', 'Found paymentDetails in webhook payload', {});
         const webhookPayment = payload.paymentDetails[0]; // Use first payment
         
         paymentMode = webhookPayment.paymentMode || 'UPI';
@@ -339,35 +359,35 @@ if (paymentDetailsArray.length > 0) {
           }
         }
         
-        console.log('Extracted from webhook payload:', {
-          paymentMode,
-          paymentTransactionId,
-          utr,
-          bankName,
-          accountType,
-          cardLast4,
-          feeAmount,
-          payableAmount
+        safeLog('info', 'Extracted from webhook payload', {
+          hasPaymentMode: !!paymentMode,
+          hasPaymentTransactionId: !!paymentTransactionId,
+          hasUtr: !!utr,
+          hasBankName: !!bankName,
+          hasAccountType: !!accountType,
+          hasCardLast4: !!cardLast4,
+          hasFeeAmount: !!feeAmount,
+          hasPayableAmount: !!payableAmount
         });
       } else {
-        console.log('No paymentDetails in webhook payload, using basic fallback');
+        safeLog('info', 'No paymentDetails in webhook payload, using basic fallback', {});
         // Use basic webhook data as last resort
         paymentTransactionId = payload.transactionId || null;
         payableAmount = payload.amount;
       }
     }
 
-    console.log('Extracted payment details:', {
-       paymentMode,
-       paymentTransactionId,
-       utr,
-       feeAmount,
-       payableAmount,
-       bankName,
-       accountType,
-       cardLast4,
+    safeLog('info', 'Extracted payment details', {
+       hasPaymentMode: !!paymentMode,
+       hasPaymentTransactionId: !!paymentTransactionId,
+       hasUtr: !!utr,
+       hasFeeAmount: !!feeAmount,
+       hasPayableAmount: !!payableAmount,
+       hasBankName: !!bankName,
+       hasAccountType: !!accountType,
+       hasCardLast4: !!cardLast4,
        paymentState: 'COMPLETED',
-       paymentTimestamp
+       hasPaymentTimestamp: !!paymentTimestamp
      });
 
     // Update order in database with payment details

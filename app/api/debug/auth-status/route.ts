@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { withUpstashRateLimit } from "../../../lib/security/upstashRateLimit";
+import { safeLogError } from "../../../lib/security/logging";
 
-export async function GET(request: NextRequest) {
+export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   try {
     // Get authentication info
     const authResult = await auth();
@@ -51,11 +53,11 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Auth debug error:', error);
+    safeLogError('Auth debug error', error);
     return NextResponse.json({
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
       authenticated: false,
     }, { status: 500 });
   }
-}
+});

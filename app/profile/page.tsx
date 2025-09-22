@@ -5,6 +5,7 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Header from "../components/Header";
 import toast from "react-hot-toast";
+import { safeLog, safeLogError } from "../lib/security/logging";
 
 export default function Profile() {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -51,7 +52,7 @@ export default function Profile() {
             }));
           }
         } catch (error) {
-          console.log("Could not load additional profile data:", error);
+          safeLog("warn", "Could not load additional profile data", { error: error instanceof Error ? error.message : String(error) });
         }
       }
     };
@@ -89,7 +90,7 @@ export default function Profile() {
         toast.error(error.message || "Failed to update profile");
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
+      safeLogError("Error updating profile", error);
       toast.error("An error occurred while updating your profile");
     } finally {
       setLoading(false);

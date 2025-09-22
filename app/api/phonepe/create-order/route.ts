@@ -3,6 +3,10 @@ import { withUpstashRateLimit } from "@/app/lib/security/upstashRateLimit";
 import { validateRequest } from "@/app/lib/security/validation";
 import { assertSameOrigin } from "@/app/lib/security/origin";
 import { safeLog, safeLogError } from "@/app/lib/security/logging";
+import { 
+  generateRequestId, 
+  protectAgainstReplay 
+} from "@/app/lib/security/replay-protection";
 import { auth } from "@clerk/nextjs/server";
 import { createPhonePeOAuthClient } from "@/app/lib/phonepe-oauth";
 import { generateOrderId } from "@/app/lib/utils";
@@ -119,6 +123,34 @@ export const POST = withUpstashRateLimit("moderate")(async (
     }
 
     const { amount, merchantOrderId, cart, customerInfo } = validationResult.data;
+
+    // 🔄 Replay Attack Protection
+    const allHeaders = Object.fromEntries(request.headers.entries());
+    const requestId = generateRequestId(validationResult.data, allHeaders);
+    const replayCheck = protectAgainstReplay(
+      requestId, 
+      { merchantOrderId, amount, userId },
+      Date.now()
+    );
+
+    if (!replayCheck.isValid) {
+      safeLogError("Create order replay attack detected", {
+        requestId,
+        merchantOrderId,
+        userId,
+        error: replayCheck.error
+      });
+      return NextResponse.json(
+        { success: false, error: "Duplicate order request detected" },
+        { status: 409 } // Conflict status for duplicate requests
+      );
+    }
+
+    safeLog("info", "Order creation request validated", {
+      requestId,
+      merchantOrderId,
+      userId
+    });
 
     // 🔑 Initialize PhonePe OAuth client
     let phonePeClient;

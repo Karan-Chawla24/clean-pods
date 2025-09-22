@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
+import { safeLogError } from "./logging";
 
 // Initialize Redis client
 const redis = new Redis({
@@ -79,7 +80,7 @@ export function withUpstashRateLimit(limitType: RateLimitType) {
         return response;
       } catch (error) {
         // If rate limiting fails, log the error but don't block the request
-        console.error("Rate limiting error:", error);
+        safeLogError("Rate limiting error", error);
         return await handler(request);
       }
     };

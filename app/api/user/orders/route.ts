@@ -7,8 +7,9 @@ import prismaVercel from "../../../lib/prisma-vercel";
 const db = process.env.VERCEL ? prismaVercel : prisma;
 import { assertSameOrigin } from "../../../lib/security/origin";
 import { safeLogError } from "../../../lib/security/logging";
+import { withUpstashRateLimit } from "../../../lib/security/upstashRateLimit";
 
-export async function GET(request: NextRequest) {
+export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   try {
     // Get authentication info from Clerk using standard cookie-based session
     const authResult = await auth();
@@ -54,15 +55,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(orders);
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    safeLogError("Error fetching orders", error);
     return NextResponse.json(
       { error: "Failed to fetch orders" },
       { status: 500 },
     );
   }
-}
+});
 
-export async function POST(request: NextRequest) {
+export const POST = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   try {
     // CSRF Protection: Validate origin header
     try {
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!data.paymentId || !data.items || !data.total) {
-      console.error("Missing required fields:", {
+      safeLogError("Missing required fields", {
         hasPaymentId: !!data.paymentId,
         hasItems: !!data.items,
         hasTotal: !!data.total,
@@ -208,4 +209,4 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});

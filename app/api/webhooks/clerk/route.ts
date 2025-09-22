@@ -90,7 +90,7 @@ async function handleUserCreated(userData: any) {
   );
 
   if (!primaryEmail) {
-    console.error("No primary email found for user:", id);
+    safeLogError("No primary email found for user", { userId: id });
     return;
   }
 
@@ -114,7 +114,7 @@ async function handleUserCreated(userData: any) {
             primaryEmail.verification?.status === "verified" ? new Date() : null,
         },
       });
-      console.log("User updated in database:", id);
+      safeLog('info', 'User updated in database', { userId: id });
     } else {
       // Create new user
       await db.user.create({
@@ -129,10 +129,10 @@ async function handleUserCreated(userData: any) {
             primaryEmail.verification?.status === "verified" ? new Date() : null,
         },
       });
-      console.log("User created in database:", id);
+      safeLog('info', 'User created in database', { userId: id });
     }
   } catch (error) {
-    console.error("Error creating user in database:", error);
+    safeLogError("Error creating user in database", error);
   }
 }
 
@@ -144,7 +144,7 @@ async function handleUserUpdated(userData: any) {
   );
 
   if (!primaryEmail) {
-    console.error("No primary email found for user:", id);
+    safeLogError("No primary email found for user", { userId: id });
     return;
   }
 
@@ -161,9 +161,9 @@ async function handleUserUpdated(userData: any) {
           primaryEmail.verification?.status === "verified" ? new Date() : null,
       },
     });
-    console.log("User updated in database:", id);
+    safeLog('info', 'User updated in database', { userId: id });
   } catch (error) {
-    console.error("Error updating user in database:", error);
+    safeLogError("Error updating user in database", error);
   }
 }
 

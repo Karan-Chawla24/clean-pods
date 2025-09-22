@@ -6,6 +6,7 @@ import prismaVercel from "../../lib/prisma-vercel";
 const db = process.env.VERCEL ? prismaVercel : prisma;
 import { withUpstashRateLimit } from "@/app/lib/security/upstashRateLimit";
 import { requireClerkAdminAuth } from "@/app/lib/clerk-admin";
+import { safeLogError } from "@/app/lib/security/logging";
 
 // Dynamic import for ExcelJS to avoid build issues
 let ExcelJS: any;
@@ -73,7 +74,7 @@ export const GET = withUpstashRateLimit("moderate")(async (
       },
     });
   } catch (error) {
-    console.error("Excel generation error:", error);
+    safeLogError("Excel generation error", error);
     return NextResponse.json(
       {
         success: false,

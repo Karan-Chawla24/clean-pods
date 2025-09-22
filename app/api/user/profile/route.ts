@@ -12,10 +12,11 @@ import {
 } from "../../../lib/security/validation";
 import { safeLogError } from "../../../lib/security/logging";
 import { assertSameOrigin } from "../../../lib/security/origin";
+import { withUpstashRateLimit } from "../../../lib/security/upstashRateLimit";
 
 // CSRF validation is handled by Clerk's built-in security measures
 
-export async function PUT(request: NextRequest) {
+export const PUT = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   let userId: string | null = null;
 
   try {
@@ -107,9 +108,9 @@ export async function PUT(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});
 
-export async function GET(request: NextRequest) {
+export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   let userId: string | null = null;
 
   try {
@@ -166,4 +167,4 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});

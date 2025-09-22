@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useUser, useAuth } from "@clerk/nextjs";
+import { safeLogError } from "../lib/security/logging";
 
 interface CheckoutForm {
   firstName: string;
@@ -138,7 +139,7 @@ export default function Checkout() {
           }
         });
       } catch (error) {
-        console.error("Failed to validate cart prices:", error);
+        safeLogError("Failed to validate cart prices", error);
       }
     };
 

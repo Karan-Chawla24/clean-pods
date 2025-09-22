@@ -6,7 +6,11 @@ import {
   contactFormSchema,
   sanitizeString,
 } from "@/app/lib/security/validation";
-import { safeLogError } from "@/app/lib/security/logging";
+import { safeLog, safeLogError } from "@/app/lib/security/logging";
+import { 
+  generateRequestId, 
+  protectAgainstReplay 
+} from "@/app/lib/security/replay-protection";
 
 // Initialize Slack webhook for contact form
 const webhook = new IncomingWebhook(process.env.SLACK_CONTACT_URL || "");
@@ -31,6 +35,32 @@ export const POST = withUpstashRateLimit("moderate")(async (
     }
 
     const { name, email, subject, message } = validationResult.data;
+
+    // 🔄 Replay Attack Protection
+    const allHeaders = Object.fromEntries(request.headers.entries());
+    const requestId = generateRequestId(validationResult.data, allHeaders);
+    const replayCheck = protectAgainstReplay(
+      requestId, 
+      { email, subject: subject.substring(0, 50) }, // Sanitized payload for storage
+      Date.now()
+    );
+
+    if (!replayCheck.isValid) {
+      safeLogError("Contact form replay attack detected", {
+        requestId,
+        email,
+        error: replayCheck.error
+      });
+      return NextResponse.json(
+        { success: false, error: "Duplicate contact form submission detected" },
+        { status: 409 } // Conflict status for duplicate requests
+      );
+    }
+
+    safeLog("info", "Contact form submission validated", {
+      requestId,
+      email
+    });
 
     // Sanitize inputs to prevent injection attacks
     const sanitizedName = sanitizeString(name);

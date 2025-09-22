@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { formatPrice, formatDate, getOrderStatusColor } from "@/app/lib/utils";
 import Header from "@/app/components/Header";
+import { safeLogError } from "@/app/lib/security/logging";
 
 interface OrderItem {
   id: string;
@@ -84,10 +85,10 @@ export default function AdminDashboard() {
         const ordersData = await response.json();
         setOrders(ordersData);
       } else {
-        console.error("Failed to fetch orders:", response.statusText);
+        safeLogError("Failed to fetch orders", new Error(response.statusText));
       }
     } catch (error) {
-      console.error("Failed to fetch orders:", error);
+      safeLogError("Failed to fetch orders", error);
     } finally {
       setLoading(false);
     }
@@ -118,7 +119,7 @@ export default function AdminDashboard() {
         window.URL.revokeObjectURL(url);
       }
     } catch (error) {
-      console.error("Failed to download orders:", error);
+      safeLogError("Failed to download orders", error);
     }
   };
 

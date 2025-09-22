@@ -6,6 +6,7 @@ import Header from "../components/Header";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import Image from "next/image";
+import { safeLogError } from "../lib/security/logging";
 
 export default function Wishlist() {
   const { wishlist, removeFromWishlist, addToCart } = useAppStore();
@@ -29,7 +30,7 @@ export default function Wishlist() {
         toast.error("Failed to add item to cart");
       }
     } catch (error) {
-      console.error("Error adding to cart:", error);
+      safeLogError("Error adding to cart", error);
       toast.error("Failed to add item to cart");
     }
   };

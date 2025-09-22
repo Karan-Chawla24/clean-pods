@@ -8,9 +8,7 @@ import HomeImg from "../images/Home.jpg";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import Testimonial1 from "../images/Home.jpg";
-import Testimonial2 from "../images/three.jpg";
-import Testimonial3 from "../images/fivein1.jpg";
+
 import FloatingBubbles from "./components/FloatingBubbles";
 import ShimmerButton from "./components/ShimmerButton";
 import FadeInOnScroll from "./components/FadeInOnScroll";
@@ -82,14 +80,6 @@ export default function Home() {
               delay={0.1}
               className="bg-white rounded-2xl p-8 text-center shadow-lg border border-orange-100 flex flex-col items-center hover:shadow-xl hover:-translate-y-2 transition-transform duration-300"
             >
-              <Image
-                src={Testimonial1}
-                alt="Priya S."
-                width={80}
-                height={80}
-                style={{ width: "auto", height: "auto" }}
-                className="rounded-full mb-4"
-              />
               <div className="flex mb-4">
                 {[...Array(5)].map((_, i) => (
                   <i
@@ -111,13 +101,6 @@ export default function Home() {
               delay={0.2}
               className="bg-white rounded-2xl p-8 text-center shadow-lg border border-orange-100 flex flex-col items-center hover:shadow-xl hover:-translate-y-2 transition-transform duration-300"
             >
-              <Image
-                src={Testimonial2}
-                alt="Rahul M."
-                width={80}
-                height={80}
-                className="rounded-full mb-4"
-              />
               <div className="flex mb-4">
                 {[...Array(5)].map((_, i) => (
                   <i
@@ -139,13 +122,6 @@ export default function Home() {
               delay={0.3}
               className="bg-white rounded-2xl p-8 text-center shadow-lg border border-orange-100 flex flex-col items-center hover:shadow-xl hover:-translate-y-2 transition-transform duration-300"
             >
-              <Image
-                src={Testimonial3}
-                alt="Anjali K."
-                width={80}
-                height={80}
-                className="rounded-full mb-4"
-              />
               <div className="flex mb-4">
                 {[...Array(5)].map((_, i) => (
                   <i

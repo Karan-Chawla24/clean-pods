@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { withUpstashRateLimit } from "@/app/lib/security/upstashRateLimit";
+import { safeLogError } from "@/app/lib/security/logging";
 
 const prisma = new PrismaClient();
 
-export async function GET(request: NextRequest) {
+export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest) => {
   try {
     const { searchParams } = new URL(request.url);
     const merchantOrderId = searchParams.get('merchantOrderId') || 'CP5NJUUVMFB';
@@ -48,10 +50,10 @@ export async function GET(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error("Error checking order:", error);
+    safeLogError("Error checking order", error);
     return NextResponse.json({
       error: "Internal server error",
       details: error instanceof Error ? error.message : "Unknown error"
     }, { status: 500 });
   }
-}
+});

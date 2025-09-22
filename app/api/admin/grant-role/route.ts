@@ -13,6 +13,10 @@ import {
 import { safeLog, safeLogError } from "../../../lib/security/logging";
 import { assertSameOrigin } from "../../../lib/security/origin";
 import { withUpstashRateLimit } from "../../../lib/security/upstashRateLimit";
+import { 
+  generateRequestId, 
+  protectAgainstReplay 
+} from "../../../lib/security/replay-protection";
 
 // Create Clerk client instance
 const clerk = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
@@ -131,6 +135,35 @@ export const POST = withUpstashRateLimit("strict")(async (request: NextRequest) 
         userId,
       });
     }
+
+    // 🔄 Replay Attack Protection
+    const allHeaders = Object.fromEntries(request.headers.entries());
+    const requestId = generateRequestId({ targetUserId, action: "grant_admin_role" }, allHeaders);
+    const replayCheck = protectAgainstReplay(
+      requestId, 
+      { targetUserId, grantedBy: userId, action: "grant_admin_role" },
+      Date.now()
+    );
+
+    if (!replayCheck.isValid) {
+      logSecurityEvent("ADMIN_GRANT_REPLAY_ATTACK", userId, {
+        userAgent,
+        ip,
+        targetUserId,
+        requestId,
+        error: replayCheck.error
+      });
+      return NextResponse.json(
+        { success: false, error: "Duplicate role grant request detected" },
+        { status: 409 } // Conflict status for duplicate requests
+      );
+    }
+
+    safeLog("info", "Admin role grant request validated", {
+      requestId,
+      targetUserId,
+      grantedBy: userId
+    });
 
     // Get target user details for logging
     const targetUser = await clerk.users.getUser(targetUserId);

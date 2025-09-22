@@ -7,6 +7,7 @@ import { validateEmail } from "../lib/utils";
 import toast from "react-hot-toast";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { safeLogError } from "../lib/security/logging";
 
 interface ContactForm {
   name: string;
@@ -69,7 +70,7 @@ export default function Contact() {
         throw new Error(result.error || "Failed to send message");
       }
     } catch (error) {
-      console.error("Contact form error:", error);
+      safeLogError("Contact form error", error);
       const errorMessage =
         error instanceof Error
           ? error.message

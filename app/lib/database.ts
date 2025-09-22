@@ -45,11 +45,10 @@ export async function saveOrder(orderData: {
 }) {
   // saveOrder invoked
   const { safeLog } = await import("./security/logging");
-  safeLog('info', 'saveOrder function called with data', {
+  safeLog('info', 'saveOrder function called', {
     hasUserId: !!orderData.userId,
     hasAddress: !!orderData.address,
-    userId: orderData.userId,
-    address: orderData.address,
+    hasCustomerData: !!(orderData.customerName || orderData.customer),
     merchantOrderId: orderData.merchantOrderId
   });
 

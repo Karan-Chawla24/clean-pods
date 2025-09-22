@@ -9,6 +9,7 @@ import { useAppStore } from "../lib/store";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
+import { safeLog, safeLogError } from "../lib/security/logging";
 
 interface OrderItem {
   id: string;
@@ -102,7 +103,7 @@ export default function Orders() {
   const { orders: storeOrders, clearCart } = useAppStore();
 
   useEffect(() => {
-    console.log('Client auth status:', { isLoaded, hasUser: !!user });
+    safeLog('info', 'Client auth status', { isLoaded, hasUser: !!user });
     
     if (!isLoaded || !user) {
       if (isLoaded && !user) {
@@ -116,21 +117,21 @@ export default function Orders() {
     if (isLoaded && user) {
       const fetchOrders = async () => {
         try {
-          console.log('Fetching orders for user:', user.id);
+          safeLog('info', 'Fetching orders for user', { userId: user.id });
           // For same-origin requests, Clerk automatically handles authentication via cookies
           // No need to manually send Bearer token for same-origin API routes
           const response = await fetch("/api/user/orders");
-          console.log('Orders API response status:', response.status);
+          safeLog('info', 'Orders API response received', { status: response.status });
           if (!response.ok) {
             const errorText = await response.text();
-            console.error('Orders API error:', errorText);
+            safeLogError('Orders API error', new Error(errorText));
             throw new Error("Failed to fetch orders");
           }
           const data = await response.json();
-          console.log('Orders data received:', data);
+          safeLog('info', 'Orders data received', { orderCount: Array.isArray(data) ? data.length : (data.orders?.length || 0) });
           setOrders(Array.isArray(data) ? data : data.orders || []);
         } catch (err) {
-          console.error("Error fetching orders:", err);
+          safeLogError("Error fetching orders", err);
           setError("Failed to load your orders");
           toast.error("Could not fetch your orders. Please try again.");
         } finally {
@@ -162,7 +163,7 @@ export default function Orders() {
       const data = await response.json();
       return data.token;
     } catch (error) {
-      console.error("Error generating invoice token:", error);
+      safeLogError("Error generating invoice token", error);
       toast.error("Failed to generate invoice access token");
       throw error;
     }
@@ -198,7 +199,7 @@ export default function Orders() {
       }
     } catch (error) {
       toast.dismiss("invoice-loading");
-      console.error("Error generating invoice token:", error);
+      safeLogError("Error generating invoice token", error);
       toast.error("Unable to generate secure invoice link. Please try again.");
     }
   };
@@ -235,7 +236,7 @@ export default function Orders() {
       toast.success("Invoice email sent successfully! Check your inbox.");
     } catch (error) {
       toast.dismiss("email-invoice-loading");
-      console.error("Error sending invoice email:", error);
+      safeLogError("Error sending invoice email", error);
       toast.error("Failed to send invoice email. Please try again.");
     }
   };

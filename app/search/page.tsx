@@ -8,6 +8,7 @@ import {
   safeDisplayProductName,
   safeDisplayText,
 } from "../lib/security/ui-escaping";
+import { safeLogError } from "../lib/security/logging";
 import Header from "../components/Header";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -31,7 +32,7 @@ async function fetchProducts(): Promise<Product[]> {
     const data = await response.json();
     return data.products;
   } catch (error) {
-    console.error("Error fetching products:", error);
+    safeLogError("Error fetching products", error);
     return [];
   }
 }
@@ -109,7 +110,7 @@ function SearchContent() {
         toast.error("Failed to add item to cart");
       }
     } catch (error) {
-      console.error("Error adding to cart:", error);
+      safeLogError("Error adding to cart", error);
       toast.error("Failed to add item to cart");
     }
   };

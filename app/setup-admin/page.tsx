@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { safeLogError } from "../lib/security/logging";
 
 export default function SetupAdmin() {
   const { user, isLoaded } = useUser();
@@ -83,7 +84,7 @@ export default function SetupAdmin() {
       } catch (error) {
         setStatus("error");
         setMessage("An error occurred during admin setup");
-        console.error("Admin bootstrap error:", error);
+        safeLogError("Admin bootstrap error", error);
       }
     };
 
