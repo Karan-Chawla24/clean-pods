@@ -30,12 +30,25 @@ BubbleBeads payment status webhook for order processing and notifications
 
 ### Active Events
 Select these events to receive notifications:
-- ✅ **PAYMENT_SUCCESS** - When payment is completed successfully
-- ✅ **PAYMENT_FAILED** - When payment fails
-- ✅ **PAYMENT_PENDING** - When payment is in pending state
-- ✅ **PAYMENT_CANCELLED** - When payment is cancelled by user
+
+**Order Events:**
+- ✅ **checkout.order.completed** - Sent when an order is successfully completed
+- ✅ **checkout.order.failed** - Sent when an order fails
+
+**Refund Events:**
+- ✅ **pg.refund.completed** - Sent when a refund is successfully processed
+- ✅ **pg.refund.failed** - Sent when a refund processing fails
 
 ## 🔐 Security Configuration
+
+### Authorization Header Setup
+
+PhonePe sends an Authorization header with webhook requests **only after** you configure the webhook URL, username, and password in your PhonePe Business dashboard. The header format is:
+```
+Authorization: SHA256(username:password)
+```
+
+### Environment Variables
 
 After creating the webhook in PhonePe dashboard:
 
@@ -45,6 +58,41 @@ After creating the webhook in PhonePe dashboard:
    PHONEPE_WEBHOOK_USERNAME=your_webhook_username_from_phonepe
    PHONEPE_WEBHOOK_PASSWORD=your_webhook_password_from_phonepe
    ```
+
+### Development Testing
+
+For development and testing scenarios, you can bypass webhook authentication:
+
+```bash
+# Development only - NEVER use in production
+PHONEPE_WEBHOOK_DEV_BYPASS=true
+```
+
+**⚠️ Security Warning**: The development bypass should NEVER be enabled in production environments. It completely skips signature verification and should only be used for local testing.
+
+## 📋 Configuration Process
+
+### Production Environment
+1. **Configure Webhook**: You can configure the Webhook URL, username, and password directly on the PhonePe Business dashboard
+2. **Set Credentials**: PhonePe will use your provided username and password to create an Authorization header
+3. **Verification**: PhonePe sends `Authorization: SHA256(username:password)` with each webhook request
+
+### Sandbox Environment
+1. **Contact Integration Team**: You must reach out to PhonePe Integration Team to set up webhooks
+2. **Create Support Ticket**:
+   - Click **Help** in the side panel of your dashboard
+   - Select **Integration** and click **Contact Us**
+   - Share the webhook callback URL while creating the ticket
+
+## ✅ Webhook Validation Guidelines
+
+**Important validation rules from PhonePe:**
+
+1. **Use payload.state Parameter**: For payment status, rely only on the root-level `payload.state` field
+2. **Avoid Strict Deserialization**: Don't use overly strict rules for processing the response
+3. **Use event Parameter**: Ignore the `type` parameter. Use the `event` parameter instead to identify event type
+4. **Time Format**: The `expireAt` and `timestamp` fields will be in epoch time
+5. **Authorization Header**: Extract and verify the `Authorization` header using SHA256(username:password)
 
 ## 🚀 Deployment Steps
 

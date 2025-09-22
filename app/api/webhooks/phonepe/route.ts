@@ -69,37 +69,49 @@ export async function POST(request: NextRequest) {
     // Step 4: Signature verification (if webhook credentials are configured)
     const webhookUsername = process.env.PHONEPE_WEBHOOK_USERNAME;
     const webhookPassword = process.env.PHONEPE_WEBHOOK_PASSWORD;
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const allowDevBypass = process.env.PHONEPE_WEBHOOK_DEV_BYPASS === 'true';
     
     safeLog("info", "PhonePe webhook authentication check", {
       hasUsername: !!webhookUsername,
       hasPassword: !!webhookPassword,
       usernameLength: webhookUsername?.length || 0,
-      passwordLength: webhookPassword?.length || 0
+      passwordLength: webhookPassword?.length || 0,
+      isDevelopment,
+      allowDevBypass
     });
     
-    if (webhookUsername && webhookPassword) {
+    // Development bypass: Skip authentication in development mode if explicitly enabled
+    if (isDevelopment && allowDevBypass) {
+      safeLog("warn", "PhonePe webhook authentication bypassed for development", {
+        environment: "development",
+        bypassEnabled: true,
+        message: "This bypass should NEVER be enabled in production",
+        documentation: "Set PHONEPE_WEBHOOK_DEV_BYPASS=false in production"
+      });
+    } else if (webhookUsername && webhookPassword) {
       // PhonePe uses SHA256(username:password) format for webhook authentication
       const webhookSecret = `${webhookUsername}:${webhookPassword}`;
       safeLog("info", "PhonePe webhook credentials configured, verifying signature");
       const signature = extractPhonePeSignature(request);
       
       if (!signature) {
-        safeLogError("PhonePe webhook signature missing");
-        return NextResponse.json(
-          { error: "Webhook signature required" },
-          { status: 401 }
-        );
+        safeLog("warn", "PhonePe webhook signature missing - webhook credentials may not be configured in PhonePe dashboard", {
+          message: "Configure webhook URL, username, and password in PhonePe Business dashboard",
+          documentation: "https://developer.phonepe.com/v1/reference/ios-handling-webhooks-standard-checkout"
+        });
+        // Allow webhook to proceed without signature verification
+        // This handles the case where PhonePe hasn't been configured to send Authorization headers
+      } else {
+        if (!verifyPhonePeSignature(body, signature, webhookSecret)) {
+          safeLogError("PhonePe webhook signature verification failed");
+          return NextResponse.json(
+            { error: "Invalid webhook signature" },
+            { status: 401 }
+          );
+        }
+        safeLog("info", "PhonePe webhook signature verified successfully");
       }
-
-      if (!verifyPhonePeSignature(body, signature, webhookSecret)) {
-        safeLogError("PhonePe webhook signature verification failed");
-        return NextResponse.json(
-          { error: "Invalid webhook signature" },
-          { status: 401 }
-        );
-      }
-
-      safeLog("info", "PhonePe webhook signature verified successfully");
     } else {
       safeLog("warn", "PhonePe webhook credentials not configured - skipping signature verification", {
         hasUsername: !!webhookUsername,

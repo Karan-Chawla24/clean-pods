@@ -145,11 +145,12 @@ export function extractPhonePeSignature(request: Request): string | null {
     }
   }
 
-  safeLogError("No PhonePe signature found in headers", {
+  safeLog("warn", "No PhonePe signature found in headers", {
     availableHeaders: allHeaders,
     authorizationHeader: request.headers.get('authorization'),
     authorizationHeaderCaseInsensitive: authHeaderName ? request.headers.get(authHeaderName) : null,
-    checkedHeaders: ['authorization (case-insensitive)', ...fallbackHeaders]
+    checkedHeaders: ['authorization (case-insensitive)', ...fallbackHeaders],
+    note: "This is expected if webhook credentials are not configured in PhonePe dashboard"
   });
   
   return null;
