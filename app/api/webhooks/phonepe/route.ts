@@ -32,7 +32,10 @@ export async function POST(request: NextRequest) {
       url: request.url,
       bodyLength: body.length,
       hasSignature: !!extractPhonePeSignature(request),
-      contentType: request.headers.get('content-type')
+      contentType: request.headers.get('content-type'),
+      authorizationHeader: request.headers.get('authorization') ? 'present' : 'missing',
+      availableHeaders: Object.keys(allHeaders),
+      userAgent: request.headers.get('user-agent')
     });
 
     // Step 1: Validate request origin and headers
@@ -63,9 +66,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Step 4: Signature verification (if webhook secret is configured)
-    const webhookSecret = process.env.PHONEPE_WEBHOOK_SECRET;
-    if (webhookSecret) {
+    // Step 4: Signature verification (if webhook credentials are configured)
+    const webhookUsername = process.env.PHONEPE_WEBHOOK_USERNAME;
+    const webhookPassword = process.env.PHONEPE_WEBHOOK_PASSWORD;
+    
+    safeLog("info", "PhonePe webhook authentication check", {
+      hasUsername: !!webhookUsername,
+      hasPassword: !!webhookPassword,
+      usernameLength: webhookUsername?.length || 0,
+      passwordLength: webhookPassword?.length || 0
+    });
+    
+    if (webhookUsername && webhookPassword) {
+      // PhonePe uses SHA256(username:password) format for webhook authentication
+      const webhookSecret = `${webhookUsername}:${webhookPassword}`;
+      safeLog("info", "PhonePe webhook credentials configured, verifying signature");
       const signature = extractPhonePeSignature(request);
       
       if (!signature) {
@@ -86,7 +101,11 @@ export async function POST(request: NextRequest) {
 
       safeLog("info", "PhonePe webhook signature verified successfully");
     } else {
-      safeLog("warn", "PhonePe webhook secret not configured - skipping signature verification");
+      safeLog("warn", "PhonePe webhook credentials not configured - skipping signature verification", {
+        hasUsername: !!webhookUsername,
+        hasPassword: !!webhookPassword,
+        message: "Set PHONEPE_WEBHOOK_USERNAME and PHONEPE_WEBHOOK_PASSWORD in environment variables"
+      });
     }
 
     // Step 5: Replay attack protection

@@ -7,48 +7,62 @@ import { safeLog, safeLogError } from "./logging";
  */
 
 /**
- * Verify PhonePe webhook signature using HMAC-SHA256
- * @param payload - Raw webhook payload string
- * @param signature - Signature from PhonePe headers
- * @param secret - Webhook secret from environment
+ * Verify PhonePe webhook signature using SHA256 hash comparison
+ * @param payload - Raw webhook payload string (not used in PhonePe auth)
+ * @param signature - Authorization header value from PhonePe
+ * @param credentials - Webhook credentials in format "username:password"
  * @returns boolean indicating if signature is valid
  */
 export function verifyPhonePeSignature(
   payload: string,
   signature: string,
-  secret: string
+  credentials: string
 ): boolean {
   try {
-    if (!payload || !signature || !secret) {
+    if (!signature || !credentials) {
       safeLogError("PhonePe signature verification failed: missing parameters", {
         hasPayload: !!payload,
         hasSignature: !!signature,
-        hasSecret: !!secret
+        hasCredentials: !!credentials
       });
       return false;
     }
 
-    // Remove any prefix from signature (e.g., "sha256=")
-    const cleanSignature = signature.replace(/^sha256=/, "");
-    
-    // Generate expected signature using HMAC-SHA256
+    // PhonePe sends Authorization header as: SHA256(username:password)
+    // We need to compute SHA256 of our credentials and compare
     const expectedSignature = crypto
-      .createHmac("sha256", secret)
-      .update(payload, "utf8")
-      .digest("hex");
+      .createHash("sha256")
+      .update(credentials, "utf8")
+      .digest("hex")
+      .toUpperCase(); // PhonePe uses uppercase hex
+
+    // Clean the received signature (remove any prefixes)
+    const cleanSignature = signature
+      .replace(/^(sha256=|Bearer\s+)/i, "")
+      .toUpperCase();
 
     // Use timing-safe comparison to prevent timing attacks
-    const isValid = crypto.timingSafeEqual(
-      Buffer.from(cleanSignature, "hex"),
-      Buffer.from(expectedSignature, "hex")
-    );
+    const expectedBuffer = Buffer.from(expectedSignature, "hex");
+    const receivedBuffer = Buffer.from(cleanSignature, "hex");
+    
+    if (expectedBuffer.length !== receivedBuffer.length) {
+      safeLogError("PhonePe signature verification failed: length mismatch", {
+        expectedLength: expectedBuffer.length,
+        receivedLength: receivedBuffer.length
+      });
+      return false;
+    }
+
+    const isValid = crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
 
     if (!isValid) {
       safeLogError("PhonePe signature verification failed", {
-        expectedLength: expectedSignature.length,
-        receivedLength: cleanSignature.length,
-        payloadLength: payload.length
+        expectedSignature: expectedSignature.substring(0, 8) + "...",
+        receivedSignature: cleanSignature.substring(0, 8) + "...",
+        credentialsFormat: credentials.includes(":") ? "username:password" : "invalid"
       });
+    } else {
+      safeLog("info", "PhonePe signature verification successful");
     }
 
     return isValid;
@@ -98,24 +112,44 @@ export function validatePhonePeWebhookOrigin(request: Request): boolean {
  * @returns signature string or null if not found/invalid
  */
 export function extractPhonePeSignature(request: Request): string | null {
-  // PhonePe may send signature in different header formats
-  const possibleHeaders = [
+  // PhonePe sends signature in Authorization header as SHA256(username:password)
+  // Check for authorization header with case-insensitive search
+  const allHeaders = Array.from(request.headers.keys());
+  const authHeaderName = allHeaders.find(header => 
+    header.toLowerCase() === 'authorization'
+  );
+  
+  if (authHeaderName) {
+    const authHeader = request.headers.get(authHeaderName);
+    if (authHeader) {
+      safeLog("info", "PhonePe signature found in Authorization header", { 
+        headerName: authHeaderName,
+        signaturePreview: authHeader.substring(0, 8) + "..."
+      });
+      return authHeader;
+    }
+  }
+
+  // Fallback to other possible headers for backward compatibility
+  const fallbackHeaders = [
     "x-phonepe-signature",
-    "x-signature",
-    "signature",
-    "authorization"
+    "x-signature", 
+    "signature"
   ];
 
-  for (const header of possibleHeaders) {
-    const signature = request.headers.get(header);
+  for (const headerName of fallbackHeaders) {
+    const signature = request.headers.get(headerName);
     if (signature) {
-      safeLog("info", "Found PhonePe signature in header", { header });
+      safeLog("info", "Found PhonePe signature in header", { header: headerName });
       return signature;
     }
   }
 
   safeLogError("No PhonePe signature found in headers", {
-    availableHeaders: Array.from(request.headers.keys())
+    availableHeaders: allHeaders,
+    authorizationHeader: request.headers.get('authorization'),
+    authorizationHeaderCaseInsensitive: authHeaderName ? request.headers.get(authHeaderName) : null,
+    checkedHeaders: ['authorization (case-insensitive)', ...fallbackHeaders]
   });
   
   return null;

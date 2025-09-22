@@ -39,20 +39,22 @@ Select these events to receive notifications:
 
 After creating the webhook in PhonePe dashboard:
 
-1. **Save the webhook secret** provided by PhonePe
+1. **Save the webhook username and password** provided by PhonePe
 2. **Add to environment variables**:
    ```bash
-   PHONEPE_WEBHOOK_SECRET=your_webhook_secret_from_phonepe
+   PHONEPE_WEBHOOK_USERNAME=your_webhook_username_from_phonepe
+   PHONEPE_WEBHOOK_PASSWORD=your_webhook_password_from_phonepe
    ```
 
 ## 🚀 Deployment Steps
 
 ### 1. Update Environment Variables
-Add the webhook secret to your Vercel environment variables:
+Add the webhook credentials to your Vercel environment variables:
 
 ```bash
 # In Vercel Dashboard -> Settings -> Environment Variables
-PHONEPE_WEBHOOK_SECRET=your_webhook_secret_from_phonepe
+PHONEPE_WEBHOOK_USERNAME=your_webhook_username_from_phonepe
+PHONEPE_WEBHOOK_PASSWORD=your_webhook_password_from_phonepe
 ```
 
 ### 2. Verify Webhook Endpoint
@@ -124,8 +126,8 @@ The webhook endpoint handles these events:
 3. Update webhook credentials if needed
 
 ### Signature Verification Fails
-1. Check `PHONEPE_WEBHOOK_SECRET` environment variable
-2. Verify signature algorithm (usually HMAC-SHA256)
+1. Check `PHONEPE_WEBHOOK_USERNAME` and `PHONEPE_WEBHOOK_PASSWORD` environment variables
+2. Verify signature algorithm (PhonePe uses SHA256(username:password))
 3. Check webhook payload format
 
 ## 📞 Support

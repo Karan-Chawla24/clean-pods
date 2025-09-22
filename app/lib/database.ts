@@ -254,10 +254,45 @@ export async function updateOrderPaymentDetails(merchantOrderId: string, payment
           return null;
         }
         
-        }
+        // Use the final retry order for update
+        return await db.order.update({
+          where: { merchantOrderId },
+          data: {
+            paymentMode: paymentDetails.paymentMode,
+            paymentTransactionId: paymentDetails.paymentTransactionId,
+            utr: paymentDetails.utr,
+            feeAmount: paymentDetails.feeAmount,
+            payableAmount: paymentDetails.payableAmount,
+            bankName: paymentDetails.bankName,
+            accountType: paymentDetails.accountType,
+            cardLast4: paymentDetails.cardLast4,
+            paymentState: paymentDetails.paymentState,
+            paymentTimestamp: paymentDetails.paymentTimestamp,
+          },
+          include: { items: true },
+        });
+      }
+      
+      // Use the first retry order for update
+      return await db.order.update({
+        where: { merchantOrderId },
+        data: {
+          paymentMode: paymentDetails.paymentMode,
+          paymentTransactionId: paymentDetails.paymentTransactionId,
+          utr: paymentDetails.utr,
+          feeAmount: paymentDetails.feeAmount,
+          payableAmount: paymentDetails.payableAmount,
+          bankName: paymentDetails.bankName,
+          accountType: paymentDetails.accountType,
+          cardLast4: paymentDetails.cardLast4,
+          paymentState: paymentDetails.paymentState,
+          paymentTimestamp: paymentDetails.paymentTimestamp,
+        },
+        include: { items: true },
+      });
     }
 
-    // Order exists, proceed with update
+    // Order exists from the first check, proceed with update
     return await db.order.update({
       where: { merchantOrderId },
       data: {
