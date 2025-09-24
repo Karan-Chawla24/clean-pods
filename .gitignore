@@ -104,3 +104,13 @@ SLACK_SETUP.md
 ORDER_MANAGEMENT.md
 orders.xlsx
 /app/generated/prisma
+public/google-site-verification.html
+
+# All markdown files (documentation, guides, troubleshooting)
+*.md
+
+# Google verification files
+google-site-verification*.html
+SEO_BEST_PRACTICES.md
+GOOGLE_SEARCH_CONSOLE_SETUP.md
+README.md

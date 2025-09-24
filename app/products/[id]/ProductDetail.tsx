@@ -14,6 +14,7 @@ import Header from "../../components/Header";
 import toast from "react-hot-toast";
 import Image from "next/image";
 import DeliveryBox3D from "../../components/DeliveryBox3D";
+import { ProductSchema, BreadcrumbSchema } from "../../components/StructuredData";
 
 interface Product {
   id: string;
@@ -540,6 +541,27 @@ export default function ProductDetail({ productId }: { productId: string }) {
           </div>
         </div>
       </div>
+
+      {/* Structured Data */}
+      <ProductSchema
+        name={product.name}
+        description={product.description}
+        image={product.image}
+        price={product.price}
+        currency="INR"
+        availability="InStock"
+        brand="BubbleBeads"
+        sku={product.id}
+        url={`/products/${product.id}`}
+        features={product.features}
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Products", url: "/products" },
+          { name: product.name, url: `/products/${product.id}` },
+        ]}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getBlogPost, getRelatedPosts } from "../../lib/blog-data";
 import ReactMarkdown from "react-markdown";
 import Header from "../../components/Header";
+import { Metadata } from "next";
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -17,6 +18,61 @@ export async function generateStaticParams() {
   return posts.map((post) => ({
     slug: post.slug,
   }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const post = getBlogPost(slug);
+
+  if (!post) {
+    return {
+      title: "Blog Post Not Found | BubbleBeads",
+      description: "The requested blog post could not be found.",
+    };
+  }
+
+  return {
+    title: `${post.title} | BubbleBeads Blog`,
+    description: post.excerpt,
+    keywords: [
+      ...post.tags,
+      "laundry tips",
+      "cleaning advice",
+      "BubbleBeads",
+      "detergent pods",
+      "fabric care"
+    ],
+    authors: [{ name: post.author }],
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      type: "article",
+      publishedTime: post.publishedAt,
+      authors: [post.author],
+      images: [
+        {
+          url: post.image,
+          width: 800,
+          height: 600,
+          alt: post.title,
+        },
+      ],
+      url: `/blog/${post.slug}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [post.image],
+    },
+    alternates: {
+      canonical: `/blog/${post.slug}`,
+    },
+  };
 }
 
 export default async function BlogPostPage({ params }: BlogPostPageProps) {

@@ -112,7 +112,7 @@ clean-pods/
 
 **Demo Credentials:**
 
-- Email: `demo@bubblebeads.com`
+- Email: `demo@bubblebeads.in`
 - Password: `demo123`
 
 ### 2. Product Management
@@ -272,7 +272,7 @@ This project is licensed under the MIT License.
 
 For support and questions:
 
-- Email: support@bubblebeads.com
+- Email: support@bubblebeads.in
 - Phone: 1-800-BUBBLEBEADS
 - Hours: Mon-Sun 9AM-6PM
 

@@ -2,6 +2,45 @@ import Link from "next/link";
 import Image from "next/image";
 import { getAllBlogPosts } from "../lib/blog-data";
 import Header from "../components/Header";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Blog | BubbleBeads - Laundry Care Tips & Cleaning Insights",
+  description: "Discover expert laundry care tips, cleaning insights, and eco-friendly solutions. Learn how to get the best results with BubbleBeads detergent pods and maintain your clothes perfectly.",
+  keywords: [
+    "laundry tips",
+    "cleaning advice",
+    "detergent guide",
+    "fabric care",
+    "stain removal",
+    "eco-friendly cleaning",
+    "washing machine tips",
+    "laundry hacks"
+  ],
+  openGraph: {
+    title: "Blog | BubbleBeads - Laundry Care Tips & Cleaning Insights",
+    description: "Expert laundry care tips and cleaning insights for modern households.",
+    type: "website",
+    url: "/blog",
+    images: [
+      {
+        url: "/beadslogo.jpg",
+        width: 800,
+        height: 600,
+        alt: "BubbleBeads Blog",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Blog | BubbleBeads - Laundry Care Tips",
+    description: "Expert laundry care tips and cleaning insights for modern households.",
+    images: ["/beadslogo.jpg"],
+  },
+  alternates: {
+    canonical: "/blog",
+  },
+};
 
 export default function BlogPage() {
   const blogPosts = getAllBlogPosts();
