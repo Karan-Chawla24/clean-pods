@@ -257,7 +257,7 @@ export const performanceUtils = {
     let timeout: NodeJS.Timeout;
     return ((...args: any[]) => {
       clearTimeout(timeout);
-      timeout = setTimeout(() => func.apply(null, args), wait);
+      timeout = setTimeout(() => func(...args), wait);
     }) as T;
   },
 
@@ -266,7 +266,7 @@ export const performanceUtils = {
     let inThrottle: boolean;
     return ((...args: any[]) => {
       if (!inThrottle) {
-        func.apply(null, args);
+        func(...args);
         inThrottle = true;
         setTimeout(() => (inThrottle = false), limit);
       }
@@ -280,7 +280,7 @@ export const performanceUtils = {
 
   // Get connection quality
   getConnectionQuality: () => {
-    // @ts-ignore
+    // @ts-expect-error - Navigator connection API is not fully standardized
     const connection = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     if (connection) {
       return {

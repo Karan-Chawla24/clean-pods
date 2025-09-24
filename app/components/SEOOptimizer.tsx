@@ -50,7 +50,7 @@ export default function SEOOptimizer({
         const script = document.createElement("script");
         script.src = "https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.8.3/dist/lazyload.min.js";
         script.onload = () => {
-          // @ts-ignore
+          // @ts-expect-error - LazyLoad is loaded dynamically from CDN
           new LazyLoad({
             elements_selector: "img[data-src]",
             class_loaded: "loaded",
