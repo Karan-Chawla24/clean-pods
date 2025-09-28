@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createPhonePeOAuthClient } from '@/app/lib/phonepe-oauth';
 import { safeLog, safeLogError } from '@/app/lib/security/logging';
-import { saveOrder } from '@/app/lib/database';
+import { updatePendingOrderWithPayment } from '@/app/lib/database';
 import { prisma } from '@/app/lib/prisma';
 import prismaVercel from '@/app/lib/prisma-vercel';
 import { sanitizeString } from '@/app/lib/security/validation';
@@ -10,25 +10,7 @@ import { withUpstashRateLimit } from '@/app/lib/security/upstashRateLimit';
 // Use Vercel-optimized Prisma client in production, standard client in development
 const db = process.env.VERCEL ? prismaVercel : prisma;
 
-// Type for stored metadata
-interface OrderMetadata {
-  userId: string;
-  customerInfo: {
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-  };
-  cart: any[];
-  timestamp: number;
-}
-
-// Access the global cache
-declare global {
-  var orderMetadataCache: Map<string, OrderMetadata> | undefined;
-}
-
-const orderMetadataCache = global.orderMetadataCache || new Map<string, OrderMetadata>();
+// Note: Order metadata cache is no longer needed since orders are created before payment initiation
 
 export const GET = withUpstashRateLimit("strict")(async (request: NextRequest) => {
   return handleCallback(request);
@@ -87,204 +69,7 @@ async function handleCallback(request: NextRequest) {
   }
 }
 
-// Save order to database using data from PhonePe order status
-async function saveOrderToDatabase({
-  merchantOrderId,
-  phonePeOrderId,
-  transactionId,
-  amount,
-  paymentDetails
-}: {
-  merchantOrderId: string;
-  phonePeOrderId: string;
-  transactionId: string;
-  amount: number;
-  paymentDetails: any;
-}) {
-  safeLog('info', 'Starting saveOrderToDatabase', { merchantOrderId });
-  
-  try {
-    // Extract customer info and cart from PhonePe metaInfo
-    const metaInfo = paymentDetails.metaInfo || {};
-    safeLog('info', 'Processing payment callback', { 
-      hasMetaInfo: !!metaInfo,
-      hasUserId: !!metaInfo.userId,
-      hasAddress: !!metaInfo.address,
-      metaInfoKeys: Object.keys(metaInfo),
-      metaInfoContent: metaInfo
-    });
-    
-    // Try to get stored order metadata if metaInfo is incomplete
-    global.orderMetadataCache = global.orderMetadataCache || new Map();
-    const storedMetadata = global.orderMetadataCache.get(merchantOrderId);
-    safeLog('info', 'Checking stored metadata', { hasStoredMetadata: !!storedMetadata });
-    
-    if (storedMetadata) {
-      safeLog('info', 'Using stored metadata for order', {
-        hasUserId: !!storedMetadata.userId,
-        hasCustomerInfo: !!storedMetadata.customerInfo,
-        hasCart: !!storedMetadata.cart,
-        merchantOrderId,
-        storedMetadataContent: storedMetadata
-      });
-    }
-    
-    // Use metaInfo first, fallback to stored metadata
-    const customerName = metaInfo.udf1 || storedMetadata?.customerInfo?.name || 'Unknown Customer';
-    const customerEmail = metaInfo.udf2 || storedMetadata?.customerInfo?.email || '';
-    const customerPhone = metaInfo.udf3 || storedMetadata?.customerInfo?.phone || '';
-    const cartItemsJson = metaInfo.udf4 || (storedMetadata?.cart ? JSON.stringify(storedMetadata.cart.slice(0, 3)) : '[]');
-    const address = metaInfo.udf5 || storedMetadata?.customerInfo?.address || 'Address not provided'; // Address from udf5
-    const userId = metaInfo.udf6 || storedMetadata?.userId || null; // UserId from udf6
-    const itemsCount = metaInfo.udf7 || (storedMetadata?.cart ? `items:${storedMetadata.cart.length}` : 'items:0'); // Items count from udf7
-    
-    safeLog('info', 'Extracted order fields', {
-      hasCustomerName: !!customerName,
-      hasCustomerEmail: !!customerEmail,
-      hasCustomerPhone: !!customerPhone,
-      hasCartItems: !!cartItemsJson,
-      hasAddress: !!address,
-      hasUserId: !!userId,
-      itemsCount,
-      merchantOrderId
-    });
-    
-    let cartItems = [];
-    try {
-      cartItems = JSON.parse(cartItemsJson);
-      safeLog('info', 'Parsed cart items successfully', { 
-        itemCount: cartItems.length,
-        merchantOrderId 
-      });
-    } catch (e) {
-      safeLogError('Failed to parse cart items from metaInfo', { 
-        hasCartItemsJson: !!cartItemsJson,
-        error: e instanceof Error ? e.message : 'Unknown error',
-        merchantOrderId 
-      });
-    }
-
-    // userId is already extracted above from udf6
-    safeLog('info', 'Processing order for user', { 
-      hasUserId: !!userId,
-      merchantOrderId 
-    });
-    
-    // If userId is available, create/update user in database first
-    let validUserId = undefined;
-    if (userId) {
-      try {
-        // Import required modules for user creation
-        const { prisma } = await import('@/app/lib/prisma');
-        const prismaVercel = await import('@/app/lib/prisma-vercel');
-        const db = process.env.VERCEL ? prismaVercel.default : prisma;
-        
-        // Try to find existing user
-        let user = await db.user.findUnique({
-          where: { id: userId }
-        });
-        
-        if (!user) {
-          // Check if user exists with same email but different ID
-          const existingUserByEmail = await db.user.findUnique({
-            where: { email: customerEmail }
-          });
-          
-          if (existingUserByEmail) {
-            // Update existing user with new Clerk ID
-            user = await db.user.update({
-              where: { email: customerEmail },
-              data: {
-                id: metaInfo.userId,
-                name: customerName,
-              },
-            });
-          } else {
-            // Create new user
-            user = await db.user.create({
-              data: {
-                id: metaInfo.userId,
-                email: customerEmail,
-                name: customerName,
-              },
-            });
-          }
-        }
-        
-        validUserId = user.id;
-        safeLog('info', 'User created/updated for PhonePe order', {
-          userId: validUserId,
-          customerName,
-          customerEmail
-        });
-      } catch (error) {
-        safeLogError('Failed to create/update user for PhonePe order', {
-          error,
-          userId: metaInfo.userId,
-          customerEmail
-        });
-        // Continue without userId if user creation fails
-      }
-    }
-
-    // Prepare order data for database
-    const orderData = {
-      merchantOrderId,
-      phonePeOrderId,
-      transactionId, // Store actual PhonePe transaction ID
-      paymentId: transactionId, // Keep for backward compatibility with existing display logic
-      total: amount / 100, // Convert from paise to rupees
-      customerName,
-      customerEmail,
-      customerPhone,
-      address: address, // Use address from udf5
-      userId: validUserId, // Use the validated userId
-      items: cartItems.length > 0 ? cartItems : [
-        {
-          name: 'PhonePe Order',
-          price: amount / 100,
-          quantity: 1
-        }
-      ]
-    };
-
-    // Save order to database
-    safeLog('info', 'Saving order to database', { 
-      merchantOrderId,
-      hasOrderData: !!orderData,
-      itemCount: orderData.items?.length || 0,
-      orderDataContent: {
-        userId: orderData.userId,
-        address: orderData.address,
-        customerName: orderData.customerName,
-        customerEmail: orderData.customerEmail,
-        customerPhone: orderData.customerPhone
-      }
-    });
-    const savedOrder = await saveOrder(orderData);
-    safeLog('info', 'Order saved successfully', { 
-      orderId: savedOrder.id,
-      merchantOrderId 
-    });
-    
-    safeLog('info', 'Order saved to database successfully', {
-      orderId: savedOrder.id,
-      merchantOrderId,
-      phonePeOrderId,
-      transactionId
-    });
-    
-    return savedOrder;
-  } catch (error) {
-    safeLogError('Failed to save order to database', {
-      error,
-      merchantOrderId,
-      phonePeOrderId,
-      transactionId
-    });
-    throw error;
-  }
-}
+// Note: saveOrderToDatabase function removed - orders are now created as pending before payment initiation
 
 // Check order status via PhonePe Order Status API and redirect accordingly
 async function checkOrderStatusAndRedirect(merchantOrderId: string, request: NextRequest | string) {
@@ -342,31 +127,33 @@ async function checkOrderStatusAndRedirect(merchantOrderId: string, request: Nex
         paymentDetailsCount: orderStatus.paymentDetails?.length || 0
       });
 
-      // Save order to database after successful payment
-      safeLog('info', 'Attempting to save order to database', { merchantOrderId });
+      // Update pending order with payment details after successful payment
+      safeLog('info', 'Attempting to update pending order with payment details', { merchantOrderId });
       try {
-        await saveOrderToDatabase({
-          merchantOrderId,
-          phonePeOrderId: transactionId,         // Internal payment transaction ID (like OM2509211510025010782857)
-          transactionId: orderStatus.orderId,   // PhonePe Order ID that user sees (like OMO2509211510025010782264)
-          amount: orderStatus.amount,
-          paymentDetails: orderStatus
+        const updatedOrder = await updatePendingOrderWithPayment(merchantOrderId, {
+          phonePeOrderId: orderStatus.orderId,   // PhonePe Order ID that user sees (like OMO2509211510025010782264)
+          transactionId: transactionId,         // Internal payment transaction ID (like OM2509211510025010782857)
+          paymentState: 'COMPLETED'
         });
-        safeLog('info', 'Order saved successfully', { merchantOrderId });
         
-        // Clean up stored metadata after successful processing
-        if (orderMetadataCache.has(merchantOrderId)) {
-          orderMetadataCache.delete(merchantOrderId);
-          safeLog('info', 'Cleaned up stored metadata', { merchantOrderId });
+        if (!updatedOrder) {
+          safeLogError('Failed to update pending order - order not found', { merchantOrderId });
+          // Continue with redirect even if update fails
+        } else {
+          safeLog('info', 'Pending order updated successfully', { 
+            merchantOrderId,
+            orderId: updatedOrder.id 
+          });
         }
+
       } catch (error) {
-        safeLogError("Failed to save order to database", {
+        safeLogError("Failed to update pending order with payment details", {
           error,
           merchantOrderId,
           phonePeOrderId: orderStatus.orderId,
           transactionId
         });
-        // Continue with redirect even if database save fails
+        // Continue with redirect even if update fails
       }
 
       // Redirect to success page with minimal parameters (industry standard)

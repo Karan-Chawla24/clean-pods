@@ -186,6 +186,139 @@ export async function getAllOrders() {
   });
 }
 
+// Create a pending order before payment initiation to prevent race conditions
+export async function createPendingOrder(orderData: {
+  merchantOrderId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  address: string;
+  userId?: string;
+  items: Array<{
+    name: string;
+    price: number;
+    quantity: number;
+  }>;
+  total: number;
+}) {
+  const { safeLog } = await import("./security/logging");
+  safeLog('info', 'Creating pending order before payment', {
+    merchantOrderId: orderData.merchantOrderId,
+    hasUserId: !!orderData.userId,
+    itemCount: orderData.items.length,
+    total: orderData.total
+  });
+
+  return retryDatabaseOperation(async () => {
+    try {
+      // Check if user exists before associating
+      let validUserId = null;
+      if (orderData.userId) {
+        try {
+          const userExists = await db.user.findUnique({
+            where: { id: orderData.userId }
+          });
+          if (userExists) {
+            validUserId = orderData.userId;
+          }
+        } catch (error) {
+          safeLogError("User not found for pending order, proceeding without userId", { userId: orderData.userId });
+        }
+      }
+
+      const order = await db.order.create({
+        data: {
+          merchantOrderId: orderData.merchantOrderId,
+          phonePeOrderId: null, // Will be updated after payment
+          transactionId: null, // Will be updated after payment
+          paymentId: `pending_${orderData.merchantOrderId}`, // Temporary payment ID
+          customerName: orderData.customerName,
+          customerEmail: orderData.customerEmail,
+          customerPhone: orderData.customerPhone,
+          address: orderData.address,
+          total: orderData.total,
+          userId: validUserId,
+          paymentState: 'PENDING', // Mark as pending
+          items: {
+            create: orderData.items.map((item) => ({
+              name: item.name,
+              price: item.price,
+              quantity: item.quantity,
+            })),
+          },
+        },
+        include: {
+          items: true,
+        },
+      });
+
+      safeLog('info', 'Pending order created successfully', {
+        orderId: order.id,
+        merchantOrderId: order.merchantOrderId,
+        paymentState: order.paymentState,
+        itemCount: order.items.length
+      });
+
+      return order;
+    } catch (error) {
+      safeLogError("Failed to create pending order", {
+        error,
+        merchantOrderId: orderData.merchantOrderId
+      });
+      throw error;
+    }
+  });
+}
+
+// Update a pending order with PhonePe transaction details after payment
+export async function updatePendingOrderWithPayment(merchantOrderId: string, paymentData: {
+  phonePeOrderId: string;
+  transactionId: string;
+  paymentState: string;
+}) {
+  const { safeLog } = await import("./security/logging");
+  safeLog('info', 'Updating pending order with payment details', {
+    merchantOrderId,
+    phonePeOrderId: paymentData.phonePeOrderId,
+    paymentState: paymentData.paymentState
+  });
+
+  return retryDatabaseOperation(async () => {
+    const existingOrder = await db.order.findUnique({
+      where: { merchantOrderId },
+      include: { items: true }
+    });
+
+    if (!existingOrder) {
+      safeLogError('Pending order not found for payment update', {
+        merchantOrderId,
+        paymentData
+      });
+      return null;
+    }
+
+    if (existingOrder.paymentState !== 'PENDING') {
+      safeLog('warn', 'Order is not in pending state', {
+        merchantOrderId,
+        currentState: existingOrder.paymentState,
+        newState: paymentData.paymentState
+      });
+    }
+
+    // Update the pending order with payment details
+    return await db.order.update({
+      where: { merchantOrderId },
+      data: {
+        phonePeOrderId: paymentData.phonePeOrderId,
+        transactionId: paymentData.transactionId,
+        paymentId: paymentData.transactionId, // Update from temporary payment ID
+        paymentState: paymentData.paymentState,
+      },
+      include: { items: true },
+    });
+  });
+}
+
 export async function updateOrderPaymentDetails(merchantOrderId: string, paymentDetails: {
   paymentMode?: string;
   paymentTransactionId?: string;
@@ -198,101 +331,39 @@ export async function updateOrderPaymentDetails(merchantOrderId: string, payment
   paymentState?: string;
   paymentTimestamp?: Date;
 }) {
-  return retryDatabaseOperation(async () => {
-    const { safeLog } = await import("./security/logging");
-    safeLog('info', 'updateOrderPaymentDetails function called', {
-      merchantOrderId,
-      paymentMode: paymentDetails.paymentMode,
-      paymentTransactionId: paymentDetails.paymentTransactionId
-    });
+  const { safeLog } = await import("./security/logging");
+  safeLog('info', 'Updating order payment details', {
+    merchantOrderId,
+    hasPaymentMode: !!paymentDetails.paymentMode,
+    hasUtr: !!paymentDetails.utr,
+    hasBankName: !!paymentDetails.bankName
+  });
 
-    // First, try to find the order to see if it exists
+  return retryDatabaseOperation(async () => {
+    // Since we now create pending orders BEFORE payment initiation,
+    // the order should always exist when webhook arrives
     const existingOrder = await db.order.findUnique({
       where: { merchantOrderId },
       include: { items: true }
     });
 
     if (!existingOrder) {
-      // Order doesn't exist yet - this is a race condition
-      // Wait a bit and try again (webhook arrived before order was saved)
-      safeLog('warn', 'Order not found for webhook update, retrying...', {
+      // This should rarely happen now with the new flow
+      safeLogError('Order not found for webhook update - this should not happen with pending order flow', {
         merchantOrderId,
-        retryReason: 'Race condition - webhook arrived before order creation'
+        paymentDetails,
+        suggestion: 'Check if pending order creation is working properly'
       });
-      
-      // Wait 5 seconds and try again (race condition: webhook arrives before callback saves order)
-      await new Promise(resolve => setTimeout(resolve, 5000));
-      
-      const retryOrder = await db.order.findUnique({
-        where: { merchantOrderId },
-        include: { items: true }
-      });
-      
-      if (!retryOrder) {
-        // Second retry with longer wait (extreme race condition)
-        safeLogError('Order still not found after first retry, trying again with longer wait', {
-          merchantOrderId,
-          retryReason: 'Extreme race condition - extending wait time'
-        });
-        
-        // Wait 8 more seconds and try one final time
-        await new Promise(resolve => setTimeout(resolve, 8000));
-        
-        const finalRetryOrder = await db.order.findUnique({
-          where: { merchantOrderId },
-          include: { items: true }
-        });
-        
-        if (!finalRetryOrder) {
-          // Still not found after 13 seconds total - log error but don't throw (webhook will retry)
-          safeLogError('Order still not found after final retry', {
-            merchantOrderId,
-            paymentDetails,
-            totalWaitTime: '13 seconds',
-            suggestion: 'Order may not have been created yet or merchantOrderId mismatch'
-          });
-          return null;
-        }
-        
-        // Use the final retry order for update
-        return await db.order.update({
-          where: { merchantOrderId },
-          data: {
-            paymentMode: paymentDetails.paymentMode,
-            paymentTransactionId: paymentDetails.paymentTransactionId,
-            utr: paymentDetails.utr,
-            feeAmount: paymentDetails.feeAmount,
-            payableAmount: paymentDetails.payableAmount,
-            bankName: paymentDetails.bankName,
-            accountType: paymentDetails.accountType,
-            cardLast4: paymentDetails.cardLast4,
-            paymentState: paymentDetails.paymentState,
-            paymentTimestamp: paymentDetails.paymentTimestamp,
-          },
-          include: { items: true },
-        });
-      }
-      
-      // Use the first retry order for update
-      return await db.order.update({
-        where: { merchantOrderId },
-        data: {
-          paymentMode: paymentDetails.paymentMode,
-          paymentTransactionId: paymentDetails.paymentTransactionId,
-          utr: paymentDetails.utr,
-          feeAmount: paymentDetails.feeAmount,
-          payableAmount: paymentDetails.payableAmount,
-          bankName: paymentDetails.bankName,
-          accountType: paymentDetails.accountType,
-          cardLast4: paymentDetails.cardLast4,
-          paymentState: paymentDetails.paymentState,
-          paymentTimestamp: paymentDetails.paymentTimestamp,
-        },
-        include: { items: true },
-      });
+      return null;
     }
 
-    // Order exists from the first check, proceed with update
+    safeLog('info', 'Order found, updating payment details', {
+      merchantOrderId,
+      currentPaymentState: existingOrder.paymentState,
+      newPaymentState: paymentDetails.paymentState
+    });
+
+    // Order exists, update it with payment details
     return await db.order.update({
       where: { merchantOrderId },
       data: {

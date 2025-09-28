@@ -59,6 +59,7 @@ export const POST = withUpstashRateLimit("moderate")(async (
     // Log authentication status for monitoring
     safeLog('info', 'Authentication check in create-order', {
       hasUserId: !!userId,
+      userId: userId, // Log the actual userId for debugging
       timestamp: new Date().toISOString(),
       origin: request.headers.get('origin'),
       userAgent: request.headers.get('user-agent')?.substring(0, 50),
@@ -167,32 +168,68 @@ export const POST = withUpstashRateLimit("moderate")(async (
       );
     }
 
-    // 🔑 Store order metadata temporarily (since PhonePe doesn't reliably return metaInfo)
-    const orderMetadata = {
-      userId: userId,
-      customerInfo: customerInfo,
-      cart: cart,
-      timestamp: Date.now()
-    };
-    
-    // Store in a simple in-memory cache (you might want to use Redis in production)
-    global.orderMetadataCache = global.orderMetadataCache || new Map();
-    global.orderMetadataCache.set(merchantOrderId, orderMetadata);
-    
-    // Clean up old entries (older than 30 minutes)
-    const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000;
-    for (const [key, value] of global.orderMetadataCache.entries()) {
-      if (value.timestamp < thirtyMinutesAgo) {
-        global.orderMetadataCache.delete(key);
+    // 🔑 CREATE PENDING ORDER FIRST (Industry Standard - Prevents Race Conditions)
+    // This ensures the order exists in DB before PhonePe webhook arrives
+    try {
+      const { createPendingOrder } = await import("@/app/lib/database");
+      
+      // Debug: Check if user exists in database
+      if (userId) {
+        const { prisma } = await import("@/app/lib/prisma");
+        const prismaVercel = await import("@/app/lib/prisma-vercel");
+        const db = process.env.VERCEL ? prismaVercel.default : prisma;
+        
+        const userExists = await db.user.findUnique({
+          where: { id: userId }
+        });
+        
+        safeLog('info', 'User existence check', {
+          userId,
+          userExists: !!userExists,
+          userEmail: userExists?.email
+        });
       }
+      
+      const pendingOrderData = {
+        merchantOrderId,
+        customerName: customerInfo.name,
+        customerEmail: customerInfo.email,
+        customerPhone: customerInfo.phone,
+        address: customerInfo.address,
+        userId: userId,
+        items: cart.map((item) => ({
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        total: amount
+      };
+
+      const pendingOrder = await createPendingOrder(pendingOrderData);
+      
+      safeLog('info', 'Pending order created before payment initiation', {
+        orderId: pendingOrder.id,
+        merchantOrderId,
+        paymentState: pendingOrder.paymentState,
+        hasUserId: !!userId,
+        itemCount: pendingOrder.items.length
+      });
+
+    } catch (error) {
+      safeLogError("Failed to create pending order", {
+        error,
+        merchantOrderId,
+        customerInfo,
+        cart
+      });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Failed to prepare order. Please try again."
+        },
+        { status: 500 }
+      );
     }
-    
-    safeLog('info', 'Stored order metadata', { 
-      merchantOrderId,
-      hasUserId: !!userId,
-      hasCartItems: !!cart?.length,
-      storedMetadataContent: orderMetadata
-    });
 
     // 🏦 Create PhonePe payment request
     // Get the correct base URL for redirects
