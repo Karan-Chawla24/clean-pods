@@ -41,6 +41,10 @@ model Order {
   customerPhone   String      @map("customer_phone")
   address         String
   
+  // New sequential numbering fields
+  orderNo         String?     @unique @map("order_no")     // Format: ORD-YYYYMMDD-XXXX
+  invoiceNo       String?     @unique @map("invoice_no")   // Format: W-YYYYMMDD-XXXX
+  
   // Enhanced payment details for all payment methods
   paymentMode     String?     // UPI_QR, CARD, WALLET, NET_BANKING, etc.
   paymentTransactionId String? // UPI Transaction ID, Card Transaction ID, Wallet Transaction ID, etc.

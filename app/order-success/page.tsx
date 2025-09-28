@@ -296,9 +296,15 @@ function OrderSuccessContent() {
                   </h3>
                   <div className="space-y-2 text-gray-600">
                     <p>
-                      <strong>Order Number:</strong>{" "}
-                      {safeDisplayOrderId(displayOrderNumber)}
+                      <strong>Order ID:</strong>{" "}
+                      {safeDisplayOrderId(orderDetails?.orderNo || displayOrderNumber)}
                     </p>
+                    {orderDetails?.invoiceNo && (
+                      <p>
+                        <strong>Invoice Number:</strong>{" "}
+                        {safeDisplayOrderId(orderDetails.invoiceNo)}
+                      </p>
+                    )}
                     {(transactionId || orderDetails?.payment_id) && (
                       <p>
                         <strong>Transaction ID:</strong>{" "}
@@ -420,8 +426,14 @@ function OrderSuccessContent() {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
+              href="/"
+              className="bg-gradient-to-r from-orange-300 to-amber-400 text-white px-8 py-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 cursor-pointer whitespace-nowrap inline-block text-center"
+            >
+              🏠 Home
+            </Link>
+            <Link
               href="/products"
-              className="bg-gradient-to-r from-orange-400 to-amber-400 text-white px-8 py-3 rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer whitespace-nowrap inline-block"
+              className="bg-gradient-to-r from-orange-400 to-amber-400 text-white px-8 py-3 rounded-lg hover:from-orange-500 hover:to-amber-500 transition-all duration-300 cursor-pointer whitespace-nowrap inline-block text-center"
             >
               Continue Shopping
             </Link>

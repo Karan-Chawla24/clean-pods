@@ -13,7 +13,7 @@ export function formatPrice(price: number): string {
 }
 
 export function generateOrderId(): string {
-  // Generate a random string with only alphanumeric characters
+  // Generate a random string with only alphanumeric characters (for merchantOrderId)
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let result = "CP";
   for (let i = 0; i < 9; i++) {

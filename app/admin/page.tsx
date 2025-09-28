@@ -19,6 +19,8 @@ interface OrderItem {
 interface Order {
   id: string;
   merchantOrderId: string;
+  orderNo?: string;
+  invoiceNo?: string;
   phonePeOrderId: string;
   paymentId: string;
   customerName: string;
@@ -285,7 +287,10 @@ export default function AdminDashboard() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Order ID
+                      Order No
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Invoice No
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Date
@@ -314,7 +319,10 @@ export default function AdminDashboard() {
                   {filteredOrders.map((order) => (
                     <tr key={order.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {order.merchantOrderId || order.paymentId}
+                          {order.orderNo || order.merchantOrderId || order.paymentId}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {order.invoiceNo || 'N/A'}
                         </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {formatDate(order.orderDate)}

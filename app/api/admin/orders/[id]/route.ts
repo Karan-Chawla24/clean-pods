@@ -34,6 +34,8 @@ export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest)
     return NextResponse.json({
         id: order.id,
         merchantOrderId: order.merchantOrderId,
+        orderNo: order.orderNo,
+        invoiceNo: order.invoiceNo,
         phonePeOrderId: order.phonePeOrderId,
         paymentId: order.paymentId,
         customerName: order.customerName,

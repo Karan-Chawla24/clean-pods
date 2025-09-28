@@ -21,6 +21,8 @@ interface OrderItem {
 interface Order {
   id: string;
   merchantOrderId: string;
+  orderNo?: string;
+  invoiceNo?: string;
   phonePeOrderId: string;
   paymentId: string;
   transactionId?: string;
@@ -318,13 +320,13 @@ export default function Orders() {
                   )}
                 <div className="mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Order #{order.merchantOrderId}
+                    Order #{order.orderNo || order.merchantOrderId}
                   </h3>
                   <p className="text-gray-600">
                     Placed on {formatDate(order.orderDate)}
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
-                    Transaction ID: {order.transactionId || order.paymentId}
+                    Invoice: {order.invoiceNo || 'N/A'} | Transaction ID: {order.transactionId || order.paymentId}
                   </p>
                 </div>
 

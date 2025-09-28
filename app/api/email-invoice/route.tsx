@@ -260,8 +260,8 @@ function createInvoiceDocument(order: any) {
           <View style={styles.invoiceInfo}>
             <Text style={styles.invoiceTitle}>INVOICE</Text>
             <Text style={styles.invoiceMeta}>
-              Invoice #: W-{order.id.slice(-8)}{"\n"}
-              Order #: {order.id}{"\n"}
+              Invoice #: {order.invoiceNo || `W-${order.id.slice(-8)}`}{"\n"}
+              Order #: {order.orderNo || order.merchantOrderId || order.id}{"\n"}
               Date: {new Date(order.orderDate).toLocaleDateString("en-IN")}
             </Text>
           </View>

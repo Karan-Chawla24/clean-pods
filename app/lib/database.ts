@@ -5,6 +5,88 @@ import { safeLogError } from "./security/logging";
 // Use Vercel-optimized Prisma client in production, standard client in development
 const db = process.env.VERCEL ? prismaVercel : prisma;
 
+/**
+ * Generate sequential order number in format: ORD-YYYYMMDD-XXXX
+ * Starting from 0002 to avoid conflicts with existing orders
+ */
+async function generateSequentialOrderNumber(): Promise<string> {
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+  
+  // Find the highest sequence number for today
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+  
+  const lastOrder = await db.order.findFirst({
+    where: {
+      orderDate: {
+        gte: todayStart,
+        lt: todayEnd
+      },
+      orderNo: {
+        not: null
+      }
+    },
+    orderBy: {
+      orderNo: 'desc'
+    }
+  });
+  
+  let sequence = 2; // Start from 0002 as requested
+  
+  if (lastOrder?.orderNo) {
+    // Extract sequence number from the last order number (ORD-YYYYMMDD-XXXX)
+    const match = lastOrder.orderNo.match(/ORD-\d{8}-(\d{4})$/);
+    if (match) {
+      sequence = parseInt(match[1]) + 1;
+    }
+  }
+  
+  const sequenceStr = sequence.toString().padStart(4, '0');
+  return `ORD-${dateStr}-${sequenceStr}`;
+}
+
+/**
+ * Generate sequential invoice number in format: W-YYYYMMDD-XXXX
+ * Starting from 0002 to avoid conflicts with existing invoices
+ */
+async function generateSequentialInvoiceNumber(): Promise<string> {
+  const today = new Date();
+  const dateStr = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
+  
+  // Find the highest sequence number for today
+  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+  
+  const lastOrder = await db.order.findFirst({
+    where: {
+      orderDate: {
+        gte: todayStart,
+        lt: todayEnd
+      },
+      invoiceNo: {
+        not: null
+      }
+    },
+    orderBy: {
+      invoiceNo: 'desc'
+    }
+  });
+  
+  let sequence = 2; // Start from 0002 as requested
+  
+  if (lastOrder?.invoiceNo) {
+    // Extract sequence number from the last invoice number (W-YYYYMMDD-XXXX)
+    const match = lastOrder.invoiceNo.match(/W-\d{8}-(\d{4})$/);
+    if (match) {
+      sequence = parseInt(match[1]) + 1;
+    }
+  }
+  
+  const sequenceStr = sequence.toString().padStart(4, '0');
+  return `W-${dateStr}-${sequenceStr}`;
+}
+
 export async function saveOrder(orderData: {
   merchantOrderId?: string;
   phonePeOrderId?: string;
@@ -86,12 +168,18 @@ export async function saveOrder(orderData: {
         }
       }
 
+      // Generate sequential order and invoice numbers
+      const orderNo = await generateSequentialOrderNumber();
+      const invoiceNo = await generateSequentialInvoiceNumber();
+
       const order = await db.order.create({
         data: {
           merchantOrderId: orderData.merchantOrderId,
           phonePeOrderId: orderData.phonePeOrderId,
           transactionId: orderData.transactionId,
           paymentId: orderData.paymentId,
+          orderNo,
+          invoiceNo,
           customerName,
           customerEmail,
           customerPhone,
@@ -226,12 +314,18 @@ export async function createPendingOrder(orderData: {
         }
       }
 
+      // Generate sequential order and invoice numbers
+      const orderNo = await generateSequentialOrderNumber();
+      const invoiceNo = await generateSequentialInvoiceNumber();
+
       const order = await db.order.create({
         data: {
           merchantOrderId: orderData.merchantOrderId,
           phonePeOrderId: null, // Will be updated after payment
           transactionId: null, // Will be updated after payment
           paymentId: `pending_${orderData.merchantOrderId}`, // Temporary payment ID
+          orderNo,
+          invoiceNo,
           customerName: orderData.customerName,
           customerEmail: orderData.customerEmail,
           customerPhone: orderData.customerPhone,

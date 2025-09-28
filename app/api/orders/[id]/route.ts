@@ -26,6 +26,8 @@ export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest)
     const transformedOrder = {
       id: order.id,
       merchant_order_id: order.merchantOrderId,
+      order_no: order.orderNo,
+      invoice_no: order.invoiceNo,
       customer_email: order.customerEmail,
       customer_name: order.customerName,
       customer_phone: order.customerPhone,

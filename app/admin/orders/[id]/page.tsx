@@ -25,6 +25,8 @@ interface OrderItem {
 interface Order {
   id: string;
   merchantOrderId: string;
+  orderNo?: string;
+  invoiceNo?: string;
   phonePeOrderId: string;
   paymentId: string;
   customerName: string;
@@ -210,7 +212,7 @@ export default function AdminOrderDetails() {
               </h1>
             </div>
             <div className="text-sm text-gray-500">
-                Order ID: {safeDisplayOrderId(order.merchantOrderId || order.paymentId)}
+                Order: {safeDisplayOrderId(order.orderNo || order.merchantOrderId || order.paymentId)} | Invoice: {order.invoiceNo || 'N/A'}
               </div>
           </div>
         </div>
@@ -222,7 +224,7 @@ export default function AdminOrderDetails() {
           <div className="flex justify-between items-start mb-6">
             <div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  Order #{safeDisplayOrderId(order.merchantOrderId || order.paymentId)}
+                  Order #{safeDisplayOrderId(order.orderNo || order.merchantOrderId || order.paymentId)}
                 </h2>
               <p className="text-gray-600">
                 Placed on {formatDate(order.orderDate)}
