@@ -427,7 +427,7 @@ function OrderSuccessContent() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               href="/"
-              className="bg-gradient-to-r from-orange-300 to-amber-400 text-white px-8 py-3 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 cursor-pointer whitespace-nowrap inline-block text-center"
+              className="bg-gradient-to-r from-orange-300 to-amber-400 text-white px-8 py-3 rounded-lg hover:from-orange-400 hover:to-amber-500 transition-all duration-300 cursor-pointer whitespace-nowrap inline-block text-center"
             >
               🏠 Home
             </Link>
