@@ -38,6 +38,7 @@ export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest)
     const orders = await db.order.findMany({
       where: {
         userId: userId,
+        paymentState: "COMPLETED", // Only show orders with completed payments
       },
       include: {
         items: true,
