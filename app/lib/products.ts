@@ -5,9 +5,9 @@ const PRODUCTS = {
   "single-box": {
     id: "single-box",
     name: "5-in-1 Laundry Pod",
-    price: 450,
+    price: 399,
     originalPrice: 750,
-    discount: 40,
+    discount: 47,
     quantity: "30 Pods",
     boxes: 1,
     shipping: 99,
@@ -29,12 +29,12 @@ const PRODUCTS = {
   "combo-2box": {
     id: "combo-2box",
     name: "5-in-1 Laundry Pod - 2 Box Combo",
-    price: 900,
+    price: 799,
     originalPrice: 1500,
-    discount: 40,
+    discount: 47,
     quantity: "60 Pods",
     boxes: 2,
-    shipping: 49,
+    shipping: 50,
     description:
       "Great value combo pack with 60 pods.",
     features: [
@@ -53,9 +53,9 @@ const PRODUCTS = {
   "combo-3box": {
     id: "combo-3box",
     name: "5-in-1 Laundry Pod - 3 Box Combo",
-    price: 1350,
+    price: 1199,
     originalPrice: 2250,
-    discount: 40,
+    discount: 47,
     quantity: "90 Pods",
     boxes: 3,
     shipping: 0,
