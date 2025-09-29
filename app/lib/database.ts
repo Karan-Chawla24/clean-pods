@@ -13,36 +13,35 @@ async function generateSequentialOrderNumber(): Promise<string> {
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
   
-  // Find the highest sequence number for today
-  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-  
-  const lastOrder = await db.order.findFirst({
+  // Find the highest sequence number across ALL dates in the database
+  const allOrders = await db.order.findMany({
     where: {
-      orderDate: {
-        gte: todayStart,
-        lt: todayEnd
-      },
       orderNo: {
         not: null
       }
     },
-    orderBy: {
-      orderNo: 'desc'
+    select: {
+      orderNo: true
     }
   });
   
-  let sequence = 2; // Start from 0002 as requested
+  let highestSequence = 1; // Start from 1, will increment to 2 for first order
   
-  if (lastOrder?.orderNo) {
-    // Extract sequence number from the last order number (ORD-YYYYMMDD-XXXX)
-    const match = lastOrder.orderNo.match(/ORD-\d{8}-(\d{4})$/);
-    if (match) {
-      sequence = parseInt(match[1]) + 1;
+  // Extract sequence numbers from all existing orders and find the highest
+  for (const order of allOrders) {
+    if (order.orderNo) {
+      const match = order.orderNo.match(/ORD-\d{8}-(\d{4})$/);
+      if (match && match[1]) {
+        const sequenceNum = parseInt(match[1]);
+        if (sequenceNum > highestSequence) {
+          highestSequence = sequenceNum;
+        }
+      }
     }
   }
   
-  const sequenceStr = sequence.toString().padStart(4, '0');
+  const nextSequence = highestSequence + 1;
+  const sequenceStr = nextSequence.toString().padStart(4, '0');
   return `ORD-${dateStr}-${sequenceStr}`;
 }
 
@@ -54,36 +53,35 @@ async function generateSequentialInvoiceNumber(): Promise<string> {
   const today = new Date();
   const dateStr = today.toISOString().slice(0, 10).replace(/-/g, ''); // YYYYMMDD
   
-  // Find the highest sequence number for today
-  const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-  const todayEnd = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
-  
-  const lastOrder = await db.order.findFirst({
+  // Find the highest sequence number across ALL dates in the database
+  const allOrders = await db.order.findMany({
     where: {
-      orderDate: {
-        gte: todayStart,
-        lt: todayEnd
-      },
       invoiceNo: {
         not: null
       }
     },
-    orderBy: {
-      invoiceNo: 'desc'
+    select: {
+      invoiceNo: true
     }
   });
   
-  let sequence = 2; // Start from 0002 as requested
+  let highestSequence = 1; // Start from 1, will increment to 2 for first invoice
   
-  if (lastOrder?.invoiceNo) {
-    // Extract sequence number from the last invoice number (W-YYYYMMDD-XXXX)
-    const match = lastOrder.invoiceNo.match(/W-\d{8}-(\d{4})$/);
-    if (match) {
-      sequence = parseInt(match[1]) + 1;
+  // Extract sequence numbers from all existing invoices and find the highest
+  for (const order of allOrders) {
+    if (order.invoiceNo) {
+      const match = order.invoiceNo.match(/W-\d{8}-(\d{4})$/);
+      if (match && match[1]) {
+        const sequenceNum = parseInt(match[1]);
+        if (sequenceNum > highestSequence) {
+          highestSequence = sequenceNum;
+        }
+      }
     }
   }
   
-  const sequenceStr = sequence.toString().padStart(4, '0');
+  const nextSequence = highestSequence + 1;
+  const sequenceStr = nextSequence.toString().padStart(4, '0');
   return `W-${dateStr}-${sequenceStr}`;
 }
 

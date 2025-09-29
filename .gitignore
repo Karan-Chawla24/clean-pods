@@ -114,3 +114,4 @@ google-site-verification*.html
 SEO_BEST_PRACTICES.md
 GOOGLE_SEARCH_CONSOLE_SETUP.md
 README.md
+/scripts/*.js
