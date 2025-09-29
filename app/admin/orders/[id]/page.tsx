@@ -281,7 +281,7 @@ export default function AdminOrderDetails() {
                     {order.paymentState === 'COMPLETED' ? 'Paid' :
                      order.paymentState === 'PENDING' ? 'Pending' :
                      order.paymentState === 'FAILED' ? 'Failed' :
-                     order.paymentState || 'Unknown'}
+                     'Unknown'}
                   </span>
                 </div>
                 {order.paymentMode && (

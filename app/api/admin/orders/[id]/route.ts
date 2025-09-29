@@ -45,6 +45,17 @@ export const GET = withUpstashRateLimit("moderate")(async (request: NextRequest)
       total: order.total,
       orderDate: order.orderDate,
       items: order.items,
+      // Include payment details
+      paymentState: order.paymentState,
+      paymentMode: order.paymentMode,
+      paymentTransactionId: order.paymentTransactionId,
+      utr: order.utr,
+      feeAmount: order.feeAmount,
+      payableAmount: order.payableAmount,
+      bankName: order.bankName,
+      accountType: order.accountType,
+      cardLast4: order.cardLast4,
+      paymentTimestamp: order.paymentTimestamp,
     });
   } catch (error) {
     safeLogError("Admin order fetch error", error);
