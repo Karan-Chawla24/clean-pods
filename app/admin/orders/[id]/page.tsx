@@ -276,9 +276,12 @@ export default function AdminOrderDetails() {
                     order.paymentState === 'COMPLETED' ? 'bg-green-100 text-green-800' :
                     order.paymentState === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
                     order.paymentState === 'FAILED' ? 'bg-red-100 text-red-800' :
-                    'bg-green-100 text-green-800'
+                    'bg-gray-100 text-gray-800'
                   }`}>
-                    {order.paymentState || 'Paid'}
+                    {order.paymentState === 'COMPLETED' ? 'Paid' :
+                     order.paymentState === 'PENDING' ? 'Pending' :
+                     order.paymentState === 'FAILED' ? 'Failed' :
+                     order.paymentState || 'Unknown'}
                   </span>
                 </div>
                 {order.paymentMode && (
