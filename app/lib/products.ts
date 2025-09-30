@@ -10,7 +10,7 @@ const PRODUCTS = {
     discount: 47,
     quantity: "30 Pods",
     boxes: 1,
-    shipping: 99,
+    shipping: 100,
     description:
       "Perfect starter pack with 30 premium 5-in-1 laundry pods.",
     features: [

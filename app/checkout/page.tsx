@@ -116,7 +116,7 @@ export default function Checkout() {
     return total + (boxesPerItem * item.quantity);
   }, 0);
   
-  const shipping = totalBoxes >= 3 ? 0 : totalBoxes >= 2 ? 49 : 99;
+  const shipping = totalBoxes >= 3 ? 0 : totalBoxes >= 2 ? 50 : 100;
   const total = subtotal + shipping;
 
   // Validate and update cart item prices on component mount

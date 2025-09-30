@@ -24,10 +24,16 @@ export default function Cart() {
     return total + (boxesPerItem * item.quantity);
   }, 0);
   
-  const shipping = totalBoxes >= 3 ? 0 : totalBoxes >= 2 ? 49 : 99;
+  const shipping = totalBoxes >= 3 ? 0 : totalBoxes >= 2 ? 50 : 100;
   const total = cartTotal + shipping;
 
   const handleUpdateQuantity = (id: string, newQuantity: number) => {
+    // Only allow quantity changes for 3-box combo items
+    if (id !== 'combo-3box') {
+      toast.error("Quantity cannot be changed for this item");
+      return;
+    }
+
     if (newQuantity <= 0) {
       removeFromCart(id);
       toast.success("Item removed from cart");
@@ -36,6 +42,11 @@ export default function Cart() {
 
     updateCartQuantity(id, newQuantity);
     toast.success("Cart updated");
+  };
+
+  // Helper function to check if quantity controls should be shown
+  const canChangeQuantity = (itemId: string) => {
+    return itemId === 'combo-3box';
   };
 
   const handleRemoveItem = (id: string) => {
@@ -132,27 +143,38 @@ export default function Cart() {
                         </button>
                       </div>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center border border-gray-300 rounded-lg">
-                          <button
-                            onClick={() =>
-                              handleUpdateQuantity(item.id, item.quantity - 1)
-                            }
-                            className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer flex items-center justify-center"
-                          >
-                            <span className="text-lg font-bold">−</span>
-                          </button>
-                          <span className="px-4 py-2 bg-gray-50 font-medium min-w-[3rem] text-center">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() =>
-                              handleUpdateQuantity(item.id, item.quantity + 1)
-                            }
-                            className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer flex items-center justify-center"
-                          >
-                            <span className="text-lg font-bold">+</span>
-                          </button>
-                        </div>
+                        {canChangeQuantity(item.id) ? (
+                          <div className="flex items-center border border-gray-300 rounded-lg">
+                            <button
+                              onClick={() =>
+                                handleUpdateQuantity(item.id, item.quantity - 1)
+                              }
+                              className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer flex items-center justify-center"
+                            >
+                              <span className="text-lg font-bold">−</span>
+                            </button>
+                            <span className="px-4 py-2 bg-gray-50 font-medium min-w-[3rem] text-center">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() =>
+                                handleUpdateQuantity(item.id, item.quantity + 1)
+                              }
+                              className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer flex items-center justify-center"
+                            >
+                              <span className="text-lg font-bold">+</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center border border-gray-300 rounded-lg bg-gray-100">
+                            <span className="px-4 py-2 font-medium min-w-[3rem] text-center text-gray-500">
+                              Qty: {item.quantity}
+                            </span>
+                            <span className="px-3 py-2 text-xs text-gray-400">
+                              Fixed
+                            </span>
+                          </div>
+                        )}
                         <div className="text-lg font-bold text-gray-900">
                           {formatPrice(item.price * item.quantity)}
                         </div>
@@ -180,27 +202,38 @@ export default function Cart() {
 
                       <div className="flex items-center space-x-6">
                         {/* Quantity Controls */}
-                        <div className="flex items-center border border-gray-300 rounded-lg">
-                          <button
-                            onClick={() =>
-                              handleUpdateQuantity(item.id, item.quantity - 1)
-                            }
-                            className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer flex items-center justify-center"
-                          >
-                            <span className="text-lg font-bold">−</span>
-                          </button>
-                          <span className="px-4 py-2 bg-gray-50 font-medium min-w-[3rem] text-center">
-                            {item.quantity}
-                          </span>
-                          <button
-                            onClick={() =>
-                              handleUpdateQuantity(item.id, item.quantity + 1)
-                            }
-                            className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer flex items-center justify-center"
-                          >
-                            <span className="text-lg font-bold">+</span>
-                          </button>
-                        </div>
+                        {canChangeQuantity(item.id) ? (
+                          <div className="flex items-center border border-gray-300 rounded-lg">
+                            <button
+                              onClick={() =>
+                                handleUpdateQuantity(item.id, item.quantity - 1)
+                              }
+                              className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer flex items-center justify-center"
+                            >
+                              <span className="text-lg font-bold">−</span>
+                            </button>
+                            <span className="px-4 py-2 bg-gray-50 font-medium min-w-[3rem] text-center">
+                              {item.quantity}
+                            </span>
+                            <button
+                              onClick={() =>
+                                handleUpdateQuantity(item.id, item.quantity + 1)
+                              }
+                              className="px-3 py-2 text-gray-600 hover:text-gray-900 cursor-pointer flex items-center justify-center"
+                            >
+                              <span className="text-lg font-bold">+</span>
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center border border-gray-300 rounded-lg bg-gray-100 px-4 py-2">
+                            <span className="font-medium text-gray-500 mr-2">
+                              Qty: {item.quantity}
+                            </span>
+                            <span className="text-xs text-gray-400 bg-gray-200 px-2 py-1 rounded">
+                              Fixed
+                            </span>
+                          </div>
+                        )}
 
                         {/* Total Price */}
                         <div className="text-lg font-bold text-gray-900 min-w-[5rem] text-right">

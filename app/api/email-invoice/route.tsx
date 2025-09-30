@@ -196,10 +196,10 @@ function createInvoiceDocument(order: any) {
       return total + (boxesPerItem * (item.quantity || 1));
     }, 0);
     
-    // Shipping logic: 3+ boxes = free, 2 boxes = 49, 1 box = 99
+    // Shipping logic: 3+ boxes = free, 2 boxes = 50, 1 box = 100
     if (totalBoxes >= 3) return 0; // Free shipping for 3+ boxes
-    if (totalBoxes === 2) return 49; // Rs. 49 for 2 boxes
-    return 99; // Rs. 99 for 1 box
+    if (totalBoxes === 2) return 50; // Rs. 50 for 2 boxes
+    return 100; // Rs. 100 for 1 box
   };
   
   // Parse cart items - use the actual order data

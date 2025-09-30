@@ -139,8 +139,8 @@ export function calculateShipping(cartItems: CartItem[]): number {
     return total + (boxesPerItem * item.quantity);
   }, 0);
   
-  // Shipping logic: 3+ boxes = free, 2 boxes = 49, 1 box = 99
-  return totalBoxes >= 3 ? 0 : totalBoxes >= 2 ? 49 : 99;
+  // Shipping logic: 3+ boxes = free, 2 boxes = 50, 1 box = 100
+  return totalBoxes >= 3 ? 0 : totalBoxes >= 2 ? 50 : 100;
 }
 
 /**
