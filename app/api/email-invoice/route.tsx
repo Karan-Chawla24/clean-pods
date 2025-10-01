@@ -306,18 +306,20 @@ function createInvoiceDocument(order: any) {
         <View style={styles.table}>
           <View style={styles.tableHeader}>
             <Text style={[styles.tableCellHeader, { flex: 3 }]}>Item Description</Text>
+            <Text style={[styles.tableCellHeader, { flex: 1.5, textAlign: "center" }]}>HSN Code</Text>
             <Text style={[styles.tableCellHeader, { flex: 1, textAlign: "center" }]}>Qty</Text>
-            <Text style={[styles.tableCellHeader, { flex: 2, textAlign: "right" }]}>Unit Price</Text>
-            <Text style={[styles.tableCellHeader, { flex: 2, textAlign: "right" }]}>Discount</Text>
-            <Text style={[styles.tableCellHeader, { flex: 2, textAlign: "right" }]}>Net Amount</Text>
+            <Text style={[styles.tableCellHeader, { flex: 1.5, textAlign: "right" }]}>Unit Price</Text>
+            <Text style={[styles.tableCellHeader, { flex: 1.5, textAlign: "right" }]}>Discount</Text>
+            <Text style={[styles.tableCellHeader, { flex: 1.5, textAlign: "right" }]}>Net Amount</Text>
           </View>
           {pricingInfo.itemsBreakdown.map((item: any, index: number) => (
             <View key={index} style={styles.tableRow}>
               <Text style={[styles.tableCell, { flex: 3 }]}>{item.name || item.productName || "5-in-1 Laundry Pod"}</Text>
+              <Text style={[styles.tableCell, { flex: 1.5, textAlign: "center" }]}>34022090</Text>
               <Text style={[styles.tableCell, { flex: 1, textAlign: "center" }]}>{item.quantity}</Text>
-              <Text style={[styles.tableCell, { flex: 2, textAlign: "right" }]}>{formatPrice(item.totalUnitPrice)}</Text>
-              <Text style={[styles.tableCell, { flex: 2, textAlign: "right" }]}>{formatPrice(item.totalDiscount)}</Text>
-              <Text style={[styles.tableCell, { flex: 2, textAlign: "right" }]}>{formatPrice(item.totalNetAmount)}</Text>
+              <Text style={[styles.tableCell, { flex: 1.5, textAlign: "right" }]}>{formatPrice(item.totalUnitPrice)}</Text>
+              <Text style={[styles.tableCell, { flex: 1.5, textAlign: "right" }]}>{formatPrice(item.totalDiscount)}</Text>
+              <Text style={[styles.tableCell, { flex: 1.5, textAlign: "right" }]}>{formatPrice(item.totalNetAmount)}</Text>
             </View>
           ))}
         </View>
