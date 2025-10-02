@@ -126,8 +126,8 @@ function createInvoiceDocument(order: any) {
       // Calculate unit price (MRP / 1.18 to remove GST)
       const unitPriceExGST = mrp / 1.18;
       
-      // Calculate discount (40% of unit price ex-GST)
-      const discountPerUnit = unitPriceExGST * 0.40;
+      // Calculate discount (47% of unit price ex-GST)
+      const discountPerUnit = unitPriceExGST * 0.468;
       
       // Calculate net amount per unit (unit price - discount)
       const netAmountPerUnit = unitPriceExGST - discountPerUnit;
